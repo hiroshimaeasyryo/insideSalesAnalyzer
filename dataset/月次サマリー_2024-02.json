@@ -1,0 +1,81 @@
+{
+  "metadata": {
+    "report_period": "2024-02",
+    "generated_at": "2025-07-03T05:10:34.739Z",
+    "report_type": "monthly_summary"
+  },
+  "key_metrics": {
+    "total_calls": 21,
+    "total_hours": 2,
+    "total_appointments": 0,
+    "total_deals": 0,
+    "total_approved": 0,
+    "total_rejected": 0
+  },
+  "deal_status_breakdown": {
+    "approved": 0,
+    "rejected": 0,
+    "pending": 0,
+    "total": 0
+  },
+  "branch_performance": {
+    "福岡": {
+      "total_calls": 21,
+      "total_hours": 2,
+      "total_appointments": 0,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    }
+  },
+  "product_performance": {
+    "Bill One経費": {
+      "total_calls": 21,
+      "total_hours": 2,
+      "total_appointments": 0,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    }
+  },
+  "staff_performance": {
+    "浜田 穂花": {
+      "staff_name": "浜田 穂花",
+      "branch": "福岡",
+      "total_calls": 21,
+      "total_hours": 2,
+      "total_appointments": 0,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    }
+  },
+  "retention_metrics": {
+    "total_staff": 111,
+    "active_staff": 4,
+    "high_risk_staff": 99,
+    "medium_risk_staff": 12,
+    "low_risk_staff": 0,
+    "retention_rate": "0.00"
+  },
+  "alerts": [
+    {
+      "type": "critical",
+      "message": "高リスク学生が危険レベルを超えています",
+      "value": "99名",
+      "threshold": "15名"
+    },
+    {
+      "type": "critical",
+      "message": "定着率が危険レベルを下回っています",
+      "value": "0.00%",
+      "threshold": "20%"
+    }
+  ]
+}

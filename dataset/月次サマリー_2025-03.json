@@ -1,0 +1,364 @@
+{
+  "metadata": {
+    "report_period": "2025-03",
+    "generated_at": "2025-07-03T05:12:40.698Z",
+    "report_type": "monthly_summary"
+  },
+  "key_metrics": {
+    "total_calls": 20408,
+    "total_hours": 2176.5,
+    "total_appointments": 365,
+    "total_deals": 3,
+    "total_approved": 2,
+    "total_rejected": 1,
+    "approval_rate": "66.67"
+  },
+  "deal_status_breakdown": {
+    "approved": 2,
+    "rejected": 1,
+    "pending": 0,
+    "total": 3
+  },
+  "branch_performance": {
+    "名古屋": {
+      "total_calls": 604,
+      "total_hours": 61.5,
+      "total_appointments": 2,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "東京": {
+      "total_calls": 635,
+      "total_hours": 64,
+      "total_appointments": 4,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "福岡": {
+      "total_calls": 1445,
+      "total_hours": 147.5,
+      "total_appointments": 14,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "横浜": {
+      "total_calls": 1598,
+      "total_hours": 153.5,
+      "total_appointments": 12,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "社員": {
+      "total_calls": 892,
+      "total_hours": 90.5,
+      "total_appointments": 40,
+      "total_deals": 3,
+      "total_approved": 2,
+      "total_revenue": 100000,
+      "total_potential_revenue": 0,
+      "approval_rate": "66.67"
+    }
+  },
+  "product_performance": {
+    "Bill One": {
+      "total_calls": 8722,
+      "total_hours": 930,
+      "total_appointments": 87,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "Bill One経費": {
+      "total_calls": 2815,
+      "total_hours": 314.5,
+      "total_appointments": 54,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "Cynthialy": {
+      "total_calls": 635,
+      "total_hours": 51,
+      "total_appointments": 7,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "sansan": {
+      "total_calls": 3978,
+      "total_hours": 359,
+      "total_appointments": 48,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "Legalscape": {
+      "total_calls": 1094,
+      "total_hours": 131,
+      "total_appointments": 54,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "TOKIUM": {
+      "total_calls": 303,
+      "total_hours": 38.5,
+      "total_appointments": 23,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "LegalForce": {
+      "total_calls": 2060,
+      "total_hours": 236,
+      "total_appointments": 53,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "mog": {
+      "total_calls": 599,
+      "total_hours": 76,
+      "total_appointments": 8,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "flier": {
+      "total_calls": 7,
+      "total_hours": 2.5,
+      "total_appointments": 5,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "digital builder": {
+      "total_calls": 106,
+      "total_hours": 16,
+      "total_appointments": 13,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "セミナー案件": {
+      "total_calls": 64,
+      "total_hours": 6,
+      "total_appointments": 8,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "クラウド契約": {
+      "total_calls": 10,
+      "total_hours": 6,
+      "total_appointments": 2,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "heaba": {
+      "total_calls": 15,
+      "total_hours": 3,
+      "total_appointments": 1,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "KANPAIイベント": {
+      "total_calls": 0,
+      "total_hours": 7,
+      "total_appointments": 2,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "未設定": {
+      "total_calls": 0,
+      "total_hours": 0,
+      "total_appointments": 0,
+      "total_deals": 3,
+      "total_approved": 2,
+      "total_revenue": 100000,
+      "total_potential_revenue": 0,
+      "approval_rate": "66.67"
+    }
+  },
+  "staff_performance": {
+    "日高 希星": {
+      "staff_name": "日高 希星",
+      "branch": null,
+      "total_calls": 969,
+      "total_hours": 84.5,
+      "total_appointments": 2,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "青山 周平": {
+      "staff_name": "青山 周平",
+      "branch": null,
+      "total_calls": 864,
+      "total_hours": 68,
+      "total_appointments": 8,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "橋口 将人": {
+      "staff_name": "橋口 将人",
+      "branch": null,
+      "total_calls": 747,
+      "total_hours": 56,
+      "total_appointments": 9,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "近藤 暖": {
+      "staff_name": "近藤 暖",
+      "branch": null,
+      "total_calls": 701,
+      "total_hours": 60.5,
+      "total_appointments": 8,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "山本 剛央": {
+      "staff_name": "山本 剛央",
+      "branch": "福岡",
+      "total_calls": 677,
+      "total_hours": 60,
+      "total_appointments": 5,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "河村 雄太": {
+      "staff_name": "河村 雄太",
+      "branch": null,
+      "total_calls": 628,
+      "total_hours": 52,
+      "total_appointments": 5,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "駒田 大輔": {
+      "staff_name": "駒田 大輔",
+      "branch": null,
+      "total_calls": 618,
+      "total_hours": 74.5,
+      "total_appointments": 17,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "上西 瑠菜": {
+      "staff_name": "上西 瑠菜",
+      "branch": "横浜",
+      "total_calls": 613,
+      "total_hours": 55.5,
+      "total_appointments": 4,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "阿南 弘毅": {
+      "staff_name": "阿南 弘毅",
+      "branch": null,
+      "total_calls": 609,
+      "total_hours": 76.5,
+      "total_appointments": 7,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "江田 慎之介": {
+      "staff_name": "江田 慎之介",
+      "branch": null,
+      "total_calls": 605,
+      "total_hours": 63,
+      "total_appointments": 6,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    }
+  },
+  "retention_metrics": {
+    "total_staff": 111,
+    "active_staff": 4,
+    "high_risk_staff": 99,
+    "medium_risk_staff": 12,
+    "low_risk_staff": 0,
+    "retention_rate": "55.45"
+  },
+  "alerts": [
+    {
+      "type": "critical",
+      "message": "高リスク学生が危険レベルを超えています",
+      "value": "99名",
+      "threshold": "15名"
+    }
+  ]
+}
