@@ -45,30 +45,7 @@ authentication_status = st.session_state.get("authentication_status")
 name = st.session_state.get("name")
 username = st.session_state.get("username")
 
-# ここからデバッグ情報を必ず表示
 
-def show_debug_info():
-    try:
-        cwd = os.getcwd()
-        data_exists = os.path.exists('dataset')
-        data_list = os.listdir('dataset') if data_exists else []
-        st.markdown(
-            f'''
-            <div style="border:3px solid red; padding:16px; background:#fff3cd; color:#000; font-size:18px; margin-bottom:24px;">
-            <b>【デバッグ情報】</b><br>
-            <b>現在のディレクトリ:</b> {cwd}<br>
-            <b>datasetディレクトリの存在:</b> {data_exists}<br>
-            <b>datasetディレクトリ内のファイル数:</b> {len(data_list)}<br>
-            <b>datasetディレクトリ内のファイル:</b><br>
-            {'<br>'.join(data_list[:10]) if data_list else '（なし）'}
-            </div>
-            ''',
-            unsafe_allow_html=True
-        )
-    except Exception as e:
-        st.markdown(f'<div style="border:3px solid red; padding:16px; background:#fff3cd; color:#000; font-size:18px;">デバッグ情報の取得に失敗: {e}</div>', unsafe_allow_html=True)
-
-show_debug_info()
 
 if authentication_status == False:
     st.error('❌ ユーザー名/パスワードが間違っています')
@@ -151,36 +128,16 @@ elif authentication_status:
     def load_data(month):
         """指定月のデータを読み込み"""
         try:
-            # 現在のディレクトリを確認
-            current_dir = os.getcwd()
-            st.write(f"🔍 データ読み込み開始: {month}")
-            st.write(f"現在のディレクトリ: {current_dir}")
-            
             # データディレクトリの存在確認
             data_dir = get_data_dir()
             if data_dir is None:
                 st.error("❌ データディレクトリが見つかりません")
-                st.write("利用可能なディレクトリ:")
-                try:
-                    for item in os.listdir(current_dir):
-                        if os.path.isdir(item):
-                            st.write(f"  📁 {item}")
-                        else:
-                            st.write(f"  📄 {item}")
-                except Exception as e:
-                    st.error(f"ディレクトリ一覧の取得に失敗: {e}")
                 return None, None, None
-            
-            st.write(f"✅ データディレクトリ: {data_dir}")
             
             # ファイルパスの構築
             basic_file = os.path.join(data_dir, f'基本分析_{month}.json')
             detail_file = os.path.join(data_dir, f'詳細分析_{month}.json')
             summary_file = os.path.join(data_dir, f'月次サマリー_{month}.json')
-            
-            st.write(f"📄 基本分析ファイル: {basic_file}")
-            st.write(f"📄 詳細分析ファイル: {detail_file}")
-            st.write(f"📄 月次サマリーファイル: {summary_file}")
             
             # ファイルの存在確認
             if not os.path.exists(basic_file):
@@ -192,14 +149,6 @@ elif authentication_status:
             if not os.path.exists(summary_file):
                 st.error(f"❌ 月次サマリーファイルが見つかりません: {summary_file}")
                 return None, None, None
-            
-            st.write("✅ すべてのファイルが存在します")
-            
-            # ファイルサイズの確認
-            basic_size = os.path.getsize(basic_file)
-            detail_size = os.path.getsize(detail_file)
-            summary_size = os.path.getsize(summary_file)
-            st.write(f"📊 ファイルサイズ: 基本分析({basic_size} bytes), 詳細分析({detail_size} bytes), 月次サマリー({summary_size} bytes)")
             
             # 基本分析データ
             with open(basic_file, 'r', encoding='utf-8') as f:
@@ -213,7 +162,6 @@ elif authentication_status:
             with open(summary_file, 'r', encoding='utf-8') as f:
                 summary_data = json.load(f)
                 
-            st.success(f"✅ {month}のデータを正常に読み込みました")
             return basic_data, detail_data, summary_data
             
         except FileNotFoundError as e:
