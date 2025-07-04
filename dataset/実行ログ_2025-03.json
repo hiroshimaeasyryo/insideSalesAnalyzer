@@ -1,0 +1,18 @@
+{
+  "execution_time": "2025-07-04T10:50:57.012Z",
+  "report_period": "2025-03",
+  "files_created": [
+    "月次サマリー_2025-03.json",
+    "定着率分析_2025-03.json",
+    "詳細分析_2025-03.json",
+    "基本分析_2025-03.json"
+  ],
+  "folder_url": "https://drive.google.com/drive/folders/1l0MK5vWqOZnQ13GTyN5LoQk-SjZ7UG2U",
+  "config_version": "1.0",
+  "summary": {
+    "total_staff": 111,
+    "total_calls": 126045,
+    "total_deals": 411,
+    "approval_rate": "43.31"
+  }
+}

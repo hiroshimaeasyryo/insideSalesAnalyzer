@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generated_at": "2025-07-03T05:10:45.680Z",
+    "generated_at": "2025-07-04T10:47:35.343Z",
     "data_period": {
       "start_month": "2024-01",
       "end_month": "2025-12"
@@ -109,7 +109,6 @@
           "total_appointments": 31,
           "total_deals": 0,
           "total_approved": 0,
-          "total_rejected": 0,
           "total_revenue": 0,
           "total_potential_revenue": 0,
           "approval_rate": 0
@@ -121,7 +120,6 @@
           "total_appointments": 21,
           "total_deals": 0,
           "total_approved": 0,
-          "total_rejected": 0,
           "total_revenue": 0,
           "total_potential_revenue": 0,
           "approval_rate": 0
@@ -145,7 +143,6 @@
           "total_appointments": 18,
           "total_deals": 0,
           "total_approved": 0,
-          "total_rejected": 0,
           "total_revenue": 0,
           "total_potential_revenue": 0,
           "approval_rate": 0
@@ -157,7 +154,6 @@
           "total_appointments": 1,
           "total_deals": 0,
           "total_approved": 0,
-          "total_rejected": 0,
           "total_revenue": 0,
           "total_potential_revenue": 0,
           "approval_rate": 0
@@ -169,7 +165,6 @@
           "total_appointments": 0,
           "total_deals": 0,
           "total_approved": 0,
-          "total_rejected": 0,
           "total_revenue": 0,
           "total_potential_revenue": 0,
           "approval_rate": 0
@@ -217,7 +212,6 @@
           "total_appointments": 18,
           "total_deals": 0,
           "total_approved": 0,
-          "total_rejected": 0,
           "total_revenue": 0,
           "total_potential_revenue": 0,
           "approval_rate": 0
@@ -241,7 +235,6 @@
           "total_appointments": 18,
           "total_deals": 0,
           "total_approved": 0,
-          "total_rejected": 0,
           "total_revenue": 0,
           "total_potential_revenue": 0,
           "approval_rate": 0
@@ -265,7 +258,6 @@
           "total_appointments": 0,
           "total_deals": 0,
           "total_approved": 0,
-          "total_rejected": 0,
           "total_revenue": 0,
           "total_potential_revenue": 0,
           "approval_rate": 0
@@ -277,7 +269,6 @@
           "total_appointments": 146,
           "total_deals": 0,
           "total_approved": 0,
-          "total_rejected": 0,
           "total_revenue": 0,
           "total_potential_revenue": 0,
           "approval_rate": 0
@@ -8406,7 +8397,6 @@
           "total_appointments": 0,
           "total_deals": 0,
           "total_approved": 0,
-          "total_rejected": 0,
           "total_revenue": 0,
           "total_potential_revenue": 0,
           "approval_rate": 0
@@ -8418,7 +8408,6 @@
           "total_appointments": 1,
           "total_deals": 0,
           "total_approved": 0,
-          "total_rejected": 0,
           "total_revenue": 0,
           "total_potential_revenue": 0,
           "approval_rate": 0
@@ -8677,7 +8666,6 @@
           "total_appointments": 34,
           "total_deals": 0,
           "total_approved": 0,
-          "total_rejected": 0,
           "total_revenue": 0,
           "total_potential_revenue": 0,
           "approval_rate": 0
@@ -8689,7 +8677,6 @@
           "total_appointments": 33,
           "total_deals": 0,
           "total_approved": 0,
-          "total_rejected": 0,
           "total_revenue": 0,
           "total_potential_revenue": 0,
           "approval_rate": 0
@@ -8701,7 +8688,6 @@
           "total_appointments": 24,
           "total_deals": 0,
           "total_approved": 0,
-          "total_rejected": 0,
           "total_revenue": 0,
           "total_potential_revenue": 0,
           "approval_rate": 0
@@ -8713,7 +8699,6 @@
           "total_appointments": 11,
           "total_deals": 0,
           "total_approved": 0,
-          "total_rejected": 0,
           "total_revenue": 0,
           "total_potential_revenue": 0,
           "approval_rate": 0
@@ -8737,7 +8722,6 @@
           "total_appointments": 92,
           "total_deals": 0,
           "total_approved": 0,
-          "total_rejected": 0,
           "total_revenue": 0,
           "total_potential_revenue": 0,
           "approval_rate": 0
@@ -8749,7 +8733,6 @@
           "total_appointments": 0,
           "total_deals": 0,
           "total_approved": 0,
-          "total_rejected": 0,
           "total_revenue": 0,
           "total_potential_revenue": 0,
           "approval_rate": 0
@@ -8797,7 +8780,6 @@
           "total_appointments": 2,
           "total_deals": 0,
           "total_approved": 0,
-          "total_rejected": 0,
           "total_revenue": 0,
           "total_potential_revenue": 0,
           "approval_rate": 0
@@ -8833,7 +8815,6 @@
           "total_appointments": 11,
           "total_deals": 0,
           "total_approved": 0,
-          "total_rejected": 0,
           "total_revenue": 0,
           "total_potential_revenue": 0,
           "approval_rate": 0
@@ -17184,7 +17165,6 @@
           "total_appointments": 48,
           "total_deals": 0,
           "total_approved": 0,
-          "total_rejected": 0,
           "total_revenue": 0,
           "total_potential_revenue": 0,
           "approval_rate": 0
@@ -17220,7 +17200,6 @@
           "total_appointments": 23,
           "total_deals": 0,
           "total_approved": 0,
-          "total_rejected": 0,
           "total_revenue": 0,
           "total_potential_revenue": 0,
           "approval_rate": 0
@@ -17244,7 +17223,6 @@
           "total_appointments": 0,
           "total_deals": 0,
           "total_approved": 0,
-          "total_rejected": 0,
           "total_revenue": 0,
           "total_potential_revenue": 0,
           "approval_rate": 0
@@ -24513,9 +24491,9 @@
       "branches": {
         "福岡": {
           "branch_name": "福岡",
-          "staff_count": 2,
-          "total_calls": 117,
-          "total_hours": 18,
+          "staff_count": 3,
+          "total_calls": 137,
+          "total_hours": 22,
           "total_appointments": 4,
           "total_deals": 26,
           "total_approved": 2,
@@ -24525,7 +24503,8 @@
           "approval_rate": "7.69",
           "staff_list": [
             "山本 剛央",
-            "赤嶺 純"
+            "赤嶺 純",
+            "新田 健介"
           ]
         },
         "東京": {
@@ -24582,11 +24561,11 @@
           "total_calls": 17,
           "total_hours": 5,
           "total_appointments": 2,
-          "total_deals": 31,
+          "total_deals": 36,
           "total_approved": 0,
           "total_rejected": 7,
           "total_revenue": 0,
-          "total_potential_revenue": 856000,
+          "total_potential_revenue": 1086000,
           "approval_rate": "0.00",
           "staff_list": [
             "久我 吏穂"
@@ -24595,9 +24574,9 @@
         "横浜": {
           "branch_name": "横浜",
           "staff_count": 3,
-          "total_calls": 176,
-          "total_hours": 18,
-          "total_appointments": 3,
+          "total_calls": 205,
+          "total_hours": 21,
+          "total_appointments": 4,
           "total_deals": 10,
           "total_approved": 0,
           "total_rejected": 1,
@@ -24613,8 +24592,8 @@
         "名古屋": {
           "branch_name": "名古屋",
           "staff_count": 1,
-          "total_calls": 132,
-          "total_hours": 10,
+          "total_calls": 182,
+          "total_hours": 14,
           "total_appointments": 0,
           "total_deals": 1,
           "total_approved": 0,
@@ -24632,44 +24611,42 @@
           "total_calls": 0,
           "total_hours": 0,
           "total_appointments": 0,
-          "total_deals": 49,
+          "total_deals": 50,
           "total_approved": 2,
           "total_rejected": 4,
           "total_revenue": 55000,
-          "total_potential_revenue": 1580000,
-          "approval_rate": "4.08",
+          "total_potential_revenue": 1600000,
+          "approval_rate": "4.00",
           "staff_list": []
         }
       },
       "products": {
         "Bill One経費": {
           "product_name": "Bill One経費",
-          "total_calls": 113,
-          "total_hours": 17,
-          "total_appointments": 4,
+          "total_calls": 229,
+          "total_hours": 31.5,
+          "total_appointments": 5,
           "total_deals": 19,
           "total_approved": 2,
-          "total_rejected": 0,
           "total_revenue": 60000,
           "total_potential_revenue": 510000,
           "approval_rate": "10.53"
         },
         "Bill One": {
           "product_name": "Bill One",
-          "total_calls": 425,
-          "total_hours": 45,
-          "total_appointments": 2,
+          "total_calls": 812,
+          "total_hours": 82.5,
+          "total_appointments": 4,
           "total_deals": 0,
           "total_approved": 0,
-          "total_rejected": 0,
           "total_revenue": 0,
           "total_potential_revenue": 0,
           "approval_rate": 0
         },
         "Cynthialy": {
           "product_name": "Cynthialy",
-          "total_calls": 10,
-          "total_hours": 1,
+          "total_calls": 15,
+          "total_hours": 1.5,
           "total_appointments": 1,
           "total_deals": 0,
           "total_approved": 0,
@@ -24685,19 +24662,17 @@
           "total_appointments": 2,
           "total_deals": 0,
           "total_approved": 0,
-          "total_rejected": 0,
           "total_revenue": 0,
           "total_potential_revenue": 0,
           "approval_rate": 0
         },
         "sansan": {
           "product_name": "sansan",
-          "total_calls": 237,
-          "total_hours": 24,
-          "total_appointments": 3,
+          "total_calls": 307,
+          "total_hours": 34,
+          "total_appointments": 5,
           "total_deals": 0,
           "total_approved": 0,
-          "total_rejected": 0,
           "total_revenue": 0,
           "total_potential_revenue": 0,
           "approval_rate": 0
@@ -24719,12 +24694,12 @@
           "total_calls": 0,
           "total_hours": 0,
           "total_appointments": 0,
-          "total_deals": 110,
+          "total_deals": 116,
           "total_approved": 2,
           "total_rejected": 13,
           "total_revenue": 55000,
-          "total_potential_revenue": 3591000,
-          "approval_rate": "1.82"
+          "total_potential_revenue": 3841000,
+          "approval_rate": "1.72"
         }
       },
       "staff": {
@@ -24991,11 +24966,11 @@
           "total_calls": 17,
           "total_hours": 5,
           "total_appointments": 2,
-          "total_deals": 11,
+          "total_deals": 12,
           "total_approved": 0,
           "total_rejected": 1,
           "total_revenue": 0,
-          "total_potential_revenue": 406000,
+          "total_potential_revenue": 456000,
           "approval_rate": "0.00",
           "daily_activity": [
             {
@@ -25050,8 +25025,8 @@
           "staff_name": "西本 空",
           "branch": "名古屋",
           "join_date": "2025-04-24T02:42:02.000Z",
-          "total_calls": 132,
-          "total_hours": 10,
+          "total_calls": 182,
+          "total_hours": 14,
           "total_appointments": 0,
           "total_deals": 0,
           "total_approved": 0,
@@ -25089,6 +25064,21 @@
                 "get_appointment": 0
               },
               "sub_products": []
+            },
+            {
+              "date": "2025-07-03T15:00:00.000Z",
+              "main_product": {
+                "product": "Bill One",
+                "call_hours": 4,
+                "call_count": 50,
+                "reception_bk": 16,
+                "no_one_in_charge": 16,
+                "disconnect": 1,
+                "charge_connected": 17,
+                "charge_bk": 17,
+                "get_appointment": 0
+              },
+              "sub_products": []
             }
           ]
         },
@@ -25096,9 +25086,9 @@
           "staff_name": "宮内 来実",
           "branch": "横浜",
           "join_date": "2025-01-28T07:21:31.000Z",
-          "total_calls": 43,
-          "total_hours": 4,
-          "total_appointments": 1,
+          "total_calls": 72,
+          "total_hours": 7,
+          "total_appointments": 2,
           "total_deals": 1,
           "total_approved": 0,
           "total_rejected": 0,
@@ -25117,6 +25107,21 @@
                 "disconnect": 4,
                 "charge_connected": 7,
                 "charge_bk": 6,
+                "get_appointment": 1
+              },
+              "sub_products": []
+            },
+            {
+              "date": "2025-07-03T15:00:00.000Z",
+              "main_product": {
+                "product": "sansan",
+                "call_hours": 3,
+                "call_count": 29,
+                "reception_bk": 4,
+                "no_one_in_charge": 16,
+                "disconnect": 0,
+                "charge_connected": 8,
+                "charge_bk": 7,
                 "get_appointment": 1
               },
               "sub_products": []
@@ -25173,11 +25178,11 @@
           "total_calls": 40,
           "total_hours": 6,
           "total_appointments": 0,
-          "total_deals": 3,
+          "total_deals": 4,
           "total_approved": 0,
           "total_rejected": 1,
           "total_revenue": 0,
-          "total_potential_revenue": 85000,
+          "total_potential_revenue": 105000,
           "approval_rate": "0.00",
           "daily_activity": [
             {
@@ -25255,9 +25260,9 @@
           "staff_name": "近藤 暖",
           "branch": null,
           "join_date": null,
-          "total_calls": 64,
-          "total_hours": 7,
-          "total_appointments": 1,
+          "total_calls": 105,
+          "total_hours": 14,
+          "total_appointments": 2,
           "total_deals": 4,
           "total_approved": 0,
           "total_rejected": 0,
@@ -25276,6 +25281,21 @@
                 "disconnect": 4,
                 "charge_connected": 9,
                 "charge_bk": 8,
+                "get_appointment": 1
+              },
+              "sub_products": []
+            },
+            {
+              "date": "2025-07-03T15:00:00.000Z",
+              "main_product": {
+                "product": "sansan",
+                "call_hours": 7,
+                "call_count": 41,
+                "reception_bk": 3,
+                "no_one_in_charge": 28,
+                "disconnect": 3,
+                "charge_connected": 7,
+                "charge_bk": 6,
                 "get_appointment": 1
               },
               "sub_products": []
@@ -25313,6 +25333,355 @@
             }
           ]
         },
+        "杉山 友月": {
+          "staff_name": "杉山 友月",
+          "branch": null,
+          "join_date": null,
+          "total_calls": 36,
+          "total_hours": 4,
+          "total_appointments": 0,
+          "total_deals": 0,
+          "total_approved": 0,
+          "total_rejected": 0,
+          "total_revenue": 0,
+          "total_potential_revenue": 0,
+          "approval_rate": 0,
+          "daily_activity": [
+            {
+              "date": "2025-07-02T15:00:00.000Z",
+              "main_product": {
+                "product": "Bill One",
+                "call_hours": 4,
+                "call_count": 36,
+                "reception_bk": 8,
+                "no_one_in_charge": 6,
+                "disconnect": 10,
+                "charge_connected": 11,
+                "charge_bk": 11,
+                "get_appointment": 0
+              },
+              "sub_products": []
+            }
+          ]
+        },
+        "宮﨑 夏帆": {
+          "staff_name": "宮﨑 夏帆",
+          "branch": null,
+          "join_date": null,
+          "total_calls": 60,
+          "total_hours": 8,
+          "total_appointments": 0,
+          "total_deals": 0,
+          "total_approved": 0,
+          "total_rejected": 0,
+          "total_revenue": 0,
+          "total_potential_revenue": 0,
+          "approval_rate": 0,
+          "daily_activity": [
+            {
+              "date": "2025-07-02T15:00:00.000Z",
+              "main_product": {
+                "product": "Bill One経費",
+                "call_hours": 5,
+                "call_count": 31,
+                "reception_bk": 3,
+                "no_one_in_charge": 11,
+                "disconnect": 5,
+                "charge_connected": 5,
+                "charge_bk": 5,
+                "get_appointment": 0
+              },
+              "sub_products": []
+            },
+            {
+              "date": "2025-07-03T15:00:00.000Z",
+              "main_product": {
+                "product": "Bill One経費",
+                "call_hours": 3,
+                "call_count": 29,
+                "reception_bk": 5,
+                "no_one_in_charge": 8,
+                "disconnect": 2,
+                "charge_connected": 14,
+                "charge_bk": 14,
+                "get_appointment": 0
+              },
+              "sub_products": []
+            }
+          ]
+        },
+        "和田 愛永": {
+          "staff_name": "和田 愛永",
+          "branch": null,
+          "join_date": null,
+          "total_calls": 51,
+          "total_hours": 5,
+          "total_appointments": 0,
+          "total_deals": 1,
+          "total_approved": 0,
+          "total_rejected": 0,
+          "total_revenue": 0,
+          "total_potential_revenue": 35000,
+          "approval_rate": "0.00",
+          "daily_activity": [
+            {
+              "date": "2025-07-02T15:00:00.000Z",
+              "main_product": {
+                "product": "Bill One",
+                "call_hours": 4.5,
+                "call_count": 46,
+                "reception_bk": 7,
+                "no_one_in_charge": 19,
+                "disconnect": 7,
+                "charge_connected": 13,
+                "charge_bk": 13,
+                "get_appointment": 0
+              },
+              "sub_products": [
+                {
+                  "product": "Cynthialy",
+                  "call_hours": 0.5,
+                  "call_count": 5,
+                  "reception_bk": 0,
+                  "no_one_in_charge": 0,
+                  "disconnect": 4,
+                  "charge_connected": 1,
+                  "charge_bk": 1,
+                  "get_appointment": 0
+                }
+              ]
+            }
+          ]
+        },
+        "番場 一冴": {
+          "staff_name": "番場 一冴",
+          "branch": null,
+          "join_date": null,
+          "total_calls": 40,
+          "total_hours": 4,
+          "total_appointments": 0,
+          "total_deals": 0,
+          "total_approved": 0,
+          "total_rejected": 0,
+          "total_revenue": 0,
+          "total_potential_revenue": 0,
+          "approval_rate": 0,
+          "daily_activity": [
+            {
+              "date": "2025-07-02T15:00:00.000Z",
+              "main_product": {
+                "product": "Bill One",
+                "call_hours": 4,
+                "call_count": 40,
+                "reception_bk": 10,
+                "no_one_in_charge": 13,
+                "disconnect": 7,
+                "charge_connected": 11,
+                "charge_bk": 11,
+                "get_appointment": 0
+              },
+              "sub_products": []
+            }
+          ]
+        },
+        "新田 健介": {
+          "staff_name": "新田 健介",
+          "branch": "福岡",
+          "join_date": "2024-10-30T07:23:57.000Z",
+          "total_calls": 20,
+          "total_hours": 4,
+          "total_appointments": 0,
+          "total_deals": 12,
+          "total_approved": 0,
+          "total_rejected": 1,
+          "total_revenue": 0,
+          "total_potential_revenue": 470000,
+          "approval_rate": "0.00",
+          "daily_activity": [
+            {
+              "date": "2025-07-02T15:00:00.000Z",
+              "main_product": {
+                "product": "Bill One",
+                "call_hours": 4,
+                "call_count": 20,
+                "reception_bk": 2,
+                "no_one_in_charge": 10,
+                "disconnect": 2,
+                "charge_connected": 6,
+                "charge_bk": 6,
+                "get_appointment": 0
+              },
+              "sub_products": []
+            }
+          ]
+        },
+        "鈴木 翔也": {
+          "staff_name": "鈴木 翔也",
+          "branch": null,
+          "join_date": null,
+          "total_calls": 41,
+          "total_hours": 6,
+          "total_appointments": 3,
+          "total_deals": 5,
+          "total_approved": 0,
+          "total_rejected": 0,
+          "total_revenue": 0,
+          "total_potential_revenue": 195000,
+          "approval_rate": "0.00",
+          "daily_activity": [
+            {
+              "date": "2025-07-03T15:00:00.000Z",
+              "main_product": {
+                "product": "Bill One",
+                "call_hours": 5,
+                "call_count": 40,
+                "reception_bk": 0,
+                "no_one_in_charge": 25,
+                "disconnect": 2,
+                "charge_connected": 13,
+                "charge_bk": 11,
+                "get_appointment": 2
+              },
+              "sub_products": [
+                {
+                  "product": "Bill One経費",
+                  "call_hours": 1,
+                  "call_count": 1,
+                  "reception_bk": 0,
+                  "no_one_in_charge": 0,
+                  "disconnect": 0,
+                  "charge_connected": 0,
+                  "charge_bk": 0,
+                  "get_appointment": 1
+                }
+              ]
+            }
+          ]
+        },
+        "松本 竜弥": {
+          "staff_name": "松本 竜弥",
+          "branch": null,
+          "join_date": null,
+          "total_calls": 55,
+          "total_hours": 5.5,
+          "total_appointments": 0,
+          "total_deals": 1,
+          "total_approved": 0,
+          "total_rejected": 0,
+          "total_revenue": 0,
+          "total_potential_revenue": 30000,
+          "approval_rate": "0.00",
+          "daily_activity": [
+            {
+              "date": "2025-07-03T15:00:00.000Z",
+              "main_product": {
+                "product": "Bill One経費",
+                "call_hours": 5.5,
+                "call_count": 55,
+                "reception_bk": 16,
+                "no_one_in_charge": 21,
+                "disconnect": 8,
+                "charge_connected": 9,
+                "charge_bk": 9,
+                "get_appointment": 0
+              },
+              "sub_products": []
+            }
+          ]
+        },
+        "家合 琉維": {
+          "staff_name": "家合 琉維",
+          "branch": null,
+          "join_date": null,
+          "total_calls": 66,
+          "total_hours": 5,
+          "total_appointments": 0,
+          "total_deals": 0,
+          "total_approved": 0,
+          "total_rejected": 0,
+          "total_revenue": 0,
+          "total_potential_revenue": 0,
+          "approval_rate": 0,
+          "daily_activity": [
+            {
+              "date": "2025-07-03T15:00:00.000Z",
+              "main_product": {
+                "product": "Bill One",
+                "call_hours": 5,
+                "call_count": 66,
+                "reception_bk": 17,
+                "no_one_in_charge": 22,
+                "disconnect": 3,
+                "charge_connected": 24,
+                "charge_bk": 24,
+                "get_appointment": 0
+              },
+              "sub_products": []
+            }
+          ]
+        },
+        "宮崎 飛隆": {
+          "staff_name": "宮崎 飛隆",
+          "branch": null,
+          "join_date": null,
+          "total_calls": 67,
+          "total_hours": 5,
+          "total_appointments": 0,
+          "total_deals": 2,
+          "total_approved": 0,
+          "total_rejected": 0,
+          "total_revenue": 0,
+          "total_potential_revenue": 75000,
+          "approval_rate": "0.00",
+          "daily_activity": [
+            {
+              "date": "2025-07-03T15:00:00.000Z",
+              "main_product": {
+                "product": "Bill One",
+                "call_hours": 5,
+                "call_count": 67,
+                "reception_bk": 7,
+                "no_one_in_charge": 34,
+                "disconnect": 5,
+                "charge_connected": 20,
+                "charge_bk": 20,
+                "get_appointment": 0
+              },
+              "sub_products": []
+            }
+          ]
+        },
+        "中武 磨美": {
+          "staff_name": "中武 磨美",
+          "branch": null,
+          "join_date": null,
+          "total_calls": 22,
+          "total_hours": 2,
+          "total_appointments": 0,
+          "total_deals": 0,
+          "total_approved": 0,
+          "total_rejected": 0,
+          "total_revenue": 0,
+          "total_potential_revenue": 0,
+          "approval_rate": 0,
+          "daily_activity": [
+            {
+              "date": "2025-07-03T15:00:00.000Z",
+              "main_product": {
+                "product": "Bill One",
+                "call_hours": 2,
+                "call_count": 22,
+                "reception_bk": 4,
+                "no_one_in_charge": 6,
+                "disconnect": 2,
+                "charge_connected": 10,
+                "charge_bk": 9,
+                "get_appointment": 0
+              },
+              "sub_products": []
+            }
+          ]
+        },
         "未設定": {
           "staff_name": "未設定",
           "branch": "未設定",
@@ -25320,25 +25689,25 @@
           "total_calls": 0,
           "total_hours": 0,
           "total_appointments": 0,
-          "total_deals": 74,
+          "total_deals": 57,
           "total_approved": 1,
-          "total_rejected": 10,
+          "total_rejected": 9,
           "total_revenue": 20000,
-          "total_potential_revenue": 2295000,
-          "approval_rate": "1.35",
+          "total_potential_revenue": 1670000,
+          "approval_rate": "1.75",
           "daily_activity": []
         }
       },
       "summary": {
-        "total_calls": 820,
-        "total_hours": 95,
-        "total_appointments": 13,
-        "total_deals": 129,
+        "total_calls": 1398,
+        "total_hours": 157.5,
+        "total_appointments": 18,
+        "total_deals": 135,
         "total_approved": 4,
         "total_rejected": 13,
         "total_revenue": 115000,
-        "total_potential_revenue": 4101000,
-        "approval_rate": "3.10"
+        "total_potential_revenue": 4351000,
+        "approval_rate": "2.96"
       }
     },
     "2025-12": {
@@ -25369,7 +25738,6 @@
           "total_appointments": 0,
           "total_deals": 0,
           "total_approved": 0,
-          "total_rejected": 0,
           "total_revenue": 0,
           "total_potential_revenue": 0,
           "approval_rate": 0
@@ -25521,7 +25889,6 @@
           "total_appointments": 93,
           "total_deals": 0,
           "total_approved": 0,
-          "total_rejected": 0,
           "total_revenue": 0,
           "total_potential_revenue": 0,
           "approval_rate": 0
@@ -25533,7 +25900,6 @@
           "total_appointments": 20,
           "total_deals": 0,
           "total_approved": 0,
-          "total_rejected": 0,
           "total_revenue": 0,
           "total_potential_revenue": 0,
           "approval_rate": 0
@@ -25545,7 +25911,6 @@
           "total_appointments": 29,
           "total_deals": 0,
           "total_approved": 0,
-          "total_rejected": 0,
           "total_revenue": 0,
           "total_potential_revenue": 0,
           "approval_rate": 0
@@ -25557,7 +25922,6 @@
           "total_appointments": 26,
           "total_deals": 0,
           "total_approved": 0,
-          "total_rejected": 0,
           "total_revenue": 0,
           "total_potential_revenue": 0,
           "approval_rate": 0
@@ -25569,7 +25933,6 @@
           "total_appointments": 22,
           "total_deals": 0,
           "total_approved": 0,
-          "total_rejected": 0,
           "total_revenue": 0,
           "total_potential_revenue": 0,
           "approval_rate": 0
@@ -25629,7 +25992,6 @@
           "total_appointments": 12,
           "total_deals": 0,
           "total_approved": 0,
-          "total_rejected": 0,
           "total_revenue": 0,
           "total_potential_revenue": 0,
           "approval_rate": 0
@@ -32901,7 +33263,6 @@
           "total_appointments": 1,
           "total_deals": 0,
           "total_approved": 0,
-          "total_rejected": 0,
           "total_revenue": 0,
           "total_potential_revenue": 0,
           "approval_rate": 0
@@ -32937,7 +33298,6 @@
           "total_appointments": 0,
           "total_deals": 0,
           "total_approved": 0,
-          "total_rejected": 0,
           "total_revenue": 0,
           "total_potential_revenue": 0,
           "approval_rate": 0
@@ -33219,7 +33579,6 @@
           "total_appointments": 22,
           "total_deals": 0,
           "total_approved": 0,
-          "total_rejected": 0,
           "total_revenue": 0,
           "total_potential_revenue": 0,
           "approval_rate": 0
@@ -33231,7 +33590,6 @@
           "total_appointments": 73,
           "total_deals": 0,
           "total_approved": 0,
-          "total_rejected": 0,
           "total_revenue": 0,
           "total_potential_revenue": 0,
           "approval_rate": 0
@@ -33243,7 +33601,6 @@
           "total_appointments": 57,
           "total_deals": 0,
           "total_approved": 0,
-          "total_rejected": 0,
           "total_revenue": 0,
           "total_potential_revenue": 0,
           "approval_rate": 0
@@ -33279,7 +33636,6 @@
           "total_appointments": 6,
           "total_deals": 0,
           "total_approved": 0,
-          "total_rejected": 0,
           "total_revenue": 0,
           "total_potential_revenue": 0,
           "approval_rate": 0
@@ -33315,7 +33671,6 @@
           "total_appointments": 0,
           "total_deals": 0,
           "total_approved": 0,
-          "total_rejected": 0,
           "total_revenue": 0,
           "total_potential_revenue": 0,
           "approval_rate": 0
@@ -33339,7 +33694,6 @@
           "total_appointments": 1,
           "total_deals": 0,
           "total_approved": 0,
-          "total_rejected": 0,
           "total_revenue": 0,
           "total_potential_revenue": 0,
           "approval_rate": 0
@@ -40928,7 +41282,6 @@
           "total_appointments": 0,
           "total_deals": 0,
           "total_approved": 0,
-          "total_rejected": 0,
           "total_revenue": 0,
           "total_potential_revenue": 0,
           "approval_rate": 0
@@ -41080,7 +41433,6 @@
           "total_appointments": 87,
           "total_deals": 0,
           "total_approved": 0,
-          "total_rejected": 0,
           "total_revenue": 0,
           "total_potential_revenue": 0,
           "approval_rate": 0
@@ -41092,7 +41444,6 @@
           "total_appointments": 54,
           "total_deals": 0,
           "total_approved": 0,
-          "total_rejected": 0,
           "total_revenue": 0,
           "total_potential_revenue": 0,
           "approval_rate": 0
@@ -41104,7 +41455,6 @@
           "total_appointments": 7,
           "total_deals": 0,
           "total_approved": 0,
-          "total_rejected": 0,
           "total_revenue": 0,
           "total_potential_revenue": 0,
           "approval_rate": 0
@@ -41116,7 +41466,6 @@
           "total_appointments": 48,
           "total_deals": 0,
           "total_approved": 0,
-          "total_rejected": 0,
           "total_revenue": 0,
           "total_potential_revenue": 0,
           "approval_rate": 0
@@ -41152,7 +41501,6 @@
           "total_appointments": 53,
           "total_deals": 0,
           "total_approved": 0,
-          "total_rejected": 0,
           "total_revenue": 0,
           "total_potential_revenue": 0,
           "approval_rate": 0
@@ -41188,7 +41536,6 @@
           "total_appointments": 13,
           "total_deals": 0,
           "total_approved": 0,
-          "total_rejected": 0,
           "total_revenue": 0,
           "total_potential_revenue": 0,
           "approval_rate": 0
@@ -41200,7 +41547,6 @@
           "total_appointments": 8,
           "total_deals": 0,
           "total_approved": 0,
-          "total_rejected": 0,
           "total_revenue": 0,
           "total_potential_revenue": 0,
           "approval_rate": 0
@@ -41224,7 +41570,6 @@
           "total_appointments": 1,
           "total_deals": 0,
           "total_approved": 0,
-          "total_rejected": 0,
           "total_revenue": 0,
           "total_potential_revenue": 0,
           "approval_rate": 0
@@ -50849,7 +51194,6 @@
           "total_appointments": 37,
           "total_deals": 0,
           "total_approved": 0,
-          "total_rejected": 0,
           "total_revenue": 0,
           "total_potential_revenue": 0,
           "approval_rate": 0
@@ -50873,7 +51217,6 @@
           "total_appointments": 122,
           "total_deals": 0,
           "total_approved": 0,
-          "total_rejected": 0,
           "total_revenue": 0,
           "total_potential_revenue": 0,
           "approval_rate": 0
@@ -50885,7 +51228,6 @@
           "total_appointments": 21,
           "total_deals": 0,
           "total_approved": 0,
-          "total_rejected": 0,
           "total_revenue": 0,
           "total_potential_revenue": 0,
           "approval_rate": 0
@@ -50897,7 +51239,6 @@
           "total_appointments": 25,
           "total_deals": 0,
           "total_approved": 0,
-          "total_rejected": 0,
           "total_revenue": 0,
           "total_potential_revenue": 0,
           "approval_rate": 0
@@ -50909,7 +51250,6 @@
           "total_appointments": 0,
           "total_deals": 0,
           "total_approved": 0,
-          "total_rejected": 0,
           "total_revenue": 0,
           "total_potential_revenue": 0,
           "approval_rate": 0
@@ -56554,7 +56894,6 @@
           "total_appointments": 28,
           "total_deals": 0,
           "total_approved": 0,
-          "total_rejected": 0,
           "total_revenue": 0,
           "total_potential_revenue": 0,
           "approval_rate": 0
@@ -56566,7 +56905,6 @@
           "total_appointments": 59,
           "total_deals": 0,
           "total_approved": 0,
-          "total_rejected": 0,
           "total_revenue": 0,
           "total_potential_revenue": 0,
           "approval_rate": 0
@@ -56578,7 +56916,6 @@
           "total_appointments": 30,
           "total_deals": 0,
           "total_approved": 0,
-          "total_rejected": 0,
           "total_revenue": 0,
           "total_potential_revenue": 0,
           "approval_rate": 0
@@ -56590,7 +56927,6 @@
           "total_appointments": 9,
           "total_deals": 0,
           "total_approved": 0,
-          "total_rejected": 0,
           "total_revenue": 0,
           "total_potential_revenue": 0,
           "approval_rate": 0
@@ -56602,7 +56938,6 @@
           "total_appointments": 18,
           "total_deals": 0,
           "total_approved": 0,
-          "total_rejected": 0,
           "total_revenue": 0,
           "total_potential_revenue": 0,
           "approval_rate": 0
@@ -56650,7 +56985,6 @@
           "total_appointments": 2,
           "total_deals": 0,
           "total_approved": 0,
-          "total_rejected": 0,
           "total_revenue": 0,
           "total_potential_revenue": 0,
           "approval_rate": 0
@@ -62321,12 +62655,12 @@
           "total_calls": 15,
           "total_hours": 4,
           "total_appointments": 2,
-          "total_deals": 87,
+          "total_deals": 86,
           "total_approved": 58,
           "total_rejected": 23,
           "total_revenue": 1996000,
-          "total_potential_revenue": 208000,
-          "approval_rate": "66.67",
+          "total_potential_revenue": 158000,
+          "approval_rate": "67.44",
           "staff_list": [
             "久我 吏穂"
           ]
@@ -62354,7 +62688,6 @@
           "total_appointments": 93,
           "total_deals": 0,
           "total_approved": 0,
-          "total_rejected": 0,
           "total_revenue": 0,
           "total_potential_revenue": 0,
           "approval_rate": 0
@@ -62366,10 +62699,10 @@
           "total_appointments": 17,
           "total_deals": 47,
           "total_approved": 35,
-          "total_rejected": 12,
           "total_revenue": 1050000,
           "total_potential_revenue": 0,
-          "approval_rate": "74.47"
+          "approval_rate": "74.47",
+          "total_rejected": null
         },
         "digital builder": {
           "product_name": "digital builder",
@@ -62402,7 +62735,6 @@
           "total_appointments": 18,
           "total_deals": 0,
           "total_approved": 0,
-          "total_rejected": 0,
           "total_revenue": 0,
           "total_potential_revenue": 0,
           "approval_rate": 0
@@ -62426,7 +62758,6 @@
           "total_appointments": 20,
           "total_deals": 0,
           "total_approved": 0,
-          "total_rejected": 0,
           "total_revenue": 0,
           "total_potential_revenue": 0,
           "approval_rate": 0
@@ -62438,7 +62769,6 @@
           "total_appointments": 4,
           "total_deals": 0,
           "total_approved": 0,
-          "total_rejected": 0,
           "total_revenue": 0,
           "total_potential_revenue": 0,
           "approval_rate": 0
@@ -62472,12 +62802,12 @@
           "total_calls": 0,
           "total_hours": 0,
           "total_appointments": 0,
-          "total_deals": 184,
+          "total_deals": 183,
           "total_approved": 115,
           "total_rejected": 52,
           "total_revenue": 3929000,
-          "total_potential_revenue": 501000,
-          "approval_rate": "62.50"
+          "total_potential_revenue": 451000,
+          "approval_rate": "62.84"
         }
       },
       "staff": {
@@ -68880,12 +69210,12 @@
           "total_calls": 15,
           "total_hours": 4,
           "total_appointments": 2,
-          "total_deals": 24,
+          "total_deals": 23,
           "total_approved": 18,
           "total_rejected": 3,
           "total_revenue": 666500,
-          "total_potential_revenue": 133000,
-          "approval_rate": "75.00",
+          "total_potential_revenue": 83000,
+          "approval_rate": "78.26",
           "daily_activity": [
             {
               "date": "2025-06-30T15:00:00.000Z",
@@ -68924,25 +69254,25 @@
         "total_calls": 14837,
         "total_hours": 1451.5,
         "total_appointments": 188,
-        "total_deals": 231,
+        "total_deals": 230,
         "total_approved": 150,
         "total_rejected": 64,
         "total_revenue": 4979000,
-        "total_potential_revenue": 501000,
-        "approval_rate": "64.94"
+        "total_potential_revenue": 451000,
+        "approval_rate": "65.22"
       }
     }
   },
   "summary_by_period": {
-    "total_calls": 125467,
-    "total_hours": 13435,
-    "total_appointments": 2156,
-    "total_deals": 406,
+    "total_calls": 126045,
+    "total_hours": 13497.5,
+    "total_appointments": 2161,
+    "total_deals": 411,
     "total_approved": 178,
     "total_rejected": 99,
     "total_revenue": 6240000,
-    "total_potential_revenue": 4602000,
-    "overall_approval_rate": "43.84"
+    "total_potential_revenue": 4802000,
+    "overall_approval_rate": "43.31"
   },
   "monthly_conversion": {
     "2024-10": {
@@ -70571,12 +70901,12 @@
     },
     "2025-07": {
       "total": {
-        "self_reported_appointments": 13,
-        "taaaan_entries": 129,
+        "self_reported_appointments": 18,
+        "taaaan_entries": 135,
         "approved_deals": 4,
-        "taaaan_rate": 9.923076923076923,
-        "approval_rate": 0.031007751937984496,
-        "true_approval_rate": 0.3076923076923077
+        "taaaan_rate": 7.5,
+        "approval_rate": 0.02962962962962963,
+        "true_approval_rate": 0.2222222222222222
       },
       "by_staff": {
         "山本 剛央": {
@@ -70637,9 +70967,9 @@
         },
         "久我 吏穂": {
           "self_reported_appointments": 2,
-          "taaaan_entries": 11,
+          "taaaan_entries": 12,
           "approved_deals": 0,
-          "taaaan_rate": 5.5,
+          "taaaan_rate": 6,
           "approval_rate": 0,
           "true_approval_rate": 0
         },
@@ -70660,10 +70990,10 @@
           "true_approval_rate": null
         },
         "宮内 来実": {
-          "self_reported_appointments": 1,
+          "self_reported_appointments": 2,
           "taaaan_entries": 1,
           "approved_deals": 0,
-          "taaaan_rate": 1,
+          "taaaan_rate": 0.5,
           "approval_rate": 0,
           "true_approval_rate": 0
         },
@@ -70677,7 +71007,7 @@
         },
         "田中 恵達": {
           "self_reported_appointments": 0,
-          "taaaan_entries": 3,
+          "taaaan_entries": 4,
           "approved_deals": 0,
           "taaaan_rate": null,
           "approval_rate": 0,
@@ -70692,10 +71022,10 @@
           "true_approval_rate": null
         },
         "近藤 暖": {
-          "self_reported_appointments": 1,
+          "self_reported_appointments": 2,
           "taaaan_entries": 4,
           "approved_deals": 0,
-          "taaaan_rate": 4,
+          "taaaan_rate": 2,
           "approval_rate": 0,
           "true_approval_rate": 0
         },
@@ -70705,6 +71035,86 @@
           "approved_deals": 0,
           "taaaan_rate": null,
           "approval_rate": 0,
+          "true_approval_rate": null
+        },
+        "杉山 友月": {
+          "self_reported_appointments": 0,
+          "taaaan_entries": 0,
+          "approved_deals": 0,
+          "taaaan_rate": null,
+          "approval_rate": null,
+          "true_approval_rate": null
+        },
+        "宮﨑 夏帆": {
+          "self_reported_appointments": 0,
+          "taaaan_entries": 0,
+          "approved_deals": 0,
+          "taaaan_rate": null,
+          "approval_rate": null,
+          "true_approval_rate": null
+        },
+        "和田 愛永": {
+          "self_reported_appointments": 0,
+          "taaaan_entries": 1,
+          "approved_deals": 0,
+          "taaaan_rate": null,
+          "approval_rate": 0,
+          "true_approval_rate": null
+        },
+        "番場 一冴": {
+          "self_reported_appointments": 0,
+          "taaaan_entries": 0,
+          "approved_deals": 0,
+          "taaaan_rate": null,
+          "approval_rate": null,
+          "true_approval_rate": null
+        },
+        "新田 健介": {
+          "self_reported_appointments": 0,
+          "taaaan_entries": 12,
+          "approved_deals": 0,
+          "taaaan_rate": null,
+          "approval_rate": 0,
+          "true_approval_rate": null
+        },
+        "鈴木 翔也": {
+          "self_reported_appointments": 3,
+          "taaaan_entries": 5,
+          "approved_deals": 0,
+          "taaaan_rate": 1.6666666666666667,
+          "approval_rate": 0,
+          "true_approval_rate": 0
+        },
+        "松本 竜弥": {
+          "self_reported_appointments": 0,
+          "taaaan_entries": 1,
+          "approved_deals": 0,
+          "taaaan_rate": null,
+          "approval_rate": 0,
+          "true_approval_rate": null
+        },
+        "家合 琉維": {
+          "self_reported_appointments": 0,
+          "taaaan_entries": 0,
+          "approved_deals": 0,
+          "taaaan_rate": null,
+          "approval_rate": null,
+          "true_approval_rate": null
+        },
+        "宮崎 飛隆": {
+          "self_reported_appointments": 0,
+          "taaaan_entries": 2,
+          "approved_deals": 0,
+          "taaaan_rate": null,
+          "approval_rate": 0,
+          "true_approval_rate": null
+        },
+        "中武 磨美": {
+          "self_reported_appointments": 0,
+          "taaaan_entries": 0,
+          "approved_deals": 0,
+          "taaaan_rate": null,
+          "approval_rate": null,
           "true_approval_rate": null
         },
         "渡邊 敬太": {
@@ -70717,7 +71127,7 @@
         },
         "小野 真稔": {
           "self_reported_appointments": 0,
-          "taaaan_entries": 11,
+          "taaaan_entries": 14,
           "approved_deals": 0,
           "taaaan_rate": null,
           "approval_rate": 0,
@@ -70731,25 +71141,9 @@
           "approval_rate": 0,
           "true_approval_rate": null
         },
-        "新田 健介": {
-          "self_reported_appointments": 0,
-          "taaaan_entries": 12,
-          "approved_deals": 0,
-          "taaaan_rate": null,
-          "approval_rate": 0,
-          "true_approval_rate": null
-        },
-        "鈴木 翔也": {
-          "self_reported_appointments": 0,
-          "taaaan_entries": 5,
-          "approved_deals": 0,
-          "taaaan_rate": null,
-          "approval_rate": 0,
-          "true_approval_rate": null
-        },
         "喜納 雄大": {
           "self_reported_appointments": 0,
-          "taaaan_entries": 3,
+          "taaaan_entries": 4,
           "approved_deals": 0,
           "taaaan_rate": null,
           "approval_rate": 0,
@@ -70779,14 +71173,6 @@
           "approval_rate": 0,
           "true_approval_rate": null
         },
-        "宮崎 飛隆": {
-          "self_reported_appointments": 0,
-          "taaaan_entries": 2,
-          "approved_deals": 0,
-          "taaaan_rate": null,
-          "approval_rate": 0,
-          "true_approval_rate": null
-        },
         "橋口 将人": {
           "self_reported_appointments": 0,
           "taaaan_entries": 7,
@@ -70798,14 +71184,6 @@
         "小倉 一真": {
           "self_reported_appointments": 0,
           "taaaan_entries": 5,
-          "approved_deals": 0,
-          "taaaan_rate": null,
-          "approval_rate": 0,
-          "true_approval_rate": null
-        },
-        "和田 愛永": {
-          "self_reported_appointments": 0,
-          "taaaan_entries": 1,
           "approved_deals": 0,
           "taaaan_rate": null,
           "approval_rate": 0,
@@ -70828,14 +71206,6 @@
           "true_approval_rate": null
         },
         "阿南 弘毅": {
-          "self_reported_appointments": 0,
-          "taaaan_entries": 1,
-          "approved_deals": 0,
-          "taaaan_rate": null,
-          "approval_rate": 0,
-          "true_approval_rate": null
-        },
-        "松本 竜弥": {
           "self_reported_appointments": 0,
           "taaaan_entries": 1,
           "approved_deals": 0,
@@ -70894,12 +71264,12 @@
           "true_approval_rate": 0
         },
         "未設定": {
-          "self_reported_appointments": 2,
-          "taaaan_entries": 49,
+          "self_reported_appointments": 6,
+          "taaaan_entries": 50,
           "approved_deals": 2,
-          "taaaan_rate": 24.5,
-          "approval_rate": 0.04081632653061224,
-          "true_approval_rate": 1
+          "taaaan_rate": 8.333333333333334,
+          "approval_rate": 0.04,
+          "true_approval_rate": 0.3333333333333333
         },
         "新潟": {
           "self_reported_appointments": 0,
@@ -70911,17 +71281,17 @@
         },
         "社員": {
           "self_reported_appointments": 2,
-          "taaaan_entries": 31,
+          "taaaan_entries": 36,
           "approved_deals": 0,
-          "taaaan_rate": 15.5,
+          "taaaan_rate": 18,
           "approval_rate": 0,
           "true_approval_rate": 0
         },
         "横浜": {
-          "self_reported_appointments": 3,
+          "self_reported_appointments": 4,
           "taaaan_entries": 10,
           "approved_deals": 0,
-          "taaaan_rate": 3.3333333333333335,
+          "taaaan_rate": 2.5,
           "approval_rate": 0,
           "true_approval_rate": 0
         },
@@ -70944,7 +71314,7 @@
           "true_approval_rate": 0.6666666666666666
         },
         "Bill One": {
-          "self_reported_appointments": 4,
+          "self_reported_appointments": 7,
           "taaaan_entries": 0,
           "approved_deals": 0,
           "taaaan_rate": 0,
@@ -70960,7 +71330,7 @@
           "true_approval_rate": 0
         },
         "sansan": {
-          "self_reported_appointments": 4,
+          "self_reported_appointments": 6,
           "taaaan_entries": 0,
           "approved_deals": 0,
           "taaaan_rate": 0,
@@ -70985,7 +71355,7 @@
         },
         "Digital Billder": {
           "self_reported_appointments": 0,
-          "taaaan_entries": 3,
+          "taaaan_entries": 6,
           "approved_deals": 0,
           "taaaan_rate": null,
           "approval_rate": 0,
@@ -71009,7 +71379,7 @@
         },
         "AI法務プラットフォーム「LegalOn Cloud」": {
           "self_reported_appointments": 0,
-          "taaaan_entries": 2,
+          "taaaan_entries": 3,
           "approved_deals": 0,
           "taaaan_rate": null,
           "approval_rate": 0,
@@ -71017,10 +71387,10 @@
         },
         "未設定": {
           "self_reported_appointments": 0,
-          "taaaan_entries": 8,
+          "taaaan_entries": 10,
           "approved_deals": 1,
           "taaaan_rate": null,
-          "approval_rate": 0.125,
+          "approval_rate": 0.1,
           "true_approval_rate": null
         }
       }
@@ -73860,10 +74230,10 @@
     "2025-06": {
       "total": {
         "self_reported_appointments": 188,
-        "taaaan_entries": 231,
+        "taaaan_entries": 230,
         "approved_deals": 150,
-        "taaaan_rate": 1.2287234042553192,
-        "approval_rate": 0.6493506493506493,
+        "taaaan_rate": 1.2234042553191489,
+        "approval_rate": 0.6521739130434783,
         "true_approval_rate": 0.7978723404255319
       },
       "by_staff": {
@@ -74253,10 +74623,10 @@
         },
         "久我 吏穂": {
           "self_reported_appointments": 2,
-          "taaaan_entries": 24,
+          "taaaan_entries": 23,
           "approved_deals": 18,
-          "taaaan_rate": 12,
-          "approval_rate": 0.75,
+          "taaaan_rate": 11.5,
+          "approval_rate": 0.782608695652174,
           "true_approval_rate": 9
         },
         "喜舎場 朝也": {
@@ -74399,10 +74769,10 @@
         },
         "社員": {
           "self_reported_appointments": 2,
-          "taaaan_entries": 87,
+          "taaaan_entries": 86,
           "approved_deals": 58,
-          "taaaan_rate": 43.5,
-          "approval_rate": 0.6666666666666666,
+          "taaaan_rate": 43,
+          "approval_rate": 0.6744186046511628,
           "true_approval_rate": 29
         }
       },
@@ -74513,10 +74883,10 @@
         },
         "未設定": {
           "self_reported_appointments": 0,
-          "taaaan_entries": 49,
+          "taaaan_entries": 48,
           "approved_deals": 27,
           "taaaan_rate": null,
-          "approval_rate": 0.5510204081632653,
+          "approval_rate": 0.5625,
           "true_approval_rate": null
         }
       }

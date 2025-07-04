@@ -216,7 +216,7 @@ function mergeSalesDataNested() {
       date:             safeDateConversion(rec['商談開始日時']),
       staff:            rec['パートナー担当者'],
       company:          rec['メーカー名'],
-      product:          rec['サービス名'],
+      product:          rec['プロダクト名'] || rec['サービス名'], // CB列から商材情報を取得、フォールバックとしてサービス名を使用
       commission:       rec['報酬'] || null,
       deal_start:       safeDateConversion(rec['商談開始日時']),
       deal_end:         safeDateConversion(rec['商談終了日時']),

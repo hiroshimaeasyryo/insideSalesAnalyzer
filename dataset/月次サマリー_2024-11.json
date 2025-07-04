@@ -1,7 +1,7 @@
 {
   "metadata": {
     "report_period": "2024-11",
-    "generated_at": "2025-07-03T05:11:29.327Z",
+    "generated_at": "2025-07-04T10:48:50.061Z",
     "report_type": "monthly_summary"
   },
   "key_metrics": {
@@ -336,9 +336,9 @@
   },
   "retention_metrics": {
     "total_staff": 111,
-    "active_staff": 4,
-    "high_risk_staff": 99,
-    "medium_risk_staff": 12,
+    "active_staff": 6,
+    "high_risk_staff": 101,
+    "medium_risk_staff": 10,
     "low_risk_staff": 0,
     "retention_rate": "50.00"
   },
@@ -346,7 +346,7 @@
     {
       "type": "critical",
       "message": "高リスク学生が危険レベルを超えています",
-      "value": "99名",
+      "value": "101名",
       "threshold": "15名"
     }
   ]

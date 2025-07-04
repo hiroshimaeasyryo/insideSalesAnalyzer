@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generated_at": "2025-07-03T05:12:39.772Z",
+    "generated_at": "2025-07-04T10:50:48.724Z",
     "analysis_period": {
       "start_month": "2002-03",
       "end_month": "2025-07"
@@ -509,21 +509,22 @@
       "branch": null,
       "join_date": null,
       "first_activity_date": "2024-10-01T15:00:00.000Z",
-      "last_activity_date": "2025-06-29T15:00:00.000Z",
+      "last_activity_date": "2025-07-03T15:00:00.000Z",
       "months_since_join": 0,
-      "months_since_first_activity": 8,
-      "active_months": 9,
-      "total_activity_days": 84,
-      "monthly_activity_rate": "50.00",
-      "avg_monthly_activity_days": "9.33",
+      "months_since_first_activity": 9,
+      "active_months": 10,
+      "total_activity_days": 85,
+      "monthly_activity_rate": "55.56",
+      "avg_monthly_activity_days": "8.50",
       "total_calls": null,
       "total_hours": null,
       "total_appointments": null,
       "appointment_rate": "0.00",
-      "risk_score": 40,
-      "risk_level": "medium",
+      "risk_score": 50,
+      "risk_level": "high",
       "risk_factors": [
-        "アポ獲得率が2%未満"
+        "アポ獲得率が2%未満",
+        "活動のばらつきが大きい（閾値: 10）"
       ],
       "activity_months": {
         "2024-10": {
@@ -939,6 +940,19 @@
             },
             {
               "date": "2025-06-29T15:00:00.000Z",
+              "product": "Bill One"
+            }
+          ]
+        },
+        "2025-07": {
+          "month": "2025-07",
+          "activity_days": 1,
+          "total_calls": null,
+          "total_hours": null,
+          "total_appointments": null,
+          "daily_activities": [
+            {
+              "date": "2025-07-03T15:00:00.000Z",
               "product": "Bill One"
             }
           ]
@@ -3469,21 +3483,22 @@
       "branch": null,
       "join_date": null,
       "first_activity_date": "2024-10-08T15:00:00.000Z",
-      "last_activity_date": "2025-06-29T15:00:00.000Z",
+      "last_activity_date": "2025-07-02T15:00:00.000Z",
       "months_since_join": 0,
-      "months_since_first_activity": 8,
-      "active_months": 9,
-      "total_activity_days": 86,
-      "monthly_activity_rate": "50.00",
-      "avg_monthly_activity_days": "9.56",
+      "months_since_first_activity": 9,
+      "active_months": 10,
+      "total_activity_days": 87,
+      "monthly_activity_rate": "55.56",
+      "avg_monthly_activity_days": "8.70",
       "total_calls": null,
       "total_hours": null,
       "total_appointments": null,
       "appointment_rate": "0.00",
-      "risk_score": 40,
-      "risk_level": "medium",
+      "risk_score": 50,
+      "risk_level": "high",
       "risk_factors": [
-        "アポ獲得率が2%未満"
+        "アポ獲得率が2%未満",
+        "活動のばらつきが大きい（閾値: 10）"
       ],
       "activity_months": {
         "2024-10": {
@@ -3907,6 +3922,19 @@
             },
             {
               "date": "2025-06-29T15:00:00.000Z",
+              "product": "Bill One"
+            }
+          ]
+        },
+        "2025-07": {
+          "month": "2025-07",
+          "activity_days": 1,
+          "total_calls": null,
+          "total_hours": null,
+          "total_appointments": null,
+          "daily_activities": [
+            {
+              "date": "2025-07-02T15:00:00.000Z",
               "product": "Bill One"
             }
           ]
@@ -11767,22 +11795,22 @@
       "branch": "福岡",
       "join_date": "2024-10-30T07:23:57.000Z",
       "first_activity_date": "2024-11-05T15:00:00.000Z",
-      "last_activity_date": "2025-06-30T15:00:00.000Z",
+      "last_activity_date": "2025-07-02T15:00:00.000Z",
       "months_since_join": 9,
       "months_since_first_activity": 8,
-      "active_months": 8,
-      "total_activity_days": 56,
-      "monthly_activity_rate": "44.44",
-      "avg_monthly_activity_days": "7.00",
+      "active_months": 9,
+      "total_activity_days": 57,
+      "monthly_activity_rate": "50.00",
+      "avg_monthly_activity_days": "6.33",
       "total_calls": null,
       "total_hours": null,
       "total_appointments": null,
       "appointment_rate": "0.00",
-      "risk_score": 90,
+      "risk_score": 50,
       "risk_level": "high",
       "risk_factors": [
-        "活動率が50%未満",
-        "アポ獲得率が2%未満"
+        "アポ獲得率が2%未満",
+        "活動のばらつきが大きい（閾値: 10）"
       ],
       "activity_months": {
         "2024-11": {
@@ -12077,6 +12105,19 @@
             },
             {
               "date": "2025-06-30T15:00:00.000Z",
+              "product": "Bill One"
+            }
+          ]
+        },
+        "2025-07": {
+          "month": "2025-07",
+          "activity_days": 1,
+          "total_calls": null,
+          "total_hours": null,
+          "total_appointments": null,
+          "daily_activities": [
+            {
+              "date": "2025-07-02T15:00:00.000Z",
               "product": "Bill One"
             }
           ]
@@ -14269,13 +14310,13 @@
       "branch": "横浜",
       "join_date": "2025-01-28T07:21:31.000Z",
       "first_activity_date": "2025-01-28T15:00:00.000Z",
-      "last_activity_date": "2025-07-01T15:00:00.000Z",
+      "last_activity_date": "2025-07-03T15:00:00.000Z",
       "months_since_join": 6,
       "months_since_first_activity": 6,
       "active_months": 7,
-      "total_activity_days": 43,
+      "total_activity_days": 44,
       "monthly_activity_rate": "38.89",
-      "avg_monthly_activity_days": "6.14",
+      "avg_monthly_activity_days": "6.29",
       "total_calls": null,
       "total_hours": null,
       "total_appointments": null,
@@ -14512,13 +14553,17 @@
         },
         "2025-07": {
           "month": "2025-07",
-          "activity_days": 1,
+          "activity_days": 2,
           "total_calls": null,
           "total_hours": null,
           "total_appointments": null,
           "daily_activities": [
             {
               "date": "2025-07-01T15:00:00.000Z",
+              "product": "sansan"
+            },
+            {
+              "date": "2025-07-03T15:00:00.000Z",
               "product": "sansan"
             }
           ]
@@ -14672,13 +14717,13 @@
       "branch": null,
       "join_date": null,
       "first_activity_date": "2025-02-11T15:00:00.000Z",
-      "last_activity_date": "2025-07-01T15:00:00.000Z",
+      "last_activity_date": "2025-07-03T15:00:00.000Z",
       "months_since_join": 0,
       "months_since_first_activity": 5,
       "active_months": 6,
-      "total_activity_days": 38,
+      "total_activity_days": 39,
       "monthly_activity_rate": "33.33",
-      "avg_monthly_activity_days": "6.33",
+      "avg_monthly_activity_days": "6.50",
       "total_calls": null,
       "total_hours": null,
       "total_appointments": null,
@@ -14886,13 +14931,17 @@
         },
         "2025-07": {
           "month": "2025-07",
-          "activity_days": 1,
+          "activity_days": 2,
           "total_calls": null,
           "total_hours": null,
           "total_appointments": null,
           "daily_activities": [
             {
               "date": "2025-07-01T15:00:00.000Z",
+              "product": "sansan"
+            },
+            {
+              "date": "2025-07-03T15:00:00.000Z",
               "product": "sansan"
             }
           ]
@@ -15928,22 +15977,23 @@
       "branch": null,
       "join_date": null,
       "first_activity_date": "2025-03-13T15:00:00.000Z",
-      "last_activity_date": "2025-06-30T15:00:00.000Z",
+      "last_activity_date": "2025-07-03T15:00:00.000Z",
       "months_since_join": 0,
       "months_since_first_activity": 4,
-      "active_months": 4,
-      "total_activity_days": 31,
-      "monthly_activity_rate": "22.22",
-      "avg_monthly_activity_days": "7.75",
+      "active_months": 5,
+      "total_activity_days": 32,
+      "monthly_activity_rate": "27.78",
+      "avg_monthly_activity_days": "6.40",
       "total_calls": null,
       "total_hours": null,
       "total_appointments": null,
       "appointment_rate": "0.00",
-      "risk_score": 90,
+      "risk_score": 100,
       "risk_level": "high",
       "risk_factors": [
         "活動率が50%未満",
-        "アポ獲得率が2%未満"
+        "アポ獲得率が2%未満",
+        "活動のばらつきが大きい（閾値: 10）"
       ],
       "activity_months": {
         "2025-03": {
@@ -16102,6 +16152,19 @@
             },
             {
               "date": "2025-06-30T15:00:00.000Z",
+              "product": "Bill One経費"
+            }
+          ]
+        },
+        "2025-07": {
+          "month": "2025-07",
+          "activity_days": 1,
+          "total_calls": null,
+          "total_hours": null,
+          "total_appointments": null,
+          "daily_activities": [
+            {
+              "date": "2025-07-03T15:00:00.000Z",
               "product": "Bill One経費"
             }
           ]
@@ -16736,13 +16799,13 @@
       "branch": null,
       "join_date": null,
       "first_activity_date": "2025-03-23T15:00:00.000Z",
-      "last_activity_date": "2025-06-29T15:00:00.000Z",
+      "last_activity_date": "2025-07-03T15:00:00.000Z",
       "months_since_join": 0,
-      "months_since_first_activity": 3,
-      "active_months": 4,
-      "total_activity_days": 27,
-      "monthly_activity_rate": "22.22",
-      "avg_monthly_activity_days": "6.75",
+      "months_since_first_activity": 4,
+      "active_months": 5,
+      "total_activity_days": 28,
+      "monthly_activity_rate": "27.78",
+      "avg_monthly_activity_days": "5.60",
       "total_calls": null,
       "total_hours": null,
       "total_appointments": null,
@@ -16895,6 +16958,19 @@
             },
             {
               "date": "2025-06-29T15:00:00.000Z",
+              "product": "Bill One"
+            }
+          ]
+        },
+        "2025-07": {
+          "month": "2025-07",
+          "activity_days": 1,
+          "total_calls": null,
+          "total_hours": null,
+          "total_appointments": null,
+          "daily_activities": [
+            {
+              "date": "2025-07-03T15:00:00.000Z",
               "product": "Bill One"
             }
           ]
@@ -17809,22 +17885,23 @@
       "branch": null,
       "join_date": null,
       "first_activity_date": "2025-05-08T15:00:00.000Z",
-      "last_activity_date": "2025-06-29T15:00:00.000Z",
+      "last_activity_date": "2025-07-02T15:00:00.000Z",
       "months_since_join": 0,
-      "months_since_first_activity": 1,
-      "active_months": 2,
-      "total_activity_days": 17,
-      "monthly_activity_rate": "11.11",
-      "avg_monthly_activity_days": "8.50",
+      "months_since_first_activity": 2,
+      "active_months": 3,
+      "total_activity_days": 18,
+      "monthly_activity_rate": "16.67",
+      "avg_monthly_activity_days": "6.00",
       "total_calls": null,
       "total_hours": null,
       "total_appointments": null,
       "appointment_rate": "0.00",
-      "risk_score": 90,
+      "risk_score": 100,
       "risk_level": "high",
       "risk_factors": [
         "活動率が50%未満",
-        "アポ獲得率が2%未満"
+        "アポ獲得率が2%未満",
+        "活動のばらつきが大きい（閾値: 10）"
       ],
       "activity_months": {
         "2025-05": {
@@ -17910,6 +17987,19 @@
             {
               "date": "2025-06-29T15:00:00.000Z",
               "product": "デジリハ"
+            }
+          ]
+        },
+        "2025-07": {
+          "month": "2025-07",
+          "activity_days": 1,
+          "total_calls": null,
+          "total_hours": null,
+          "total_appointments": null,
+          "daily_activities": [
+            {
+              "date": "2025-07-02T15:00:00.000Z",
+              "product": "Bill One"
             }
           ]
         }
@@ -18097,13 +18187,13 @@
       "branch": "名古屋",
       "join_date": "2025-04-24T02:42:02.000Z",
       "first_activity_date": "2025-05-13T15:00:00.000Z",
-      "last_activity_date": "2025-07-01T15:00:00.000Z",
+      "last_activity_date": "2025-07-03T15:00:00.000Z",
       "months_since_join": 3,
       "months_since_first_activity": 2,
       "active_months": 3,
-      "total_activity_days": 20,
+      "total_activity_days": 21,
       "monthly_activity_rate": "16.67",
-      "avg_monthly_activity_days": "6.67",
+      "avg_monthly_activity_days": "7.00",
       "total_calls": null,
       "total_hours": null,
       "total_appointments": null,
@@ -18208,7 +18298,7 @@
         },
         "2025-07": {
           "month": "2025-07",
-          "activity_days": 2,
+          "activity_days": 3,
           "total_calls": null,
           "total_hours": null,
           "total_appointments": null,
@@ -18219,6 +18309,10 @@
             },
             {
               "date": "2025-07-01T15:00:00.000Z",
+              "product": "Bill One"
+            },
+            {
+              "date": "2025-07-03T15:00:00.000Z",
               "product": "Bill One"
             }
           ]
@@ -18306,13 +18400,13 @@
       "branch": null,
       "join_date": null,
       "first_activity_date": "2025-05-19T15:00:00.000Z",
-      "last_activity_date": "2025-06-29T15:00:00.000Z",
+      "last_activity_date": "2025-07-03T15:00:00.000Z",
       "months_since_join": 0,
-      "months_since_first_activity": 1,
-      "active_months": 2,
-      "total_activity_days": 10,
-      "monthly_activity_rate": "11.11",
-      "avg_monthly_activity_days": "5.00",
+      "months_since_first_activity": 2,
+      "active_months": 3,
+      "total_activity_days": 11,
+      "monthly_activity_rate": "16.67",
+      "avg_monthly_activity_days": "3.67",
       "total_calls": null,
       "total_hours": null,
       "total_appointments": null,
@@ -18381,6 +18475,19 @@
               "product": "Bill One"
             }
           ]
+        },
+        "2025-07": {
+          "month": "2025-07",
+          "activity_days": 1,
+          "total_calls": null,
+          "total_hours": null,
+          "total_appointments": null,
+          "daily_activities": [
+            {
+              "date": "2025-07-03T15:00:00.000Z",
+              "product": "Bill One"
+            }
+          ]
         }
       }
     },
@@ -18389,13 +18496,13 @@
       "branch": null,
       "join_date": null,
       "first_activity_date": "2025-06-04T15:00:00.000Z",
-      "last_activity_date": "2025-06-04T15:00:00.000Z",
+      "last_activity_date": "2025-07-03T15:00:00.000Z",
       "months_since_join": 0,
-      "months_since_first_activity": 0,
-      "active_months": 1,
-      "total_activity_days": 1,
-      "monthly_activity_rate": "5.56",
-      "avg_monthly_activity_days": "1.00",
+      "months_since_first_activity": 1,
+      "active_months": 2,
+      "total_activity_days": 3,
+      "monthly_activity_rate": "11.11",
+      "avg_monthly_activity_days": "1.50",
       "total_calls": null,
       "total_hours": null,
       "total_appointments": null,
@@ -18418,6 +18525,23 @@
           "daily_activities": [
             {
               "date": "2025-06-04T15:00:00.000Z",
+              "product": "Bill One経費"
+            }
+          ]
+        },
+        "2025-07": {
+          "month": "2025-07",
+          "activity_days": 2,
+          "total_calls": null,
+          "total_hours": null,
+          "total_appointments": null,
+          "daily_activities": [
+            {
+              "date": "2025-07-02T15:00:00.000Z",
+              "product": "Bill One経費"
+            },
+            {
+              "date": "2025-07-03T15:00:00.000Z",
               "product": "Bill One経費"
             }
           ]
@@ -18618,13 +18742,13 @@
       "branch": null,
       "join_date": null,
       "first_activity_date": "2025-06-09T15:00:00.000Z",
-      "last_activity_date": "2025-06-29T15:00:00.000Z",
+      "last_activity_date": "2025-07-02T15:00:00.000Z",
       "months_since_join": 0,
-      "months_since_first_activity": 0,
-      "active_months": 1,
-      "total_activity_days": 6,
-      "monthly_activity_rate": "5.56",
-      "avg_monthly_activity_days": "6.00",
+      "months_since_first_activity": 1,
+      "active_months": 2,
+      "total_activity_days": 7,
+      "monthly_activity_rate": "11.11",
+      "avg_monthly_activity_days": "3.50",
       "total_calls": null,
       "total_hours": null,
       "total_appointments": null,
@@ -18669,6 +18793,19 @@
               "product": "Bill One"
             }
           ]
+        },
+        "2025-07": {
+          "month": "2025-07",
+          "activity_days": 1,
+          "total_calls": null,
+          "total_hours": null,
+          "total_appointments": null,
+          "daily_activities": [
+            {
+              "date": "2025-07-02T15:00:00.000Z",
+              "product": "Bill One"
+            }
+          ]
         }
       }
     },
@@ -18677,13 +18814,13 @@
       "branch": null,
       "join_date": null,
       "first_activity_date": "2025-06-09T15:00:00.000Z",
-      "last_activity_date": "2025-06-26T15:00:00.000Z",
+      "last_activity_date": "2025-07-03T15:00:00.000Z",
       "months_since_join": 0,
-      "months_since_first_activity": 0,
-      "active_months": 1,
-      "total_activity_days": 5,
-      "monthly_activity_rate": "5.56",
-      "avg_monthly_activity_days": "5.00",
+      "months_since_first_activity": 1,
+      "active_months": 2,
+      "total_activity_days": 6,
+      "monthly_activity_rate": "11.11",
+      "avg_monthly_activity_days": "3.00",
       "total_calls": null,
       "total_hours": null,
       "total_appointments": null,
@@ -18721,6 +18858,19 @@
             },
             {
               "date": "2025-06-26T15:00:00.000Z",
+              "product": "Bill One"
+            }
+          ]
+        },
+        "2025-07": {
+          "month": "2025-07",
+          "activity_days": 1,
+          "total_calls": null,
+          "total_hours": null,
+          "total_appointments": null,
+          "daily_activities": [
+            {
+              "date": "2025-07-03T15:00:00.000Z",
               "product": "Bill One"
             }
           ]
@@ -19071,21 +19221,21 @@
     },
     "2025-07": {
       "month": "2025-07",
-      "active_staff": 16,
+      "active_staff": 26,
       "total_staff": 111,
-      "retention_rate": "14.41"
+      "retention_rate": "23.42"
     }
   },
   "branch_retention_analysis": {
     "未分類": {
       "branch_name": "未分類",
       "total_staff": 75,
-      "active_staff": 2,
-      "high_risk_staff": 67,
-      "medium_risk_staff": 8,
+      "active_staff": 4,
+      "high_risk_staff": 69,
+      "medium_risk_staff": 6,
       "low_risk_staff": 0,
-      "avg_activity_rate": "21.26",
-      "avg_risk_score": "93.20"
+      "avg_activity_rate": "21.93",
+      "avg_risk_score": "93.73"
     },
     "社員": {
       "branch_name": "社員",
@@ -19104,8 +19254,8 @@
       "high_risk_staff": 6,
       "medium_risk_staff": 2,
       "low_risk_staff": 0,
-      "avg_activity_rate": "32.64",
-      "avg_risk_score": "78.75"
+      "avg_activity_rate": "33.33",
+      "avg_risk_score": "73.75"
     },
     "横浜": {
       "branch_name": "横浜",
@@ -19173,6 +19323,7 @@
       "高木 陽生",
       "遠藤 彩華",
       "山中 由乃",
+      "鈴木 翔也",
       "渡邊 敬太",
       "秋本 翔衣",
       "平磯 柊",
@@ -19180,6 +19331,7 @@
       "寺島 陽平",
       "堺 千菜美",
       "阿南 弘毅",
+      "和田 愛永",
       "喜舎場 朝也",
       "桐生 那南",
       "寺本 友翔",
@@ -19271,10 +19423,8 @@
       "藤本 晃成"
     ],
     "medium_risk_staff": [
-      "鈴木 翔也",
       "田中 恵達",
       "浜田 穂花",
-      "和田 愛永",
       "中村 優太",
       "木村 杏里",
       "稲川 直将",
