@@ -1,7 +1,7 @@
 {
   "metadata": {
     "report_period": "2025-02",
-    "generated_at": "2025-07-04T10:50:18.216Z",
+    "generated_at": "2025-07-07T13:42:19.226Z",
     "report_type": "monthly_summary"
   },
   "key_metrics": {
@@ -11,7 +11,9 @@
     "total_deals": 9,
     "total_approved": 3,
     "total_rejected": 6,
-    "approval_rate": "33.33"
+    "approval_rate": "33.33",
+    "total_revenue": 145000,
+    "total_potential_revenue": 0
   },
   "deal_status_breakdown": {
     "approved": 3,
@@ -222,15 +224,25 @@
       "total_potential_revenue": 0,
       "approval_rate": 0
     },
-    "未設定": {
+    "マネーフォワード クラウド契約": {
       "total_calls": 0,
       "total_hours": 0,
       "total_appointments": 0,
-      "total_deals": 9,
-      "total_approved": 3,
-      "total_revenue": 145000,
+      "total_deals": 7,
+      "total_approved": 2,
+      "total_revenue": 100000,
       "total_potential_revenue": 0,
-      "approval_rate": "33.33"
+      "approval_rate": "28.57"
+    },
+    "マネーフォワードクラウド連結会計": {
+      "total_calls": 0,
+      "total_hours": 0,
+      "total_appointments": 0,
+      "total_deals": 2,
+      "total_approved": 1,
+      "total_revenue": 45000,
+      "total_potential_revenue": 0,
+      "approval_rate": "50.00"
     }
   },
   "staff_performance": {
@@ -358,8 +370,8 @@
   "retention_metrics": {
     "total_staff": 111,
     "active_staff": 6,
-    "high_risk_staff": 101,
-    "medium_risk_staff": 10,
+    "high_risk_staff": 100,
+    "medium_risk_staff": 11,
     "low_risk_staff": 0,
     "retention_rate": "47.42"
   },
@@ -373,7 +385,7 @@
     {
       "type": "critical",
       "message": "高リスク学生が危険レベルを超えています",
-      "value": "101名",
+      "value": "100名",
       "threshold": "15名"
     }
   ]

@@ -1,23 +1,25 @@
 {
   "metadata": {
     "report_period": "2025-06",
-    "generated_at": "2025-07-04T10:52:27.157Z",
+    "generated_at": "2025-07-07T13:43:52.409Z",
     "report_type": "monthly_summary"
   },
   "key_metrics": {
     "total_calls": 14837,
     "total_hours": 1451.5,
     "total_appointments": 188,
-    "total_deals": 230,
+    "total_deals": 229,
     "total_approved": 150,
-    "total_rejected": 64,
-    "approval_rate": "65.22"
+    "total_rejected": 65,
+    "approval_rate": "65.50",
+    "total_revenue": 4979000,
+    "total_potential_revenue": 411000
   },
   "deal_status_breakdown": {
     "approved": 150,
-    "rejected": 64,
-    "pending": 16,
-    "total": 230
+    "rejected": 65,
+    "pending": 14,
+    "total": 229
   },
   "branch_performance": {
     "名古屋": {
@@ -64,11 +66,11 @@
       "total_calls": 1228,
       "total_hours": 136.5,
       "total_appointments": 39,
-      "total_deals": 29,
+      "total_deals": 28,
       "total_approved": 18,
       "total_revenue": 563000,
-      "total_potential_revenue": 80000,
-      "approval_rate": "62.07"
+      "total_potential_revenue": 60000,
+      "approval_rate": "64.29"
     },
     "東京": {
       "total_calls": 709,
@@ -97,7 +99,7 @@
       "total_deals": 92,
       "total_approved": 59,
       "total_revenue": 1930000,
-      "total_potential_revenue": 163000,
+      "total_potential_revenue": 143000,
       "approval_rate": "64.13"
     }
   },
@@ -202,15 +204,65 @@
       "total_potential_revenue": 0,
       "approval_rate": 0
     },
+    "Digital Billder": {
+      "total_calls": 0,
+      "total_hours": 0,
+      "total_appointments": 0,
+      "total_deals": 7,
+      "total_approved": 5,
+      "total_revenue": 250000,
+      "total_potential_revenue": 0,
+      "approval_rate": "71.43"
+    },
+    "営業DXサービスSansan": {
+      "total_calls": 0,
+      "total_hours": 0,
+      "total_appointments": 0,
+      "total_deals": 49,
+      "total_approved": 39,
+      "total_revenue": 1230000,
+      "total_potential_revenue": 0,
+      "approval_rate": "79.59"
+    },
+    "インボイス管理サービスBill One": {
+      "total_calls": 0,
+      "total_hours": 0,
+      "total_appointments": 0,
+      "total_deals": 61,
+      "total_approved": 34,
+      "total_revenue": 1290000,
+      "total_potential_revenue": 0,
+      "approval_rate": "55.74"
+    },
+    "AIコンストシェルジュ「光/Hikari」": {
+      "total_calls": 0,
+      "total_hours": 0,
+      "total_appointments": 0,
+      "total_deals": 8,
+      "total_approved": 7,
+      "total_revenue": 245000,
+      "total_potential_revenue": 35000,
+      "approval_rate": "87.50"
+    },
+    "AI法務プラットフォーム「LegalOn Cloud」": {
+      "total_calls": 0,
+      "total_hours": 0,
+      "total_appointments": 0,
+      "total_deals": 10,
+      "total_approved": 3,
+      "total_revenue": 90000,
+      "total_potential_revenue": 0,
+      "approval_rate": "30.00"
+    },
     "未設定": {
       "total_calls": 0,
       "total_hours": 0,
       "total_appointments": 0,
-      "total_deals": 183,
-      "total_approved": 115,
-      "total_revenue": 3929000,
-      "total_potential_revenue": 451000,
-      "approval_rate": "62.84"
+      "total_deals": 47,
+      "total_approved": 27,
+      "total_revenue": 824000,
+      "total_potential_revenue": 376000,
+      "approval_rate": "57.45"
     }
   },
   "staff_performance": {
@@ -338,8 +390,8 @@
   "retention_metrics": {
     "total_staff": 111,
     "active_staff": 6,
-    "high_risk_staff": 101,
-    "medium_risk_staff": 10,
+    "high_risk_staff": 100,
+    "medium_risk_staff": 11,
     "low_risk_staff": 0,
     "retention_rate": "44.14"
   },
@@ -347,7 +399,7 @@
     {
       "type": "critical",
       "message": "高リスク学生が危険レベルを超えています",
-      "value": "101名",
+      "value": "100名",
       "threshold": "15名"
     }
   ]

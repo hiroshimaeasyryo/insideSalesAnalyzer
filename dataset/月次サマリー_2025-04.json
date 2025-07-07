@@ -1,7 +1,7 @@
 {
   "metadata": {
     "report_period": "2025-04",
-    "generated_at": "2025-07-04T10:51:22.326Z",
+    "generated_at": "2025-07-07T13:43:06.746Z",
     "report_type": "monthly_summary"
   },
   "key_metrics": {
@@ -11,7 +11,9 @@
     "total_deals": 15,
     "total_approved": 8,
     "total_rejected": 7,
-    "approval_rate": "53.33"
+    "approval_rate": "53.33",
+    "total_revenue": 400000,
+    "total_potential_revenue": 0
   },
   "deal_status_breakdown": {
     "approved": 8,
@@ -192,7 +194,7 @@
       "total_potential_revenue": 0,
       "approval_rate": 0
     },
-    "未設定": {
+    "マネーフォワード クラウド契約": {
       "total_calls": 0,
       "total_hours": 0,
       "total_appointments": 0,
@@ -328,8 +330,8 @@
   "retention_metrics": {
     "total_staff": 111,
     "active_staff": 6,
-    "high_risk_staff": 101,
-    "medium_risk_staff": 10,
+    "high_risk_staff": 100,
+    "medium_risk_staff": 11,
     "low_risk_staff": 0,
     "retention_rate": "36.45"
   },
@@ -343,7 +345,7 @@
     {
       "type": "critical",
       "message": "高リスク学生が危険レベルを超えています",
-      "value": "101名",
+      "value": "100名",
       "threshold": "15名"
     }
   ]

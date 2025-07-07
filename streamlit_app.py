@@ -451,17 +451,49 @@ elif authentication_status:
                 total_potential_revenue = summary_data['key_metrics'].get('total_potential_revenue', 0) if 'key_metrics' in summary_data else 0
 
                 # --- カードスタイルで指標を表示 ---
-                card_cols = st.columns(4)
-                card_cols[0].metric("架電数", f"{total_calls:,}件")
-                card_cols[1].metric("担当コネクト数", f"{charge_connected:,}件")
-                card_cols[2].metric("アポ獲得数", f"{appointments:,}件")
-                card_cols[3].metric("TAAAN商談数", f"{total_deals:,}件")
+                card_style = """
+                    <div style="
+                        background-color: #fff;
+                        border-radius: 10px;
+                        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+                        padding: 20px 10px 10px 10px;
+                        margin: 5px;
+                        text-align: center;
+                        border-left: 6px solid {color};
+                        min-width: 170px;
+                        min-height: 170px;
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: space-between;
+                    ">
+                        <div>
+                            <div style=\"font-size: 1.1em; color: #555;\">{label}</div>
+                            <div style=\"font-size: 2em; font-weight: bold; color: {color};\">{value}</div>
+                        </div>
+                        <div style=\"font-size: 0.9em; color: #888; margin-top: 10px;\">{desc}</div>
+                    </div>
+                """
 
-                # --- 売上指標を表示 ---
-                revenue_cols = st.columns(3)
-                revenue_cols[0].metric("確定売上", f"¥{total_revenue:,}", help="承認済み商談の売上")
-                revenue_cols[1].metric("潜在売上", f"¥{total_potential_revenue:,}", help="承認待ち・要対応商談の売上")
-                revenue_cols[2].metric("総売上", f"¥{total_revenue + total_potential_revenue:,}", help="確定売上 + 潜在売上")
+                # (a) 架電数セット（青系グラデーション）
+                card_data = [
+                    {"label": "架電数", "value": f"{total_calls:,}件", "desc": "日報上で報告された架電数", "color": "#01478c"},
+                    {"label": "担当コネクト数", "value": f"{charge_connected:,}件", "desc": "日報上で報告された担当コネクト数", "color": "#1976d2"},
+                    {"label": "アポ獲得数", "value": f"{appointments:,}件", "desc": "日報上で報告されたアポ獲得数", "color": "#42a5f5"},
+                    {"label": "TAAAN商談数", "value": f"{total_deals:,}件", "desc": "TAAANに入力された件数", "color": "#90caf9"},
+                ]
+                cols = st.columns(len(card_data))
+                for i, card in enumerate(card_data):
+                    cols[i].markdown(card_style.format(**card), unsafe_allow_html=True)
+
+                # (b) 売上セット（緑系グラデーション）
+                revenue_card_data = [
+                    {"label": "確定売上", "value": f"¥{total_revenue:,}", "desc": "TAAAN入力で商談ステータスが「承認」の報酬合計", "color": "#055709"},
+                    {"label": "潜在売上", "value": f"¥{total_potential_revenue:,}", "desc": "TAAAN入力で商談ステータスが「承認待ち」または「要対応」の報酬合計", "color": "#388e3c"},
+                    {"label": "総売上", "value": f"¥{total_revenue + total_potential_revenue:,}", "desc": "確定売上と潜在売上の合計", "color": "#81c784"},
+                ]
+                revenue_cols = st.columns(len(revenue_card_data))
+                for i, card in enumerate(revenue_card_data):
+                    revenue_cols[i].markdown(card_style.format(**card), unsafe_allow_html=True)
 
                 # --- 変換率の計算 ---
                 call_to_connect = (charge_connected / total_calls * 100) if total_calls > 0 else 0
@@ -469,12 +501,16 @@ elif authentication_status:
                 appointment_to_taaaan = (total_deals / appointments * 100) if appointments > 0 else 0
                 taaaan_to_approved = (total_approved / total_deals * 100) if total_deals > 0 else 0
 
-                # --- 変換率をカードで表示 ---
-                rate_cols = st.columns(4)
-                rate_cols[0].metric("架電→担当率", f"{call_to_connect:.1f}%")
-                rate_cols[1].metric("担当→アポ率", f"{connect_to_appointment:.1f}%")
-                rate_cols[2].metric("アポ→TAAAN率", f"{appointment_to_taaaan:.1f}%")
-                rate_cols[3].metric("TAAAN→承認率", f"{taaaan_to_approved:.1f}%")
+                # (c) 変換率セット（オレンジ系グラデーション）
+                rate_card_data = [
+                    {"label": "架電→担当率", "value": f"{call_to_connect:.1f}%", "desc": "日報上で報告された担当コネクト数÷架電数", "color": "#9e5102"},
+                    {"label": "担当→アポ率", "value": f"{connect_to_appointment:.1f}%", "desc": "日報上で報告されたアポ獲得数÷担当コネクト数", "color": "#f57c00"},
+                    {"label": "アポ→TAAAN率", "value": f"{appointment_to_taaaan:.1f}%", "desc": "アポ獲得数÷TAAAN商談数", "color": "#ffb300"},
+                    {"label": "TAAAN→承認率", "value": f"{taaaan_to_approved:.1f}%", "desc": "TAAANに入力された件数のうち、商談ステータスが「承認」の割合", "color": "#ffe082"},
+                ]
+                rate_cols = st.columns(len(rate_card_data))
+                for i, card in enumerate(rate_card_data):
+                    rate_cols[i].markdown(card_style.format(**card), unsafe_allow_html=True)
 
                 # --- ファネルチャートはそのまま下に表示 ---
                 funnel_labels = ["架電数", "担当コネクト数", "アポ獲得数", "TAAAN商談数"]
@@ -702,9 +738,6 @@ elif authentication_status:
                                 'total_potential_revenue': data.get('total_potential_revenue', 0)
                             }
                                 
-                            # デバッグ情報を表示
-                            st.info(f"ℹ️ **TAAANデータ確認**: {len(taaaan_branch_data)}支部のデータを読み込みました")
-                            
                             # 支部別データにTAAAN情報を追加
                             branch_summary['taaaan_deals'] = branch_summary['branch'].map(
                                 lambda x: taaaan_branch_data.get(x, {}).get('total_deals', 0)
@@ -1029,9 +1062,6 @@ elif authentication_status:
                                 'total_revenue': data.get('total_revenue', 0),
                                 'total_potential_revenue': data.get('total_potential_revenue', 0)
                             }
-                        
-                        # デバッグ情報を表示
-                        st.info(f"ℹ️ **TAAANデータ確認**: {len(taaaan_product_data)}商材のデータを読み込みました")
                         
                         # 商材別データにTAAAN情報を追加
                         product_summary['taaaan_deals'] = product_summary['product'].map(
