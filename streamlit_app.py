@@ -188,6 +188,16 @@ elif authentication_status:
             )
         )
         return fig
+    
+    # --- グラフの数値フォーマット設定関数 ---
+    def update_number_format(fig):
+        fig.update_layout(
+            yaxis=dict(
+                tickformat=',',
+                separatethousands=True
+            )
+        )
+        return fig
 
     # --- 指標名の日本語マッピング ---
     indicator_labels = {
@@ -444,11 +454,22 @@ elif authentication_status:
                     branch = staff_data.get("branch")
                     join_date = staff_data.get("join_date")
                     for activity in staff_data.get("daily_activity", []):
+                        # 日付をUTC→JST変換
+                        activity_date = activity.get("date")
+                        if activity_date:
+                            try:
+                                # UTC→JST変換
+                                date_jst = pd.to_datetime(activity_date, utc=True).tz_convert('Asia/Tokyo').date()
+                                activity_date = str(date_jst)
+                            except:
+                                # 変換に失敗した場合はそのまま使用
+                                pass
+                        
                         # メイン商材の処理
                         main = activity.get("main_product", {})
                         if main.get("call_count", 0) > 0:  # 架電数が0より大きい場合のみ追加
                             record = {
-                                "date": activity.get("date"),
+                                "date": activity_date,
                                 "product": main.get("product"),
                                 "call_hours": main.get("call_hours"),
                                 "call_count": main.get("call_count"),
@@ -470,7 +491,7 @@ elif authentication_status:
                         for sub in sub_products:
                             if sub.get("call_count", 0) > 0:  # 架電数が0より大きい場合のみ追加
                                 record = {
-                                    "date": activity.get("date"),
+                                    "date": activity_date,
                                     "product": sub.get("product"),
                                     "call_hours": sub.get("call_hours"),
                                     "call_count": sub.get("call_count"),
@@ -681,7 +702,7 @@ elif authentication_status:
                             name='総架電数',
                             line=dict(color='blue', width=2),
                             yaxis='y1',
-                            hovertemplate='%{x|%Y/%m/%d}<br>総架電数: %{y}件<extra></extra>'
+                            hovertemplate='%{x|%Y/%m/%d}<br>総架電数: %{y:,}件<extra></extra>'
                         ))
                         # 担当コネクト数
                         fig_trend.add_trace(go.Scatter(
@@ -691,7 +712,7 @@ elif authentication_status:
                             name='担当コネクト数',
                             line=dict(color='green', width=2),
                             yaxis='y1',
-                            hovertemplate='%{x|%Y/%m/%d}<br>担当コネクト数: %{y}件<extra></extra>'
+                            hovertemplate='%{x|%Y/%m/%d}<br>担当コネクト数: %{y:,}件<extra></extra>'
                         ))
                         # アポ獲得数（右軸）
                         fig_trend.add_trace(go.Scatter(
@@ -701,14 +722,29 @@ elif authentication_status:
                             name='アポ獲得数(右軸)',
                             line=dict(color='red', width=2, dash='dot'),
                             yaxis='y2',
-                            hovertemplate='%{x|%Y/%m/%d}<br>アポ獲得数: %{y}件<extra></extra>'
+                            hovertemplate='%{x|%Y/%m/%d}<br>アポ獲得数: %{y:,}件<extra></extra>'
                         ))
                         
                         fig_trend.update_layout(
                             title="日別架電トレンド",
                             xaxis_title="日付",
-                            yaxis=dict(title='件数', side='left', showgrid=True, zeroline=True),
-                            yaxis2=dict(title='アポ獲得数', side='right', overlaying='y', showgrid=False, zeroline=False),
+                            yaxis=dict(
+                                title='件数', 
+                                side='left', 
+                                showgrid=True, 
+                                zeroline=True,
+                                tickformat=',',  # カンマ区切り
+                                separatethousands=True
+                            ),
+                            yaxis2=dict(
+                                title='アポ獲得数', 
+                                side='right', 
+                                overlaying='y', 
+                                showgrid=False, 
+                                zeroline=False,
+                                tickformat=',',  # カンマ区切り
+                                separatethousands=True
+                            ),
                             height=400,
                             legend=dict(orientation='h'),
                             # 日本人にわかりやすい日付形式
@@ -752,7 +788,7 @@ elif authentication_status:
                             name='累計総架電数',
                             line=dict(color='blue', width=2),
                             yaxis='y1',
-                            hovertemplate='%{x|%Y/%m/%d}<br>累計総架電数: %{y}件<extra></extra>'
+                            hovertemplate='%{x|%Y/%m/%d}<br>累計総架電数: %{y:,}件<extra></extra>'
                         ))
                         # 累計担当コネクト数
                         fig_cumulative.add_trace(go.Scatter(
@@ -762,7 +798,7 @@ elif authentication_status:
                             name='累計担当コネクト数',
                             line=dict(color='green', width=2),
                             yaxis='y1',
-                            hovertemplate='%{x|%Y/%m/%d}<br>累計担当コネクト数: %{y}件<extra></extra>'
+                            hovertemplate='%{x|%Y/%m/%d}<br>累計担当コネクト数: %{y:,}件<extra></extra>'
                         ))
                         # 累計アポ獲得数（右軸）
                         fig_cumulative.add_trace(go.Scatter(
@@ -772,14 +808,29 @@ elif authentication_status:
                             name='累計アポ獲得数(右軸)',
                             line=dict(color='red', width=2, dash='dot'),
                             yaxis='y2',
-                            hovertemplate='%{x|%Y/%m/%d}<br>累計アポ獲得数: %{y}件<extra></extra>'
+                            hovertemplate='%{x|%Y/%m/%d}<br>累計アポ獲得数: %{y:,}件<extra></extra>'
                         ))
                         
                         fig_cumulative.update_layout(
                             title="累計値トレンド",
                             xaxis_title="日付",
-                            yaxis=dict(title='累計件数', side='left', showgrid=True, zeroline=True),
-                            yaxis2=dict(title='累計アポ獲得数', side='right', overlaying='y', showgrid=False, zeroline=False),
+                            yaxis=dict(
+                                title='累計件数', 
+                                side='left', 
+                                showgrid=True, 
+                                zeroline=True,
+                                tickformat=',',  # カンマ区切り
+                                separatethousands=True
+                            ),
+                            yaxis2=dict(
+                                title='累計アポ獲得数', 
+                                side='right', 
+                                overlaying='y', 
+                                showgrid=False, 
+                                zeroline=False,
+                                tickformat=',',  # カンマ区切り
+                                separatethousands=True
+                            ),
                             height=400,
                             legend=dict(orientation='h'),
                             # 日本人にわかりやすい日付形式
@@ -891,7 +942,8 @@ elif authentication_status:
                             fig_branch_calls.update_layout(
                                 title=indicator_labels.get('call_count', '架電数'),
                                 yaxis_title=indicator_labels.get('call_count', '架電数'),
-                                showlegend=False
+                                showlegend=False,
+                                yaxis=dict(tickformat=',', separatethousands=True)
                             )
                             st.plotly_chart(fig_branch_calls, use_container_width=True)
                         with col2:
@@ -1485,7 +1537,10 @@ elif authentication_status:
                             color='total_calls',
                             color_continuous_scale='Blues'
                         )
-                        fig_product_calls.update_layout(height=350)
+                        fig_product_calls.update_layout(
+                            height=350,
+                            yaxis=dict(tickformat=',', separatethousands=True)
+                        )
                         st.plotly_chart(fig_product_calls, use_container_width=True)
                     
                     with col2:
@@ -1497,7 +1552,10 @@ elif authentication_status:
                             color='charge_connected',
                             color_continuous_scale='Greens'
                         )
-                        fig_product_connect.update_layout(height=350)
+                        fig_product_connect.update_layout(
+                            height=350,
+                            yaxis=dict(tickformat=',', separatethousands=True)
+                        )
                         st.plotly_chart(fig_product_connect, use_container_width=True)
                     
                     with col3:
@@ -1509,7 +1567,10 @@ elif authentication_status:
                             color='appointments',
                             color_continuous_scale='Oranges'
                         )
-                        fig_product_appointments.update_layout(height=350)
+                        fig_product_appointments.update_layout(
+                            height=350,
+                            yaxis=dict(tickformat=',', separatethousands=True)
+                        )
                         st.plotly_chart(fig_product_appointments, use_container_width=True)
                     
                     # 2行目: TAAAN商談数、承認数、売上
@@ -1524,7 +1585,10 @@ elif authentication_status:
                             color='taaaan_deals',
                             color_continuous_scale='Purples'
                         )
-                        fig_product_taaaan.update_layout(height=350)
+                        fig_product_taaaan.update_layout(
+                            height=350,
+                            yaxis=dict(tickformat=',', separatethousands=True)
+                        )
                         st.plotly_chart(fig_product_taaaan, use_container_width=True)
                     
                     with col5:
@@ -1536,7 +1600,10 @@ elif authentication_status:
                             color='approved_deals',
                             color_continuous_scale='Reds'
                         )
-                        fig_product_approved.update_layout(height=350)
+                        fig_product_approved.update_layout(
+                            height=350,
+                            yaxis=dict(tickformat=',', separatethousands=True)
+                        )
                         st.plotly_chart(fig_product_approved, use_container_width=True)
                     
                     with col6:
@@ -1548,7 +1615,10 @@ elif authentication_status:
                             color='total_revenue',
                             color_continuous_scale='Greens'
                         )
-                        fig_product_revenue.update_layout(height=350)
+                        fig_product_revenue.update_layout(
+                            height=350,
+                            yaxis=dict(tickformat=',', separatethousands=True)
+                        )
                         st.plotly_chart(fig_product_revenue, use_container_width=True)
                     
                     # 商材別詳細テーブル
@@ -1560,6 +1630,21 @@ elif authentication_status:
                         'taaaan_deals', 'approved_deals', 'total_revenue', 'total_potential_revenue',
                         'connect_rate', 'appointment_rate', 'approval_rate'
                     ]
+                    
+                    # カラム名の日本語マッピング
+                    column_labels = {
+                        'product': '商材',
+                        'total_calls': '総架電数',
+                        'charge_connected': '担当コネクト数',
+                        'appointments': 'アポ獲得数',
+                        'taaaan_deals': 'TAAAN商談数',
+                        'approved_deals': '承認数',
+                        'total_revenue': '確定売上',
+                        'total_potential_revenue': '潜在売上',
+                        'connect_rate': '担当コネクト率(%)',
+                        'appointment_rate': 'アポ獲得率(%)',
+                        'approval_rate': '承認率(%)'
+                    }
                     
                     # 合計行を追加
                     total_row = {
@@ -1582,6 +1667,19 @@ elif authentication_status:
                         product_summary_with_total,
                         pd.DataFrame([total_row])
                     ], ignore_index=True)
+                    
+                    # 数値のフォーマット
+                    for col in ['total_calls', 'charge_connected', 'appointments', 'taaaan_deals', 'approved_deals']:
+                        product_summary_with_total[col] = product_summary_with_total[col].apply(lambda x: f"{x:,}")
+                    
+                    for col in ['total_revenue', 'total_potential_revenue']:
+                        product_summary_with_total[col] = product_summary_with_total[col].apply(lambda x: f"¥{x:,}")
+                    
+                    for col in ['connect_rate', 'appointment_rate', 'approval_rate']:
+                        product_summary_with_total[col] = product_summary_with_total[col].apply(lambda x: f"{x}%")
+                    
+                    # カラム名を日本語に変更
+                    product_summary_with_total.columns = [column_labels.get(col, col) for col in product_summary_with_total.columns]
                     
                     st.dataframe(
                         product_summary_with_total,
@@ -1644,14 +1742,46 @@ elif authentication_status:
                     if selected_staff != '全て':
                         filtered_df = filtered_df[filtered_df['staff_name'] == selected_staff]
                     
+                    # 詳細テーブルの日本語ヘッダーマッピング
+                    detail_column_labels = {
+                        'date': '日付',
+                        'product': '商材',
+                        'call_hours': '架電時間(h)',
+                        'call_count': '架電数',
+                        'reception_bk': '受付ブロック',
+                        'no_one_in_charge': '担当者不在',
+                        'disconnect': '切断',
+                        'charge_connected': '担当コネクト',
+                        'charge_bk': '担当ブロック',
+                        'get_appointment': 'アポ獲得',
+                        'staff_name': 'スタッフ名',
+                        'branch': '支部',
+                        'join_date': '入社日',
+                        'product_type': '商材タイプ'
+                    }
+                    
+                    # 表示用DataFrameを作成（カラム名を日本語化）
+                    display_df = filtered_df.sort_values('date', ascending=False).copy()
+                    display_df.columns = [detail_column_labels.get(col, col) for col in display_df.columns]
+                    
+                    # 数値データを日本語フォーマットに変更
+                    numeric_columns = ['架電数', '受付ブロック', '担当者不在', '切断', '担当コネクト', '担当ブロック', 'アポ獲得']
+                    for col in numeric_columns:
+                        if col in display_df.columns:
+                            display_df[col] = display_df[col].fillna(0).astype(int)
+                    
+                    # 架電時間は小数点1桁表示
+                    if '架電時間(h)' in display_df.columns:
+                        display_df['架電時間(h)'] = display_df['架電時間(h)'].fillna(0).round(1)
+                    
                     # 詳細テーブル
                     st.dataframe(
-                        filtered_df.sort_values('date', ascending=False),
+                        display_df,
                         use_container_width=True
                     )
                     
-                    # CSVダウンロード
-                    csv = filtered_df.to_csv(index=False, encoding='utf-8-sig')
+                    # CSVダウンロード（日本語ヘッダー付き）
+                    csv = display_df.to_csv(index=False, encoding='utf-8-sig')
                     st.download_button(
                         label="📥 CSVダウンロード",
                         data=csv,
