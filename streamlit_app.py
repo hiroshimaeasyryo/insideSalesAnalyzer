@@ -175,6 +175,65 @@ elif authentication_status:
             st.write(f"エラーの詳細: {type(e).__name__}")
             return None, None, None
     
+    # --- グラフ共通のlegend設定関数 ---
+    def update_legend(fig):
+        fig.update_layout(
+            legend=dict(
+                orientation='h',
+                yanchor='bottom',
+                y=-0.3,
+                xanchor='center',
+                x=0.5,
+                font=dict(family='"Meiryo", "Yu Gothic", "Noto Sans JP", "sans-serif"', size=12)
+            )
+        )
+        return fig
+
+    # --- 指標名の日本語マッピング ---
+    indicator_labels = {
+        'call_count': '架電数',
+        'call_hours': '架電時間数',
+        'charge_connected': '担当コネクト数',
+        'get_appointment': 'アポ獲得数',
+        'total_deals': 'TAAAN商談数',
+        'total_approved': '承認数',
+        'total_revenue': '報酬合計額',
+        'unique_staff_count': 'ユニーク稼働者数',
+        'total_calls_per_staff': '1人あたり架電数',
+        'call_hours_per_staff': '1人あたり架電時間数',
+        'charge_connected_per_staff': '1人あたり担当コネクト数',
+        'appointments_per_staff': '1人あたりアポ獲得数',
+        'taaaan_deals_per_staff': '1人あたりTAAAN商談数',
+        'approved_deals_per_staff': '1人あたり承認数',
+        'revenue_per_staff': '1人あたり報酬合計額',
+        'total_calls_per_hour': '時間あたり架電数',
+        'charge_connected_per_hour': '時間あたり担当コネクト数',
+        'appointments_per_hour': '時間あたりアポ獲得数',
+        'taaaan_deals_per_hour': '時間あたりTAAAN商談数',
+        'approved_deals_per_hour': '時間あたり承認数',
+        'revenue_per_hour': '時間あたり報酬合計額'
+    }
+
+    # --- 実数・単位あたり分析のグラフ描画部 ---
+    # 例: fig = px.bar(..., title=..., ...); fig = update_legend(fig); st.plotly_chart(fig, ...)
+    # trace名はbranch（支部名）なので豆腐化しないが、指標名はtitleで日本語化
+
+    # --- 3ヶ月比較グラフ部 ---
+    # アコーディオンをやめ、forループで全指標を縦並び一括表示
+    # x軸は月次表記（例: 2024-05, 2024-06, 2024-07）
+    # legendは下部・日本語化
+    #
+    # 例:
+    # for col, label, color in indicators:
+    #     st.markdown(f"#### {label}（支部別3ヶ月比較）")
+    #     ...
+    #     fig = px.line(..., title=..., ...)
+    #     fig.update_xaxes(type='category', tickvals=compare_months, ticktext=compare_months)
+    #     fig = update_legend(fig)
+    #     st.plotly_chart(fig, ...)
+    #
+    # --- 既存のアコーディオン/expander部分は削除 ---
+
     # 分析タイプに応じたコンテンツ表示
     if analysis_type == "📈 月次分析":
         st.header("📈 月次分析")
@@ -698,36 +757,25 @@ elif authentication_status:
                 
                 with tab2:
                     st.subheader("支部別分析")
-                    
-                    # データソースの説明
-                    st.info("ℹ️ **データソース**: 支部別分析は各スタッフの日次活動データから集計しています（メイン商材 + サブ商材）")
-                    
-                    # 支部別集計 - カラム名を動的に決定
+
+                    # --- サブタブ共通で使う支部別集計処理をここで必ず実行 ---
                     call_col = 'call_count' if 'call_count' in df_basic.columns else 'total_calls'
                     appointment_col = 'get_appointment' if 'get_appointment' in df_basic.columns else 'appointments'
                     success_col = 'charge_connected' if 'charge_connected' in df_basic.columns else 'successful_calls'
-                    
-                    # 支部名の正規化（nullを「未設定」に変更）を先に行う
+                    hours_col = 'call_hours' if 'call_hours' in df_basic.columns else None
                     df_basic_for_branch = df_basic.copy()
                     df_basic_for_branch['branch'] = df_basic_for_branch['branch'].fillna('未設定')
-                    
-                    # ユニーク稼働者数を計算
                     unique_staff_by_branch = df_basic_for_branch.groupby('branch')['staff_name'].nunique().reset_index()
                     unique_staff_by_branch.columns = ['branch', 'unique_staff_count']
-                    
-                    branch_summary = df_basic_for_branch.groupby('branch').agg({
-                        call_col: 'sum',
-                        success_col: 'sum',
-                        appointment_col: 'sum'
-                    }).reset_index()
-                
-                    # カラム名を統一
-                    branch_summary.columns = ['branch', 'total_calls', 'charge_connected', 'appointments']
-                    
-                    # ユニーク稼働者数を結合
+                    agg_dict = {call_col: 'sum', success_col: 'sum', appointment_col: 'sum'}
+                    if hours_col:
+                        agg_dict[hours_col] = 'sum'
+                    branch_summary = df_basic_for_branch.groupby('branch').agg(agg_dict).reset_index()
+                    columns = ['branch', 'total_calls', 'charge_connected', 'appointments']
+                    if hours_col:
+                        columns.append('call_hours')
+                    branch_summary.columns = columns
                     branch_summary = branch_summary.merge(unique_staff_by_branch, on='branch', how='left')
-                    
-                    # TAAANデータを先に処理
                     if 'branch_performance' in summary_data:
                         taaaan_branch_data = {}
                         for branch, data in summary_data['branch_performance'].items():
@@ -737,29 +785,23 @@ elif authentication_status:
                                 'total_revenue': data.get('total_revenue', 0),
                                 'total_potential_revenue': data.get('total_potential_revenue', 0)
                             }
-                                
-                            # 支部別データにTAAAN情報を追加
-                            branch_summary['taaaan_deals'] = branch_summary['branch'].map(
-                                lambda x: taaaan_branch_data.get(x, {}).get('total_deals', 0)
-                            )
-                            branch_summary['approved_deals'] = branch_summary['branch'].map(
-                                lambda x: taaaan_branch_data.get(x, {}).get('total_approved', 0)
-                            )
-                            branch_summary['total_revenue'] = branch_summary['branch'].map(
-                                lambda x: taaaan_branch_data.get(x, {}).get('total_revenue', 0)
-                            )
-                            branch_summary['total_potential_revenue'] = branch_summary['branch'].map(
-                                lambda x: taaaan_branch_data.get(x, {}).get('total_potential_revenue', 0)
-                            )
+                        branch_summary['taaaan_deals'] = branch_summary['branch'].map(
+                            lambda x: taaaan_branch_data.get(x, {}).get('total_deals', 0)
+                        )
+                        branch_summary['approved_deals'] = branch_summary['branch'].map(
+                            lambda x: taaaan_branch_data.get(x, {}).get('total_approved', 0)
+                        )
+                        branch_summary['total_revenue'] = branch_summary['branch'].map(
+                            lambda x: taaaan_branch_data.get(x, {}).get('total_revenue', 0)
+                        )
+                        branch_summary['total_potential_revenue'] = branch_summary['branch'].map(
+                            lambda x: taaaan_branch_data.get(x, {}).get('total_potential_revenue', 0)
+                        )
                     else:
-                        # TAAANデータが存在しない場合
                         branch_summary['taaaan_deals'] = 0
                         branch_summary['approved_deals'] = 0
                         branch_summary['total_revenue'] = 0
                         branch_summary['total_potential_revenue'] = 0
-                        st.warning("⚠️ **TAAANデータが見つかりません**: 支部別分析ではTAAAN関連の指標を表示できません")
-                    
-                    # 変換率の計算
                     branch_summary['connect_rate'] = (
                         (branch_summary['charge_connected'] / branch_summary['total_calls'] * 100)
                         .fillna(0)
@@ -775,200 +817,330 @@ elif authentication_status:
                         .fillna(0)
                         .round(1)
                     )
-                    
-                    # データ整合性の警告
-                    if 'key_metrics' in summary_data:
-                        summary_total = summary_data['key_metrics'].get('total_calls', 0)
-                        branch_total = branch_summary['total_calls'].sum()
-                        summary_taaaan = summary_data['key_metrics'].get('total_deals', 0)
-                        branch_taaaan = branch_summary['taaaan_deals'].sum()
-                        summary_approved = summary_data['key_metrics'].get('total_approved', 0)
-                        branch_approved = branch_summary['approved_deals'].sum()
-                        
-                        # 架電数の整合性チェック
-                        if summary_total != branch_total:
-                            diff = summary_total - branch_total
-                            if diff > 0:
-                                st.warning(f"⚠️ **架電数整合性**: 月次サマリー({summary_total:,}件)と支部別合計({branch_total:,}件)の差: {diff:,}件")
+                    # --- ここまで共通集計 ---
+
+                    # サブタブを追加
+                    subtab1, subtab2, subtab3, subtab4 = st.tabs([
+                        "実数", "単位あたり分析", "実数3ヶ月比較", "単位あたり3ヶ月比較"
+                    ])
+
+                    with subtab1:
+                        st.markdown("#### 実数（従来の支部別パフォーマンス）")
+                        col1, col2, col3 = st.columns(3)
+                        with col1:
+                            fig_branch_calls = px.bar(
+                                branch_summary,
+                                x='branch',
+                                y='total_calls',
+                                title=indicator_labels.get('call_count', '架電数'),
+                                color='total_calls',
+                                color_continuous_scale='Blues'
+                            )
+                            fig_branch_calls.update_layout(yaxis_title=indicator_labels.get('call_count', '架電数'))
+                            fig_branch_calls = update_legend(fig_branch_calls)
+                            st.plotly_chart(fig_branch_calls, use_container_width=True)
+                        with col2:
+                            if 'call_hours' in branch_summary.columns:
+                                fig_branch_hours = px.bar(
+                                    branch_summary,
+                                    x='branch',
+                                    y='call_hours',
+                                    title=indicator_labels.get('call_hours', '架電時間数'),
+                                    color='call_hours',
+                                    color_continuous_scale='Teal'
+                                )
+                                fig_branch_hours.update_layout(yaxis_title=indicator_labels.get('call_hours', '架電時間数'))
+                                fig_branch_hours = update_legend(fig_branch_hours)
+                                st.plotly_chart(fig_branch_hours, use_container_width=True)
                             else:
-                                st.info(f"ℹ️ **架電数整合性**: 支部別合計({branch_total:,}件)が月次サマリー({summary_total:,}件)より{abs(diff):,}件多い")
-                        
-                        # TAAAN商談数の整合性チェック
-                        if summary_taaaan != branch_taaaan:
-                            diff = summary_taaaan - branch_taaaan
-                            st.warning(f"⚠️ **TAAAN商談数整合性**: 月次サマリー({summary_taaaan:,}件)と支部別合計({branch_taaaan:,}件)の差: {diff:,}件")
-                            st.info("ℹ️ **原因**: 支部未設定のスタッフのTAAANデータが支部別集計に含まれていません")
-                        
-                        # 承認数の整合性チェック
-                        if summary_approved != branch_approved:
-                            diff = summary_approved - branch_approved
-                            st.warning(f"⚠️ **承認数整合性**: 月次サマリー({summary_approved:,}件)と支部別合計({branch_approved:,}件)の差: {diff:,}件")
-                            st.info("ℹ️ **原因**: 支部未設定のスタッフの承認データが支部別集計に含まれていません")
-                        
-                        # 報酬情報のデバッグ
-                        summary_revenue = summary_data['key_metrics'].get('total_revenue', 0)
-                        branch_revenue = branch_summary['total_revenue'].sum()
-                        st.info(f"ℹ️ **報酬デバッグ**: 月次サマリー売上¥{summary_revenue:,}、支部別合計¥{branch_revenue:,}")
-                    
-                    # 支部別グラフ（5つのグラフを2行で表示）
-                    st.subheader("支部別パフォーマンス")
-                    
-                    # 1行目: 架電数、担当コネクト数、アポ獲得数
-                    col1, col2, col3 = st.columns(3)
-                    
-                    with col1:
-                        fig_branch_calls = px.bar(
-                            branch_summary,
-                            x='branch',
-                            y='total_calls',
-                            title="支部別架電数",
-                            color='total_calls',
-                            color_continuous_scale='Blues'
-                        )
-                        fig_branch_calls.update_layout(height=350)
-                        st.plotly_chart(fig_branch_calls, use_container_width=True)
-                    
-                    with col2:
-                        fig_branch_connect = px.bar(
-                            branch_summary,
-                            x='branch',
-                            y='charge_connected',
-                            title="支部別担当コネクト数",
-                            color='charge_connected',
-                            color_continuous_scale='Greens'
-                        )
-                        fig_branch_connect.update_layout(height=350)
-                        st.plotly_chart(fig_branch_connect, use_container_width=True)
-                    
-                    with col3:
-                        fig_branch_appointments = px.bar(
-                            branch_summary,
-                            x='branch',
-                            y='appointments',
-                            title="支部別アポ獲得数",
-                            color='appointments',
-                            color_continuous_scale='Oranges'
-                        )
-                        fig_branch_appointments.update_layout(height=350)
-                        st.plotly_chart(fig_branch_appointments, use_container_width=True)
-                    
-                    # 2行目: TAAAN商談数、承認数
-                    col4, col5, col6 = st.columns(3)
-                    
-                    with col4:
-                        fig_branch_taaaan = px.bar(
-                            branch_summary,
-                            x='branch',
-                            y='taaaan_deals',
-                            title="支部別TAAAN商談数",
-                            color='taaaan_deals',
-                            color_continuous_scale='Purples'
-                        )
-                        fig_branch_taaaan.update_layout(height=350)
-                        st.plotly_chart(fig_branch_taaaan, use_container_width=True)
-                    
-                    with col5:
-                        fig_branch_approved = px.bar(
-                            branch_summary,
-                            x='branch',
-                            y='approved_deals',
-                            title="支部別承認数",
-                            color='approved_deals',
-                            color_continuous_scale='Reds'
-                        )
-                        fig_branch_approved.update_layout(height=350)
-                        st.plotly_chart(fig_branch_approved, use_container_width=True)
-                    
-                    with col6:
-                        fig_branch_staff = px.bar(
-                            branch_summary,
-                            x='branch',
-                            y='unique_staff_count',
-                            title="支部別ユニーク稼働者数",
-                            color='unique_staff_count',
-                            color_continuous_scale='Viridis'
-                        )
-                        fig_branch_staff.update_layout(height=350)
-                        st.plotly_chart(fig_branch_staff, use_container_width=True)
-                    
-                    # 支部別詳細テーブル
-                    st.subheader("支部別詳細")
-                    
-                    # 表示するカラムを選択
-                    display_columns = [
-                        'branch', 'total_calls', 'charge_connected', 'appointments', 
-                        'taaaan_deals', 'approved_deals', 'unique_staff_count', 'total_revenue', 'total_potential_revenue',
-                        'connect_rate', 'appointment_rate', 'approval_rate'
-                    ]
-                    
-                    # 合計行を追加
-                    total_row = {
-                        'branch': '合計',
-                        'total_calls': branch_summary['total_calls'].sum(),
-                        'charge_connected': branch_summary['charge_connected'].sum(),
-                        'appointments': branch_summary['appointments'].sum(),
-                        'taaaan_deals': branch_summary['taaaan_deals'].sum(),
-                        'approved_deals': branch_summary['approved_deals'].sum(),
-                        'unique_staff_count': branch_summary['unique_staff_count'].sum(),
-                        'total_revenue': branch_summary['total_revenue'].sum(),
-                        'total_potential_revenue': branch_summary['total_potential_revenue'].sum(),
-                        'connect_rate': round((branch_summary['charge_connected'].sum() / branch_summary['total_calls'].sum() * 100), 1),
-                        'appointment_rate': round((branch_summary['appointments'].sum() / branch_summary['charge_connected'].sum() * 100), 1),
-                        'approval_rate': round((branch_summary['approved_deals'].sum() / branch_summary['taaaan_deals'].sum() * 100), 1)
-                    }
-                    
-                    # 合計行をDataFrameに追加
-                    total_df = pd.DataFrame([total_row])
-                    display_df = pd.concat([branch_summary[display_columns].sort_values('total_calls', ascending=False), total_df], ignore_index=True)
-                    
-                    # カラム名を日本語に変更
-                    display_df.columns = [
-                        '支部', '架電数', '担当コネクト', 'アポ獲得', 
-                        'TAAAN商談', '承認数', 'ユニーク稼働者数', '確定売上', '潜在売上',
-                        '架電→担当率', '担当→アポ率', 'TAAAN→承認率'
-                    ]
-                    
-                    st.dataframe(
-                        display_df,
-                        use_container_width=True
-                    )
-                    
-                    # データソースの説明
-                    st.info("ℹ️ **データソース**: 架電数〜アポ獲得・ユニーク稼働者数は日報データ、TAAAN商談〜承認数はTAAANデータ")
-                    
-                    # データ整合性の警告
-                    if 'key_metrics' in summary_data:
-                        summary_total = summary_data['key_metrics'].get('total_calls', 0)
-                        branch_total = branch_summary['total_calls'].sum()
-                        summary_taaaan = summary_data['key_metrics'].get('total_deals', 0)
-                        branch_taaaan = branch_summary['taaaan_deals'].sum()
-                        summary_approved = summary_data['key_metrics'].get('total_approved', 0)
-                        branch_approved = branch_summary['approved_deals'].sum()
-                        
-                        # 架電数の整合性チェック
-                        if summary_total != branch_total:
-                            diff = summary_total - branch_total
-                            if diff > 0:
-                                st.warning(f"⚠️ **架電数整合性**: 月次サマリー({summary_total:,}件)と支部別合計({branch_total:,}件)の差: {diff:,}件")
+                                st.info("架電時間データがありません")
+                        with col3:
+                            fig_branch_connect = px.bar(
+                                branch_summary,
+                                x='branch',
+                                y='charge_connected',
+                                title=indicator_labels.get('charge_connected', '担当コネクト数'),
+                                color='charge_connected',
+                                color_continuous_scale='Greens'
+                            )
+                            fig_branch_connect.update_layout(yaxis_title=indicator_labels.get('charge_connected', '担当コネクト数'))
+                            fig_branch_connect = update_legend(fig_branch_connect)
+                            st.plotly_chart(fig_branch_connect, use_container_width=True)
+                        col4, col5, col6 = st.columns(3)
+                        with col4:
+                            fig_branch_appointments = px.bar(
+                                branch_summary,
+                                x='branch',
+                                y='appointments',
+                                title=indicator_labels.get('get_appointment', 'アポ獲得数'),
+                                color='appointments',
+                                color_continuous_scale='Oranges'
+                            )
+                            fig_branch_appointments.update_layout(yaxis_title=indicator_labels.get('get_appointment', 'アポ獲得数'))
+                            fig_branch_appointments = update_legend(fig_branch_appointments)
+                            st.plotly_chart(fig_branch_appointments, use_container_width=True)
+                        with col5:
+                            fig_branch_taaaan = px.bar(
+                                branch_summary,
+                                x='branch',
+                                y='taaaan_deals',
+                                title=indicator_labels.get('total_deals', 'TAAAN商談数'),
+                                color='taaaan_deals',
+                                color_continuous_scale='Purples'
+                            )
+                            fig_branch_taaaan.update_layout(yaxis_title=indicator_labels.get('total_deals', 'TAAAN商談数'))
+                            fig_branch_taaaan = update_legend(fig_branch_taaaan)
+                            st.plotly_chart(fig_branch_taaaan, use_container_width=True)
+                        with col6:
+                            fig_branch_approved = px.bar(
+                                branch_summary,
+                                x='branch',
+                                y='approved_deals',
+                                title=indicator_labels.get('total_approved', '承認数'),
+                                color='approved_deals',
+                                color_continuous_scale='Reds'
+                            )
+                            fig_branch_approved.update_layout(yaxis_title=indicator_labels.get('total_approved', '承認数'))
+                            fig_branch_approved = update_legend(fig_branch_approved)
+                            st.plotly_chart(fig_branch_approved, use_container_width=True)
+                        col7, col8 = st.columns(2)
+                        with col7:
+                            fig_branch_reward = px.bar(
+                                branch_summary,
+                                x='branch',
+                                y='total_revenue',
+                                title=indicator_labels.get('total_revenue', '報酬合計額'),
+                                color='total_revenue',
+                                color_continuous_scale='Greens'
+                            )
+                            fig_branch_reward.update_layout(yaxis_title=indicator_labels.get('total_revenue', '報酬合計額'))
+                            fig_branch_reward = update_legend(fig_branch_reward)
+                            st.plotly_chart(fig_branch_reward, use_container_width=True)
+                        with col8:
+                            fig_branch_staff = px.bar(
+                                branch_summary,
+                                x='branch',
+                                y='unique_staff_count',
+                                title=indicator_labels.get('unique_staff_count', 'ユニーク稼働者数'),
+                                color='unique_staff_count',
+                                color_continuous_scale='Viridis'
+                            )
+                            fig_branch_staff.update_layout(yaxis_title=indicator_labels.get('unique_staff_count', 'ユニーク稼働者数'))
+                            fig_branch_staff = update_legend(fig_branch_staff)
+                            st.plotly_chart(fig_branch_staff, use_container_width=True)
+
+                    with subtab2:
+                        st.markdown("##### 1人あたり指標")
+                        unit_df = branch_summary.copy()
+                        unit_df['total_calls_per_staff'] = unit_df['total_calls'] / unit_df['unique_staff_count'].replace(0, float('nan'))
+                        unit_df['call_hours_per_staff'] = unit_df['call_hours'] / unit_df['unique_staff_count'].replace(0, float('nan')) if 'call_hours' in unit_df.columns else float('nan')
+                        unit_df['charge_connected_per_staff'] = unit_df['charge_connected'] / unit_df['unique_staff_count'].replace(0, float('nan'))
+                        unit_df['appointments_per_staff'] = unit_df['appointments'] / unit_df['unique_staff_count'].replace(0, float('nan'))
+                        unit_df['taaaan_deals_per_staff'] = unit_df['taaaan_deals'] / unit_df['unique_staff_count'].replace(0, float('nan'))
+                        unit_df['approved_deals_per_staff'] = unit_df['approved_deals'] / unit_df['unique_staff_count'].replace(0, float('nan'))
+                        unit_df['revenue_per_staff'] = unit_df['total_revenue'] / unit_df['unique_staff_count'].replace(0, float('nan'))
+                        col1, col2, col3 = st.columns(3)
+                        with col1:
+                            fig = px.bar(unit_df, x='branch', y='total_calls_per_staff', title=indicator_labels['total_calls_per_staff'], color='total_calls_per_staff', color_continuous_scale='Blues')
+                            fig.update_layout(yaxis_title=indicator_labels['total_calls_per_staff'])
+                            fig = update_legend(fig)
+                            st.plotly_chart(fig, use_container_width=True)
+                            fig = px.bar(unit_df, x='branch', y='call_hours_per_staff', title=indicator_labels['call_hours_per_staff'], color='call_hours_per_staff', color_continuous_scale='Teal')
+                            fig.update_layout(yaxis_title=indicator_labels['call_hours_per_staff'])
+                            fig = update_legend(fig)
+                            st.plotly_chart(fig, use_container_width=True)
+                        with col2:
+                            fig = px.bar(unit_df, x='branch', y='charge_connected_per_staff', title=indicator_labels['charge_connected_per_staff'], color='charge_connected_per_staff', color_continuous_scale='Greens')
+                            fig.update_layout(yaxis_title=indicator_labels['charge_connected_per_staff'])
+                            fig = update_legend(fig)
+                            st.plotly_chart(fig, use_container_width=True)
+                            fig = px.bar(unit_df, x='branch', y='appointments_per_staff', title=indicator_labels['appointments_per_staff'], color='appointments_per_staff', color_continuous_scale='Oranges')
+                            fig.update_layout(yaxis_title=indicator_labels['appointments_per_staff'])
+                            fig = update_legend(fig)
+                            st.plotly_chart(fig, use_container_width=True)
+                        with col3:
+                            fig = px.bar(unit_df, x='branch', y='taaaan_deals_per_staff', title=indicator_labels['taaaan_deals_per_staff'], color='taaaan_deals_per_staff', color_continuous_scale='Purples')
+                            fig.update_layout(yaxis_title=indicator_labels['taaaan_deals_per_staff'])
+                            fig = update_legend(fig)
+                            st.plotly_chart(fig, use_container_width=True)
+                            fig = px.bar(unit_df, x='branch', y='approved_deals_per_staff', title=indicator_labels['approved_deals_per_staff'], color='approved_deals_per_staff', color_continuous_scale='Reds')
+                            fig.update_layout(yaxis_title=indicator_labels['approved_deals_per_staff'])
+                            fig = update_legend(fig)
+                            st.plotly_chart(fig, use_container_width=True)
+                            fig = px.bar(unit_df, x='branch', y='revenue_per_staff', title=indicator_labels['revenue_per_staff'], color='revenue_per_staff', color_continuous_scale='Greens')
+                            fig.update_layout(yaxis_title=indicator_labels['revenue_per_staff'])
+                            fig = update_legend(fig)
+                            st.plotly_chart(fig, use_container_width=True)
+                        st.markdown("##### 時間あたり指標")
+                        unit_df['total_calls_per_hour'] = unit_df['total_calls'] / unit_df['call_hours'].replace(0, float('nan')) if 'call_hours' in unit_df.columns else float('nan')
+                        unit_df['charge_connected_per_hour'] = unit_df['charge_connected'] / unit_df['call_hours'].replace(0, float('nan')) if 'call_hours' in unit_df.columns else float('nan')
+                        unit_df['appointments_per_hour'] = unit_df['appointments'] / unit_df['call_hours'].replace(0, float('nan')) if 'call_hours' in unit_df.columns else float('nan')
+                        unit_df['taaaan_deals_per_hour'] = unit_df['taaaan_deals'] / unit_df['call_hours'].replace(0, float('nan')) if 'call_hours' in unit_df.columns else float('nan')
+                        unit_df['approved_deals_per_hour'] = unit_df['approved_deals'] / unit_df['call_hours'].replace(0, float('nan')) if 'call_hours' in unit_df.columns else float('nan')
+                        unit_df['revenue_per_hour'] = unit_df['total_revenue'] / unit_df['call_hours'].replace(0, float('nan')) if 'call_hours' in unit_df.columns else float('nan')
+                        col4, col5, col6 = st.columns(3)
+                        with col4:
+                            fig = px.bar(unit_df, x='branch', y='total_calls_per_hour', title=indicator_labels['total_calls_per_hour'], color='total_calls_per_hour', color_continuous_scale='Blues')
+                            fig.update_layout(yaxis_title=indicator_labels['total_calls_per_hour'])
+                            fig = update_legend(fig)
+                            st.plotly_chart(fig, use_container_width=True)
+                            fig = px.bar(unit_df, x='branch', y='charge_connected_per_hour', title=indicator_labels['charge_connected_per_hour'], color='charge_connected_per_hour', color_continuous_scale='Greens')
+                            fig.update_layout(yaxis_title=indicator_labels['charge_connected_per_hour'])
+                            fig = update_legend(fig)
+                            st.plotly_chart(fig, use_container_width=True)
+                        with col5:
+                            fig = px.bar(unit_df, x='branch', y='appointments_per_hour', title=indicator_labels['appointments_per_hour'], color='appointments_per_hour', color_continuous_scale='Oranges')
+                            fig.update_layout(yaxis_title=indicator_labels['appointments_per_hour'])
+                            fig = update_legend(fig)
+                            st.plotly_chart(fig, use_container_width=True)
+                            fig = px.bar(unit_df, x='branch', y='taaaan_deals_per_hour', title=indicator_labels['taaaan_deals_per_hour'], color='taaaan_deals_per_hour', color_continuous_scale='Purples')
+                            fig.update_layout(yaxis_title=indicator_labels['taaaan_deals_per_hour'])
+                            fig = update_legend(fig)
+                            st.plotly_chart(fig, use_container_width=True)
+                        with col6:
+                            fig = px.bar(unit_df, x='branch', y='approved_deals_per_hour', title=indicator_labels['approved_deals_per_hour'], color='approved_deals_per_hour', color_continuous_scale='Reds')
+                            fig.update_layout(yaxis_title=indicator_labels['approved_deals_per_hour'])
+                            fig = update_legend(fig)
+                            st.plotly_chart(fig, use_container_width=True)
+                            fig = px.bar(unit_df, x='branch', y='revenue_per_hour', title=indicator_labels['revenue_per_hour'], color='revenue_per_hour', color_continuous_scale='Greens')
+                            fig.update_layout(yaxis_title=indicator_labels['revenue_per_hour'])
+                            fig = update_legend(fig)
+                            st.plotly_chart(fig, use_container_width=True)
+
+                    with subtab3:
+                        st.markdown("#### 実数3ヶ月比較")
+                        # 比較月リスト作成
+                        def get_prev_months(month_str, n=3):
+                            base = datetime.strptime(month_str, '%Y-%m')
+                            return [(base - timedelta(days=30*i)).strftime('%Y-%m') for i in reversed(range(n))]
+                        compare_months = get_prev_months(selected_month, 3)
+                        # 各月の支部別集計を取得
+                        branch_summaries = {}
+                        for m in compare_months:
+                            b, d, s = load_data(m)
+                            if b and s:
+                                try:
+                                    staff_dict = b["monthly_analysis"][m]["staff"]
+                                    df_b = extract_daily_activity_from_staff(staff_dict)
+                                    df_b["branch"] = df_b["branch"].fillna("未設定")
+                                    unique_staff = df_b.groupby('branch')['staff_name'].nunique().reset_index()
+                                    unique_staff.columns = ['branch', 'unique_staff_count']
+                                    agg_dict = {'call_count': 'sum', 'charge_connected': 'sum', 'get_appointment': 'sum', 'call_hours': 'sum'}
+                                    branch_df = df_b.groupby('branch').agg(agg_dict).reset_index()
+                                    branch_df = branch_df.merge(unique_staff, on='branch', how='left')
+                                    # TAAANデータ
+                                    if 'branch_performance' in s:
+                                        for col in ['total_deals','total_approved','total_revenue']:
+                                            branch_df[col] = branch_df['branch'].map(lambda x: s['branch_performance'].get(x,{}).get(col,0))
+                                    else:
+                                        branch_df['total_deals'] = 0
+                                        branch_df['total_approved'] = 0
+                                        branch_df['total_revenue'] = 0
+                                    branch_summaries[m] = branch_df
+                                except Exception as e:
+                                    branch_summaries[m] = None
                             else:
-                                st.info(f"ℹ️ **架電数整合性**: 支部別合計({branch_total:,}件)が月次サマリー({summary_total:,}件)より{abs(diff):,}件多い")
-                        
-                        # TAAAN商談数の整合性チェック
-                        if summary_taaaan != branch_taaaan:
-                            diff = summary_taaaan - branch_taaaan
-                            st.warning(f"⚠️ **TAAAN商談数整合性**: 月次サマリー({summary_taaaan:,}件)と支部別合計({branch_taaaan:,}件)の差: {diff:,}件")
-                            st.info("ℹ️ **原因**: 支部未設定のスタッフのTAAANデータが支部別集計に含まれていません")
-                        
-                        # 承認数の整合性チェック
-                        if summary_approved != branch_approved:
-                            diff = summary_approved - branch_approved
-                            st.warning(f"⚠️ **承認数整合性**: 月次サマリー({summary_approved:,}件)と支部別合計({branch_approved:,}件)の差: {diff:,}件")
-                            st.info("ℹ️ **原因**: 支部未設定のスタッフの承認データが支部別集計に含まれていません")
-                        
-                        # 報酬情報のデバッグ
-                        summary_revenue = summary_data['key_metrics'].get('total_revenue', 0)
-                        branch_revenue = branch_summary['total_revenue'].sum()
-                        st.info(f"ℹ️ **報酬デバッグ**: 月次サマリー売上¥{summary_revenue:,}、支部別合計¥{branch_revenue:,}")
+                                branch_summaries[m] = None
+                        # 指標リスト
+                        indicators = [
+                            ('call_count', '架電数', 'Blues'),
+                            ('call_hours', '架電時間数', 'Teal'),
+                            ('charge_connected', '担当コネクト数', 'Greens'),
+                            ('get_appointment', 'アポ獲得数', 'Oranges'),
+                            ('total_deals', 'TAAAN商談数', 'Purples'),
+                            ('total_approved', '承認数', 'Reds'),
+                            ('total_revenue', '報酬合計額', 'Greens'),
+                            ('unique_staff_count', 'ユニーク稼働者数', 'Viridis')
+                        ]
+                        for i in range(0, len(indicators), 3):
+                            cols = st.columns(3)
+                            for j, (col, label, color) in enumerate(indicators[i:i+3]):
+                                with cols[j]:
+                                    st.markdown(f"##### {label}（支部別3ヶ月比較）")
+                                    plot_df = []
+                                    for m in compare_months:
+                                        df = branch_summaries.get(m)
+                                        if df is not None and col in df.columns:
+                                            for _, row in df.iterrows():
+                                                plot_df.append({"month": m, "branch": row['branch'], "value": row[col]})
+                                    if plot_df:
+                                        plot_df = pd.DataFrame(plot_df)
+                                        fig = px.line(
+                                            plot_df, x='month', y='value', color='branch', markers=True,
+                                            title=f'{label}（支部別3ヶ月比較）', color_discrete_sequence=px.colors.qualitative.Set1,
+                                            labels={"value": label, "month": "月", "branch": "支部"}
+                                        )
+                                        fig.update_xaxes(type='category', tickvals=compare_months, ticktext=compare_months)
+                                        fig.update_layout(yaxis_title=label)
+                                        fig = update_legend(fig)
+                                        st.plotly_chart(fig, use_container_width=True)
+                                    else:
+                                        st.info("データがありません")
+
+                    with subtab4:
+                        st.markdown("#### 単位あたり3ヶ月比較")
+                        # 指標リスト
+                        unit_indicators = [
+                            ('total_calls_per_staff', '1人あたり架電数', 'Blues'),
+                            ('call_hours_per_staff', '1人あたり架電時間数', 'Teal'),
+                            ('charge_connected_per_staff', '1人あたり担当コネクト数', 'Greens'),
+                            ('appointments_per_staff', '1人あたりアポ獲得数', 'Oranges'),
+                            ('taaaan_deals_per_staff', '1人あたりTAAAN商談数', 'Purples'),
+                            ('approved_deals_per_staff', '1人あたり承認数', 'Reds'),
+                            ('revenue_per_staff', '1人あたり報酬合計額', 'Greens'),
+                            ('total_calls_per_hour', '時間あたり架電数', 'Blues'),
+                            ('charge_connected_per_hour', '時間あたり担当コネクト数', 'Greens'),
+                            ('appointments_per_hour', '時間あたりアポ獲得数', 'Oranges'),
+                            ('taaaan_deals_per_hour', '時間あたりTAAAN商談数', 'Purples'),
+                            ('approved_deals_per_hour', '時間あたり承認数', 'Reds'),
+                            ('revenue_per_hour', '時間あたり報酬合計額', 'Greens')
+                        ]
+                        # 各月の単位あたり指標を計算
+                        unit_monthly = {}
+                        for m in compare_months:
+                            df = branch_summaries.get(m)
+                            if df is not None:
+                                u = df.copy()
+                                u['total_calls_per_staff'] = u['call_count'] / u['unique_staff_count'].replace(0, float('nan'))
+                                u['call_hours_per_staff'] = u['call_hours'] / u['unique_staff_count'].replace(0, float('nan')) if 'call_hours' in u.columns else float('nan')
+                                u['charge_connected_per_staff'] = u['charge_connected'] / u['unique_staff_count'].replace(0, float('nan'))
+                                u['appointments_per_staff'] = u['get_appointment'] / u['unique_staff_count'].replace(0, float('nan'))
+                                u['taaaan_deals_per_staff'] = u['total_deals'] / u['unique_staff_count'].replace(0, float('nan'))
+                                u['approved_deals_per_staff'] = u['total_approved'] / u['unique_staff_count'].replace(0, float('nan'))
+                                u['revenue_per_staff'] = u['total_revenue'] / u['unique_staff_count'].replace(0, float('nan'))
+                                u['total_calls_per_hour'] = u['call_count'] / u['call_hours'].replace(0, float('nan')) if 'call_hours' in u.columns else float('nan')
+                                u['charge_connected_per_hour'] = u['charge_connected'] / u['call_hours'].replace(0, float('nan')) if 'call_hours' in u.columns else float('nan')
+                                u['appointments_per_hour'] = u['get_appointment'] / u['call_hours'].replace(0, float('nan')) if 'call_hours' in u.columns else float('nan')
+                                u['taaaan_deals_per_hour'] = u['total_deals'] / u['call_hours'].replace(0, float('nan')) if 'call_hours' in u.columns else float('nan')
+                                u['approved_deals_per_hour'] = u['total_approved'] / u['call_hours'].replace(0, float('nan')) if 'call_hours' in u.columns else float('nan')
+                                u['revenue_per_hour'] = u['total_revenue'] / u['call_hours'].replace(0, float('nan')) if 'call_hours' in u.columns else float('nan')
+                                unit_monthly[m] = u
+                            else:
+                                unit_monthly[m] = None
+                        for i in range(0, len(unit_indicators), 3):
+                            cols = st.columns(3)
+                            for j, (col, label, color) in enumerate(unit_indicators[i:i+3]):
+                                with cols[j]:
+                                    st.markdown(f"##### {label}（支部別3ヶ月比較）")
+                                    plot_df = []
+                                    for m in compare_months:
+                                        df = unit_monthly.get(m)
+                                        if df is not None and col in df.columns:
+                                            for _, row in df.iterrows():
+                                                plot_df.append({"month": m, "branch": row['branch'], "value": row[col]})
+                                    if plot_df:
+                                        plot_df = pd.DataFrame(plot_df)
+                                        fig = px.line(
+                                            plot_df, x='month', y='value', color='branch', markers=True,
+                                            title=f'{label}（支部別3ヶ月比較）', color_discrete_sequence=px.colors.qualitative.Set1,
+                                            labels={"value": label, "month": "月", "branch": "支部"}
+                                        )
+                                        fig.update_xaxes(type='category', tickvals=compare_months, ticktext=compare_months)
+                                        fig.update_layout(yaxis_title=label)
+                                        fig = update_legend(fig)
+                                        st.plotly_chart(fig, use_container_width=True)
+                                    else:
+                                        st.info("データがありません")
                 
                 with tab3:
                     st.subheader("スタッフ別分析")
