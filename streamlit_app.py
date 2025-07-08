@@ -213,36 +213,16 @@ elif authentication_status:
         'call_hours_per_staff': '1人あたり架電時間数',
         'charge_connected_per_staff': '1人あたり担当コネクト数',
         'appointments_per_staff': '1人あたりアポ獲得数',
-        'taaaan_deals_per_staff': '1人あたりTAAAN商談数',
+        'taaan_deals_per_staff': '1人あたりTAAAN商談数',
         'approved_deals_per_staff': '1人あたり承認数',
         'revenue_per_staff': '1人あたり報酬合計額',
         'total_calls_per_hour': '時間あたり架電数',
         'charge_connected_per_hour': '時間あたり担当コネクト数',
         'appointments_per_hour': '時間あたりアポ獲得数',
-        'taaaan_deals_per_hour': '時間あたりTAAAN商談数',
+        'taaan_deals_per_hour': '時間あたりTAAAN商談数',
         'approved_deals_per_hour': '時間あたり承認数',
         'revenue_per_hour': '時間あたり報酬合計額'
     }
-
-    # --- 実数・単位あたり分析のグラフ描画部 ---
-    # 例: fig = px.bar(..., title=..., ...); fig = update_legend(fig); st.plotly_chart(fig, ...)
-    # trace名はbranch（支部名）なので豆腐化しないが、指標名はtitleで日本語化
-
-    # --- 3ヶ月比較グラフ部 ---
-    # アコーディオンをやめ、forループで全指標を縦並び一括表示
-    # x軸は月次表記（例: 2024-05, 2024-06, 2024-07）
-    # legendは下部・日本語化
-    #
-    # 例:
-    # for col, label, color in indicators:
-    #     st.markdown(f"#### {label}（支部別3ヶ月比較）")
-    #     ...
-    #     fig = px.line(..., title=..., ...)
-    #     fig.update_xaxes(type='category', tickvals=compare_months, ticktext=compare_months)
-    #     fig = update_legend(fig)
-    #     st.plotly_chart(fig, ...)
-    #
-    # --- 既存のアコーディオン/expander部分は削除 ---
 
     # 分析タイプに応じたコンテンツ表示
     if analysis_type == "📈 月次分析":
@@ -312,12 +292,12 @@ elif authentication_status:
                     # カラムの存在確認をしてからグラフに追加
                     if 'self_reported_appointments' in conv_total.columns:
                         fig.add_trace(go.Scatter(x=conv_total['month'], y=conv_total['self_reported_appointments'], mode='lines+markers', name='日報上のアポ獲得'))
-                    if 'taaaan_entries' in conv_total.columns:
-                        fig.add_trace(go.Scatter(x=conv_total['month'], y=conv_total['taaaan_entries'], mode='lines+markers', name='TAAAN入力'))
+                    if 'taaan_entries' in conv_total.columns:
+                        fig.add_trace(go.Scatter(x=conv_total['month'], y=conv_total['taaan_entries'], mode='lines+markers', name='TAAAN入力'))
                     if 'approved_deals' in conv_total.columns:
                         fig.add_trace(go.Scatter(x=conv_total['month'], y=conv_total['approved_deals'], mode='lines+markers', name='メーカーからの承認'))
-                    if 'taaaan_rate' in conv_total.columns:
-                        fig.add_trace(go.Scatter(x=conv_total['month'], y=conv_total['taaaan_rate']*100, mode='lines+markers', name='アポ→TAAAN率(%)', yaxis='y2'))
+                    if 'taaan_rate' in conv_total.columns:
+                        fig.add_trace(go.Scatter(x=conv_total['month'], y=conv_total['taaan_rate']*100, mode='lines+markers', name='アポ→TAAAN率(%)', yaxis='y2'))
                     if 'approval_rate' in conv_total.columns:
                         fig.add_trace(go.Scatter(x=conv_total['month'], y=conv_total['approval_rate']*100, mode='lines+markers', name='TAAAN→承認率(%)', yaxis='y2'))
                     if 'true_approval_rate' in conv_total.columns:
@@ -338,11 +318,11 @@ elif authentication_status:
                     col1.metric("日報上のアポ獲得", 
                                int(latest.get('self_reported_appointments', 0)) if pd.notnull(latest.get('self_reported_appointments')) else 0)
                     col2.metric("TAAAN入力", 
-                               int(latest.get('taaaan_entries', 0)) if pd.notnull(latest.get('taaaan_entries')) else 0)
+                               int(latest.get('taaan_entries', 0)) if pd.notnull(latest.get('taaan_entries')) else 0)
                     col3.metric("メーカーからの承認", 
                                int(latest.get('approved_deals', 0)) if pd.notnull(latest.get('approved_deals')) else 0)
                     col4.metric("アポ→TAAAN率", 
-                               f"{latest.get('taaaan_rate', 0)*100:.1f}%" if pd.notnull(latest.get('taaaan_rate')) else 'N/A')
+                               f"{latest.get('taaan_rate', 0)*100:.1f}%" if pd.notnull(latest.get('taaan_rate')) else 'N/A')
                     col5.metric("TAAAN→承認率", 
                                f"{latest.get('approval_rate', 0)*100:.1f}%" if pd.notnull(latest.get('approval_rate')) else 'N/A')
                     col6.metric("アポ→承認率", 
@@ -578,15 +558,15 @@ elif authentication_status:
                 # --- 変換率の計算 ---
                 call_to_connect = (charge_connected / total_calls * 100) if total_calls > 0 else 0
                 connect_to_appointment = (appointments / charge_connected * 100) if charge_connected > 0 else 0
-                appointment_to_taaaan = (total_deals / appointments * 100) if appointments > 0 else 0
-                taaaan_to_approved = (total_approved / total_deals * 100) if total_deals > 0 else 0
+                appointment_to_taaan = (total_deals / appointments * 100) if appointments > 0 else 0
+                taaan_to_approved = (total_approved / total_deals * 100) if total_deals > 0 else 0
 
                 # (c) 変換率セット（オレンジ系グラデーション）
                 rate_card_data = [
                     {"label": "架電→担当率", "value": f"{call_to_connect:.1f}%", "desc": "日報上で報告された担当コネクト数÷架電数", "color": "#9e5102"},
                     {"label": "担当→アポ率", "value": f"{connect_to_appointment:.1f}%", "desc": "日報上で報告されたアポ獲得数÷担当コネクト数", "color": "#f57c00"},
-                    {"label": "アポ→TAAAN率", "value": f"{appointment_to_taaaan:.1f}%", "desc": "アポ獲得数÷TAAAN商談数", "color": "#ffb300"},
-                    {"label": "TAAAN→承認率", "value": f"{taaaan_to_approved:.1f}%", "desc": "TAAANに入力された件数のうち、商談ステータスが「承認」の割合", "color": "#ffe082"},
+                    {"label": "アポ→TAAAN率", "value": f"{appointment_to_taaan:.1f}%", "desc": "アポ獲得数÷TAAAN商談数", "color": "#ffb300"},
+                    {"label": "TAAAN→承認率", "value": f"{taaan_to_approved:.1f}%", "desc": "TAAANに入力された件数のうち、商談ステータスが「承認」の割合", "color": "#ffe082"},
                 ]
                 rate_cols = st.columns(len(rate_card_data))
                 for i, card in enumerate(rate_card_data):
@@ -876,28 +856,28 @@ elif authentication_status:
                     branch_summary.columns = columns
                     branch_summary = branch_summary.merge(unique_staff_by_branch, on='branch', how='left')
                     if 'branch_performance' in summary_data:
-                        taaaan_branch_data = {}
+                        taaan_branch_data = {}
                         for branch, data in summary_data['branch_performance'].items():
-                            taaaan_branch_data[branch] = {
+                            taaan_branch_data[branch] = {
                                 'total_deals': data.get('total_deals', 0),
                                 'total_approved': data.get('total_approved', 0),
                                 'total_revenue': data.get('total_revenue', 0),
                                 'total_potential_revenue': data.get('total_potential_revenue', 0)
                             }
-                        branch_summary['taaaan_deals'] = branch_summary['branch'].map(
-                            lambda x: taaaan_branch_data.get(x, {}).get('total_deals', 0)
+                        branch_summary['taaan_deals'] = branch_summary['branch'].map(
+                            lambda x: taaan_branch_data.get(x, {}).get('total_deals', 0)
                         )
                         branch_summary['approved_deals'] = branch_summary['branch'].map(
-                            lambda x: taaaan_branch_data.get(x, {}).get('total_approved', 0)
+                            lambda x: taaan_branch_data.get(x, {}).get('total_approved', 0)
                         )
                         branch_summary['total_revenue'] = branch_summary['branch'].map(
-                            lambda x: taaaan_branch_data.get(x, {}).get('total_revenue', 0)
+                            lambda x: taaan_branch_data.get(x, {}).get('total_revenue', 0)
                         )
                         branch_summary['total_potential_revenue'] = branch_summary['branch'].map(
-                            lambda x: taaaan_branch_data.get(x, {}).get('total_potential_revenue', 0)
+                            lambda x: taaan_branch_data.get(x, {}).get('total_potential_revenue', 0)
                         )
                     else:
-                        branch_summary['taaaan_deals'] = 0
+                        branch_summary['taaan_deals'] = 0
                         branch_summary['approved_deals'] = 0
                         branch_summary['total_revenue'] = 0
                         branch_summary['total_potential_revenue'] = 0
@@ -912,7 +892,7 @@ elif authentication_status:
                         .round(1)
                     )
                     branch_summary['approval_rate'] = (
-                        (branch_summary['approved_deals'] / branch_summary['taaaan_deals'] * 100)
+                        (branch_summary['approved_deals'] / branch_summary['taaan_deals'] * 100)
                         .fillna(0)
                         .round(1)
                     )
@@ -937,7 +917,8 @@ elif authentication_status:
                                     y=branch_data['total_calls'],
                                     name=branch,
                                     marker_color=branch_colors.get(branch, '#95a5a6'),
-                                    showlegend=False
+                                    showlegend=False,
+                                    hovertemplate='<b>%{x}</b><br>架電数: %{y:,}件<extra></extra>'
                                 ))
                             fig_branch_calls.update_layout(
                                 title=indicator_labels.get('call_count', '架電数'),
@@ -958,12 +939,14 @@ elif authentication_status:
                                         y=branch_data['call_hours'],
                                         name=branch,
                                         marker_color=branch_colors.get(branch, '#95a5a6'),
-                                        showlegend=False
+                                        showlegend=False,
+                                        hovertemplate='<b>%{x}</b><br>架電時間数: %{y:,.1f}時間<extra></extra>'
                                     ))
                                 fig_branch_hours.update_layout(
                                     title=indicator_labels.get('call_hours', '架電時間数'),
                                     yaxis_title=indicator_labels.get('call_hours', '架電時間数'),
-                                    showlegend=False
+                                    showlegend=False,
+                                    yaxis=dict(tickformat=',', separatethousands=True)
                                 )
                                 st.plotly_chart(fig_branch_hours, use_container_width=True)
                             else:
@@ -979,12 +962,14 @@ elif authentication_status:
                                     y=branch_data['charge_connected'],
                                     name=branch,
                                     marker_color=branch_colors.get(branch, '#95a5a6'),
-                                    showlegend=False
+                                    showlegend=False,
+                                    hovertemplate='<b>%{x}</b><br>担当コネクト数: %{y:,}件<extra></extra>'
                                 ))
                             fig_branch_connect.update_layout(
                                 title=indicator_labels.get('charge_connected', '担当コネクト数'),
                                 yaxis_title=indicator_labels.get('charge_connected', '担当コネクト数'),
-                                showlegend=False
+                                showlegend=False,
+                                yaxis=dict(tickformat=',', separatethousands=True)
                             )
                             st.plotly_chart(fig_branch_connect, use_container_width=True)
                         col4, col5, col6 = st.columns(3)
@@ -999,33 +984,37 @@ elif authentication_status:
                                     y=branch_data['appointments'],
                                     name=branch,
                                     marker_color=branch_colors.get(branch, '#95a5a6'),
-                                    showlegend=False
+                                    showlegend=False,
+                                    hovertemplate='<b>%{x}</b><br>アポ獲得数: %{y:,}件<extra></extra>'
                                 ))
                             fig_branch_appointments.update_layout(
                                 title=indicator_labels.get('get_appointment', 'アポ獲得数'),
                                 yaxis_title=indicator_labels.get('get_appointment', 'アポ獲得数'),
-                                showlegend=False
+                                showlegend=False,
+                                yaxis=dict(tickformat=',', separatethousands=True)
                             )
                             st.plotly_chart(fig_branch_appointments, use_container_width=True)
                         with col5:
                             # go.Figureを使用して手動で凡例を追加
-                            fig_branch_taaaan = go.Figure()
+                            fig_branch_taaan = go.Figure()
                             # 支部ごとに異なる色でバーを作成
                             for branch in branch_summary['branch']:
                                 branch_data = branch_summary[branch_summary['branch'] == branch]
-                                fig_branch_taaaan.add_trace(go.Bar(
+                                fig_branch_taaan.add_trace(go.Bar(
                                     x=[branch],
-                                    y=branch_data['taaaan_deals'],
+                                    y=branch_data['taaan_deals'],
                                     name=branch,
                                     marker_color=branch_colors.get(branch, '#95a5a6'),
-                                    showlegend=False
+                                    showlegend=False,
+                                    hovertemplate='<b>%{x}</b><br>TAAAN商談数: %{y:,}件<extra></extra>'
                                 ))
-                            fig_branch_taaaan.update_layout(
+                            fig_branch_taaan.update_layout(
                                 title=indicator_labels.get('total_deals', 'TAAAN商談数'),
                                 yaxis_title=indicator_labels.get('total_deals', 'TAAAN商談数'),
-                                showlegend=False
+                                showlegend=False,
+                                yaxis=dict(tickformat=',', separatethousands=True)
                             )
-                            st.plotly_chart(fig_branch_taaaan, use_container_width=True)
+                            st.plotly_chart(fig_branch_taaan, use_container_width=True)
                         with col6:
                             # go.Figureを使用して手動で凡例を追加
                             fig_branch_approved = go.Figure()
@@ -1037,12 +1026,14 @@ elif authentication_status:
                                     y=branch_data['approved_deals'],
                                     name=branch,
                                     marker_color=branch_colors.get(branch, '#95a5a6'),
-                                    showlegend=False
+                                    showlegend=False,
+                                    hovertemplate='<b>%{x}</b><br>承認数: %{y:,}件<extra></extra>'
                                 ))
                             fig_branch_approved.update_layout(
                                 title=indicator_labels.get('total_approved', '承認数'),
                                 yaxis_title=indicator_labels.get('total_approved', '承認数'),
-                                showlegend=False
+                                showlegend=False,
+                                yaxis=dict(tickformat=',', separatethousands=True)
                             )
                             st.plotly_chart(fig_branch_approved, use_container_width=True)
                         col7, col8 = st.columns(2)
@@ -1057,12 +1048,14 @@ elif authentication_status:
                                     y=branch_data['total_revenue'],
                                     name=branch,
                                     marker_color=branch_colors.get(branch, '#95a5a6'),
-                                    showlegend=False
+                                    showlegend=False,
+                                    hovertemplate='<b>%{x}</b><br>報酬合計額: ¥%{y:,}<extra></extra>'
                                 ))
                             fig_branch_reward.update_layout(
                                 title=indicator_labels.get('total_revenue', '報酬合計額'),
                                 yaxis_title=indicator_labels.get('total_revenue', '報酬合計額'),
-                                showlegend=False
+                                showlegend=False,
+                                yaxis=dict(tickformat=',', separatethousands=True)
                             )
                             st.plotly_chart(fig_branch_reward, use_container_width=True)
                         with col8:
@@ -1076,12 +1069,14 @@ elif authentication_status:
                                     y=branch_data['unique_staff_count'],
                                     name=branch,
                                     marker_color=branch_colors.get(branch, '#95a5a6'),
-                                    showlegend=False
+                                    showlegend=False,
+                                    hovertemplate='<b>%{x}</b><br>ユニーク稼働者数: %{y:,}人<extra></extra>'
                                 ))
                             fig_branch_staff.update_layout(
                                 title=indicator_labels.get('unique_staff_count', 'ユニーク稼働者数'),
                                 yaxis_title=indicator_labels.get('unique_staff_count', 'ユニーク稼働者数'),
-                                showlegend=False
+                                showlegend=False,
+                                yaxis=dict(tickformat=',', separatethousands=True)
                             )
                             st.plotly_chart(fig_branch_staff, use_container_width=True)
 
@@ -1092,14 +1087,14 @@ elif authentication_status:
                         unit_df['call_hours_per_staff'] = unit_df['call_hours'] / unit_df['unique_staff_count'].replace(0, float('nan')) if 'call_hours' in unit_df.columns else float('nan')
                         unit_df['charge_connected_per_staff'] = unit_df['charge_connected'] / unit_df['unique_staff_count'].replace(0, float('nan'))
                         unit_df['appointments_per_staff'] = unit_df['appointments'] / unit_df['unique_staff_count'].replace(0, float('nan'))
-                        unit_df['taaaan_deals_per_staff'] = unit_df['taaaan_deals'] / unit_df['unique_staff_count'].replace(0, float('nan'))
+                        unit_df['taaan_deals_per_staff'] = unit_df['taaan_deals'] / unit_df['unique_staff_count'].replace(0, float('nan'))
                         unit_df['approved_deals_per_staff'] = unit_df['approved_deals'] / unit_df['unique_staff_count'].replace(0, float('nan'))
                         unit_df['revenue_per_staff'] = unit_df['total_revenue'] / unit_df['unique_staff_count'].replace(0, float('nan'))
                         col1, col2, col3 = st.columns(3)
                         with col1:
                             for y_col, label in [
                                 ('total_calls_per_staff', indicator_labels['total_calls_per_staff']),
-                                ('taaaan_deals_per_staff', indicator_labels['taaaan_deals_per_staff'])
+                                ('taaan_deals_per_staff', indicator_labels['taaan_deals_per_staff'])
                             ]:
                                 fig = go.Figure()
                                 for branch in unit_df['branch']:
@@ -1109,12 +1104,14 @@ elif authentication_status:
                                         y=branch_data[y_col],
                                         name=branch,
                                         marker_color=branch_colors.get(branch, '#95a5a6'),
-                                        showlegend=False
+                                        showlegend=False,
+                                        hovertemplate=f'<b>%{{x}}</b><br>{label}: %{{y:,.1f}}<extra></extra>'
                                     ))
                                 fig.update_layout(
                                     title=label,
                                     yaxis_title=label,
-                                    showlegend=False
+                                    showlegend=False,
+                                    yaxis=dict(tickformat=',', separatethousands=True)
                                 )
                                 st.plotly_chart(fig, use_container_width=True)
                         with col2:
@@ -1130,12 +1127,14 @@ elif authentication_status:
                                         y=branch_data[y_col],
                                         name=branch,
                                         marker_color=branch_colors.get(branch, '#95a5a6'),
-                                        showlegend=False
+                                        showlegend=False,
+                                        hovertemplate=f'<b>%{{x}}</b><br>{label}: %{{y:,.1f}}<extra></extra>'
                                     ))
                                 fig.update_layout(
                                     title=label,
                                     yaxis_title=label,
-                                    showlegend=False
+                                    showlegend=False,
+                                    yaxis=dict(tickformat=',', separatethousands=True)
                                 )
                                 st.plotly_chart(fig, use_container_width=True)
                         with col3:
@@ -1145,19 +1144,24 @@ elif authentication_status:
                                 ('revenue_per_staff', indicator_labels['revenue_per_staff'])
                             ]:
                                 fig = go.Figure()
+                                # 報酬関連はホバーテンプレートに¥マークを追加
+                                is_revenue = 'revenue' in y_col
                                 for branch in unit_df['branch']:
                                     branch_data = unit_df[unit_df['branch'] == branch]
+                                    hover_template = f'<b>%{{x}}</b><br>{label}: ¥%{{y:,.1f}}<extra></extra>' if is_revenue else f'<b>%{{x}}</b><br>{label}: %{{y:,.1f}}<extra></extra>'
                                     fig.add_trace(go.Bar(
                                         x=[branch],
                                         y=branch_data[y_col],
                                         name=branch,
                                         marker_color=branch_colors.get(branch, '#95a5a6'),
-                                        showlegend=False
+                                        showlegend=False,
+                                        hovertemplate=hover_template
                                     ))
                                 fig.update_layout(
                                     title=label,
                                     yaxis_title=label,
-                                    showlegend=False
+                                    showlegend=False,
+                                    yaxis=dict(tickformat=',', separatethousands=True)
                                 )
                                 st.plotly_chart(fig, use_container_width=True)
 
@@ -1165,14 +1169,14 @@ elif authentication_status:
                         unit_df['total_calls_per_hour'] = unit_df['total_calls'] / unit_df['call_hours'].replace(0, float('nan')) if 'call_hours' in unit_df.columns else float('nan')
                         unit_df['charge_connected_per_hour'] = unit_df['charge_connected'] / unit_df['call_hours'].replace(0, float('nan')) if 'call_hours' in unit_df.columns else float('nan')
                         unit_df['appointments_per_hour'] = unit_df['appointments'] / unit_df['call_hours'].replace(0, float('nan')) if 'call_hours' in unit_df.columns else float('nan')
-                        unit_df['taaaan_deals_per_hour'] = unit_df['taaaan_deals'] / unit_df['call_hours'].replace(0, float('nan')) if 'call_hours' in unit_df.columns else float('nan')
+                        unit_df['taaan_deals_per_hour'] = unit_df['taaan_deals'] / unit_df['call_hours'].replace(0, float('nan')) if 'call_hours' in unit_df.columns else float('nan')
                         unit_df['approved_deals_per_hour'] = unit_df['approved_deals'] / unit_df['call_hours'].replace(0, float('nan')) if 'call_hours' in unit_df.columns else float('nan')
                         unit_df['revenue_per_hour'] = unit_df['total_revenue'] / unit_df['call_hours'].replace(0, float('nan')) if 'call_hours' in unit_df.columns else float('nan')
                         col4, col5, col6 = st.columns(3)
                         with col4:
                             for y_col, label in [
                                 ('total_calls_per_hour', indicator_labels['total_calls_per_hour']),
-                                ('taaaan_deals_per_hour', indicator_labels['taaaan_deals_per_hour'])
+                                ('taaan_deals_per_hour', indicator_labels['taaan_deals_per_hour'])
                             ]:
                                 fig = go.Figure()
                                 for branch in unit_df['branch']:
@@ -1182,12 +1186,14 @@ elif authentication_status:
                                         y=branch_data[y_col],
                                         name=branch,
                                         marker_color=branch_colors.get(branch, '#95a5a6'),
-                                        showlegend=False
+                                        showlegend=False,
+                                        hovertemplate=f'<b>%{{x}}</b><br>{label}: %{{y:,.1f}}<extra></extra>'
                                     ))
                                 fig.update_layout(
                                     title=label,
                                     yaxis_title=label,
-                                    showlegend=False
+                                    showlegend=False,
+                                    yaxis=dict(tickformat=',', separatethousands=True)
                                 )
                                 st.plotly_chart(fig, use_container_width=True)
                         with col5:
@@ -1203,12 +1209,14 @@ elif authentication_status:
                                         y=branch_data[y_col],
                                         name=branch,
                                         marker_color=branch_colors.get(branch, '#95a5a6'),
-                                        showlegend=False
+                                        showlegend=False,
+                                        hovertemplate=f'<b>%{{x}}</b><br>{label}: %{{y:,.1f}}<extra></extra>'
                                     ))
                                 fig.update_layout(
                                     title=label,
                                     yaxis_title=label,
-                                    showlegend=False
+                                    showlegend=False,
+                                    yaxis=dict(tickformat=',', separatethousands=True)
                                 )
                                 st.plotly_chart(fig, use_container_width=True)
                         with col6:
@@ -1217,19 +1225,24 @@ elif authentication_status:
                                 ('revenue_per_hour', indicator_labels['revenue_per_hour'])
                             ]:
                                 fig = go.Figure()
+                                # 報酬関連はホバーテンプレートに¥マークを追加
+                                is_revenue = 'revenue' in y_col
                                 for branch in unit_df['branch']:
                                     branch_data = unit_df[unit_df['branch'] == branch]
+                                    hover_template = f'<b>%{{x}}</b><br>{label}: ¥%{{y:,.0f}}<extra></extra>' if is_revenue else f'<b>%{{x}}</b><br>{label}: %{{y:,.1f}}<extra></extra>'
                                     fig.add_trace(go.Bar(
                                         x=[branch],
                                         y=branch_data[y_col],
                                         name=branch,
                                         marker_color=branch_colors.get(branch, '#95a5a6'),
-                                        showlegend=False
+                                        showlegend=False,
+                                        hovertemplate=hover_template
                                     ))
                                 fig.update_layout(
                                     title=label,
                                     yaxis_title=label,
-                                    showlegend=False
+                                    showlegend=False,
+                                    yaxis=dict(tickformat=',', separatethousands=True)
                                 )
                                 st.plotly_chart(fig, use_container_width=True)
 
@@ -1293,14 +1306,25 @@ elif authentication_status:
                                         plot_df = pd.DataFrame(plot_df)
                                         # 統一した色パレットを使用
                                         color_sequence = [branch_colors.get(branch, '#95a5a6') for branch in plot_df['branch'].unique()]
+                                        
+                                        # 報酬関連はホバーテンプレートに¥マークを追加
+                                        is_revenue = 'revenue' in col
+                                        hover_template = f'支部: %{{fullData.name}}<br>月: %{{x}}<br>{label}: ¥%{{y:,}}<extra></extra>' if is_revenue else f'支部: %{{fullData.name}}<br>月: %{{x}}<br>{label}: %{{y:,}}<extra></extra>'
+                                        
                                         fig = px.line(
                                             plot_df, x='month', y='value', color='branch', markers=True,
                                             color_discrete_sequence=color_sequence,
                                             labels={"value": label, "month": "月", "branch": "支部"}
                                         )
+                                        
+                                        # ホバーテンプレートを個別に設定
+                                        for trace in fig.data:
+                                            trace.hovertemplate = hover_template
+                                        
                                         fig.update_xaxes(type='category', tickvals=compare_months, ticktext=compare_months)
                                         fig.update_layout(
                                             yaxis_title=label,
+                                            yaxis=dict(tickformat=',', separatethousands=True),
                                             legend=dict(
                                                 orientation='h',
                                                 yanchor='bottom',
@@ -1322,13 +1346,13 @@ elif authentication_status:
                             ('call_hours_per_staff', '1人あたり架電時間数', 'Teal'),
                             ('charge_connected_per_staff', '1人あたり担当コネクト数', 'Greens'),
                             ('appointments_per_staff', '1人あたりアポ獲得数', 'Oranges'),
-                            ('taaaan_deals_per_staff', '1人あたりTAAAN商談数', 'Purples'),
+                            ('taaan_deals_per_staff', '1人あたりTAAAN商談数', 'Purples'),
                             ('approved_deals_per_staff', '1人あたり承認数', 'Reds'),
                             ('revenue_per_staff', '1人あたり報酬合計額', 'Greens'),
                             ('total_calls_per_hour', '時間あたり架電数', 'Blues'),
                             ('charge_connected_per_hour', '時間あたり担当コネクト数', 'Greens'),
                             ('appointments_per_hour', '時間あたりアポ獲得数', 'Oranges'),
-                            ('taaaan_deals_per_hour', '時間あたりTAAAN商談数', 'Purples'),
+                            ('taaan_deals_per_hour', '時間あたりTAAAN商談数', 'Purples'),
                             ('approved_deals_per_hour', '時間あたり承認数', 'Reds'),
                             ('revenue_per_hour', '時間あたり報酬合計額', 'Greens')
                         ]
@@ -1342,13 +1366,13 @@ elif authentication_status:
                                 u['call_hours_per_staff'] = u['call_hours'] / u['unique_staff_count'].replace(0, float('nan')) if 'call_hours' in u.columns else float('nan')
                                 u['charge_connected_per_staff'] = u['charge_connected'] / u['unique_staff_count'].replace(0, float('nan'))
                                 u['appointments_per_staff'] = u['get_appointment'] / u['unique_staff_count'].replace(0, float('nan'))
-                                u['taaaan_deals_per_staff'] = u['total_deals'] / u['unique_staff_count'].replace(0, float('nan'))
+                                u['taaan_deals_per_staff'] = u['total_deals'] / u['unique_staff_count'].replace(0, float('nan'))
                                 u['approved_deals_per_staff'] = u['total_approved'] / u['unique_staff_count'].replace(0, float('nan'))
                                 u['revenue_per_staff'] = u['total_revenue'] / u['unique_staff_count'].replace(0, float('nan'))
                                 u['total_calls_per_hour'] = u['call_count'] / u['call_hours'].replace(0, float('nan')) if 'call_hours' in u.columns else float('nan')
                                 u['charge_connected_per_hour'] = u['charge_connected'] / u['call_hours'].replace(0, float('nan')) if 'call_hours' in u.columns else float('nan')
                                 u['appointments_per_hour'] = u['get_appointment'] / u['call_hours'].replace(0, float('nan')) if 'call_hours' in u.columns else float('nan')
-                                u['taaaan_deals_per_hour'] = u['total_deals'] / u['call_hours'].replace(0, float('nan')) if 'call_hours' in u.columns else float('nan')
+                                u['taaan_deals_per_hour'] = u['total_deals'] / u['call_hours'].replace(0, float('nan')) if 'call_hours' in u.columns else float('nan')
                                 u['approved_deals_per_hour'] = u['total_approved'] / u['call_hours'].replace(0, float('nan')) if 'call_hours' in u.columns else float('nan')
                                 u['revenue_per_hour'] = u['total_revenue'] / u['call_hours'].replace(0, float('nan')) if 'call_hours' in u.columns else float('nan')
                                 unit_monthly[m] = u
@@ -1369,14 +1393,30 @@ elif authentication_status:
                                         plot_df = pd.DataFrame(plot_df)
                                         # 統一した色パレットを使用
                                         color_sequence = [branch_colors.get(branch, '#95a5a6') for branch in plot_df['branch'].unique()]
+                                        
+                                        # 報酬関連はホバーテンプレートに¥マークを追加
+                                        is_revenue = 'revenue' in col
+                                        if is_revenue:
+                                            # 単位あたり報酬は1桁表示
+                                            precision = ':.1f' if 'per_staff' in col else ':.0f'
+                                            hover_template = f'支部: %{{fullData.name}}<br>月: %{{x}}<br>{label}: ¥%{{y{precision}}}<extra></extra>'
+                                        else:
+                                            hover_template = f'支部: %{{fullData.name}}<br>月: %{{x}}<br>{label}: %{{y:,.1f}}<extra></extra>'
+                                        
                                         fig = px.line(
                                             plot_df, x='month', y='value', color='branch', markers=True,
                                             color_discrete_sequence=color_sequence,
                                             labels={"value": label, "month": "月", "branch": "支部"}
                                         )
+                                        
+                                        # ホバーテンプレートを個別に設定
+                                        for trace in fig.data:
+                                            trace.hovertemplate = hover_template
+                                        
                                         fig.update_xaxes(type='category', tickvals=compare_months, ticktext=compare_months)
                                         fig.update_layout(
                                             yaxis_title=label,
+                                            yaxis=dict(tickformat=',', separatethousands=True),
                                             legend=dict(
                                                 orientation='h',
                                                 yanchor='bottom',
@@ -1459,257 +1499,264 @@ elif authentication_status:
                 with tab4:
                     st.subheader("商材別分析")
                     
-                    # 商材別集計 - カラム名を動的に決定
+                    # データソースの説明
+                    st.info("""
+                    **データソース**:
+                    - **架電数・担当コネクト数・アポ獲得数**: 日報データから抽出
+                    - **TAAAN商談数・承認数・確定売上**: TAAANデータから抽出
+                    
+                    ※日報とTAAANは独立したデータソースのため、商材情報が異なる場合があります。
+                    """)
+                    
+                    # 日報データから商材別集計（1-3の指標）
                     call_col = 'call_count' if 'call_count' in df_basic.columns else 'total_calls'
                     appointment_col = 'get_appointment' if 'get_appointment' in df_basic.columns else 'appointments'
                     success_col = 'charge_connected' if 'charge_connected' in df_basic.columns else 'successful_calls'
                     
-                    product_summary = df_basic.groupby('product').agg({
+                    # 日報データのみから商材別集計（1-3の指標）
+                    daily_product_summary = df_basic.groupby('product').agg({
                         call_col: 'sum',
                         success_col: 'sum',
                         appointment_col: 'sum'
                     }).reset_index()
                     
                     # カラム名を統一
-                    product_summary.columns = ['product', 'total_calls', 'charge_connected', 'appointments']
+                    daily_product_summary.columns = ['product', 'total_calls', 'charge_connected', 'appointments']
                     
-                    # TAAANデータも含めた商材別集計
+                    # TAAANデータから商材別集計（4-6の指標）
+                    taaan_product_summary = pd.DataFrame()
+                    taaan_product_data = []
                     if 'product_performance' in summary_data:
-                        taaaan_product_data = {}
                         for product, data in summary_data['product_performance'].items():
-                            taaaan_product_data[product] = {
-                                'total_deals': data.get('total_deals', 0),
-                                'total_approved': data.get('total_approved', 0),
+                            taaan_product_data.append({
+                                'product': product,
+                                'taaan_deals': data.get('total_deals', 0),
+                                'approved_deals': data.get('total_approved', 0),
                                 'total_revenue': data.get('total_revenue', 0),
                                 'total_potential_revenue': data.get('total_potential_revenue', 0)
-                            }
-                        
-                        # 商材別データにTAAAN情報を追加
-                        product_summary['taaaan_deals'] = product_summary['product'].map(
-                            lambda x: taaaan_product_data.get(x, {}).get('total_deals', 0)
-                        )
-                        product_summary['approved_deals'] = product_summary['product'].map(
-                            lambda x: taaaan_product_data.get(x, {}).get('total_approved', 0)
-                        )
-                        product_summary['total_revenue'] = product_summary['product'].map(
-                            lambda x: taaaan_product_data.get(x, {}).get('total_revenue', 0)
-                        )
-                        product_summary['total_potential_revenue'] = product_summary['product'].map(
-                            lambda x: taaaan_product_data.get(x, {}).get('total_potential_revenue', 0)
-                        )
+                            })
+                        taaan_product_summary = pd.DataFrame(taaan_product_data)
                     else:
-                        # TAAANデータが存在しない場合
-                        product_summary['taaaan_deals'] = 0
-                        product_summary['approved_deals'] = 0
-                        product_summary['total_revenue'] = 0
-                        product_summary['total_potential_revenue'] = 0
                         st.warning("⚠️ **TAAANデータが見つかりません**: 商材別分析ではTAAAN関連の指標を表示できません")
-                        
-                    # 変換率の計算
-                    product_summary['connect_rate'] = (
-                        (product_summary['charge_connected'] / product_summary['total_calls'] * 100)
-                        .fillna(0)
-                        .round(1)
-                    )
-                    product_summary['appointment_rate'] = (
-                        (product_summary['appointments'] / product_summary['charge_connected'] * 100)
-                        .fillna(0)
-                        .round(1)
-                    )
-                    product_summary['approval_rate'] = (
-                        (product_summary['approved_deals'] / product_summary['taaaan_deals'] * 100)
-                        .fillna(0)
-                        .round(1)
-                    )
                     
                     # 商材別グラフ（4つのグラフを2行で表示）
                     st.subheader("商材別パフォーマンス")
                     
-                    # 1行目: 架電数、担当コネクト数、アポ獲得数
+                    # 1行目: 架電数、担当コネクト数、アポ獲得数（日報データ）
                     col1, col2, col3 = st.columns(3)
                     
                     with col1:
-                        fig_product_calls = px.bar(
-                            product_summary,
-                            x='product',
-                            y='total_calls',
-                            title="商材別架電数",
-                            color='total_calls',
-                            color_continuous_scale='Blues'
-                        )
-                        fig_product_calls.update_layout(
-                            height=350,
-                            yaxis=dict(tickformat=',', separatethousands=True)
-                        )
-                        st.plotly_chart(fig_product_calls, use_container_width=True)
+                        if not daily_product_summary.empty:
+                            fig_product_calls = px.bar(
+                                daily_product_summary,
+                                x='product',
+                                y='total_calls',
+                                title="商材別架電数（日報データ）",
+                                color_discrete_sequence=['#1976d2']  # 青
+                            )
+                            fig_product_calls.update_layout(
+                                height=350,
+                                yaxis=dict(tickformat=',', separatethousands=True)
+                            )
+                            st.plotly_chart(fig_product_calls, use_container_width=True)
+                        else:
+                            st.info("日報データがありません")
                     
                     with col2:
-                        fig_product_connect = px.bar(
-                            product_summary,
-                            x='product',
-                            y='charge_connected',
-                            title="商材別担当コネクト数",
-                            color='charge_connected',
-                            color_continuous_scale='Greens'
-                        )
-                        fig_product_connect.update_layout(
-                            height=350,
-                            yaxis=dict(tickformat=',', separatethousands=True)
-                        )
-                        st.plotly_chart(fig_product_connect, use_container_width=True)
+                        if not daily_product_summary.empty:
+                            fig_product_connect = px.bar(
+                                daily_product_summary,
+                                x='product',
+                                y='charge_connected',
+                                title="商材別担当コネクト数（日報データ）",
+                                color_discrete_sequence=['#388e3c']  # 緑
+                            )
+                            fig_product_connect.update_layout(
+                                height=350,
+                                yaxis=dict(tickformat=',', separatethousands=True)
+                            )
+                            st.plotly_chart(fig_product_connect, use_container_width=True)
+                        else:
+                            st.info("日報データがありません")
                     
                     with col3:
-                        fig_product_appointments = px.bar(
-                            product_summary,
-                            x='product',
-                            y='appointments',
-                            title="商材別アポ獲得数",
-                            color='appointments',
-                            color_continuous_scale='Oranges'
-                        )
-                        fig_product_appointments.update_layout(
-                            height=350,
-                            yaxis=dict(tickformat=',', separatethousands=True)
-                        )
-                        st.plotly_chart(fig_product_appointments, use_container_width=True)
+                        if not daily_product_summary.empty:
+                            fig_product_appointments = px.bar(
+                                daily_product_summary,
+                                x='product',
+                                y='appointments',
+                                title="商材別アポ獲得数（日報データ）",
+                                color_discrete_sequence=['#f57c00']  # オレンジ
+                            )
+                            fig_product_appointments.update_layout(
+                                height=350,
+                                yaxis=dict(tickformat=',', separatethousands=True)
+                            )
+                            st.plotly_chart(fig_product_appointments, use_container_width=True)
+                        else:
+                            st.info("日報データがありません")
                     
-                    # 2行目: TAAAN商談数、承認数、売上
+                    # 2行目: TAAAN商談数、承認数、売上（TAAANデータ）
                     col4, col5, col6 = st.columns(3)
                     
                     with col4:
-                        fig_product_taaaan = px.bar(
-                            product_summary,
-                            x='product',
-                            y='taaaan_deals',
-                            title="商材別TAAAN商談数",
-                            color='taaaan_deals',
-                            color_continuous_scale='Purples'
-                        )
-                        fig_product_taaaan.update_layout(
-                            height=350,
-                            yaxis=dict(tickformat=',', separatethousands=True)
-                        )
-                        st.plotly_chart(fig_product_taaaan, use_container_width=True)
+                        if not taaan_product_summary.empty:
+                            fig_product_taaan = px.bar(
+                                taaan_product_summary,
+                                x='product',
+                                y='taaan_deals',
+                                title="商材別TAAAN商談数（TAAANデータ）",
+                                color_discrete_sequence=['#7b1fa2']  # 紫
+                            )
+                            fig_product_taaan.update_layout(
+                                height=350,
+                                yaxis=dict(tickformat=',', separatethousands=True)
+                            )
+                            st.plotly_chart(fig_product_taaan, use_container_width=True)
+                        else:
+                            st.info("TAAANデータがありません")
                     
                     with col5:
-                        fig_product_approved = px.bar(
-                            product_summary,
-                            x='product',
-                            y='approved_deals',
-                            title="商材別承認数",
-                            color='approved_deals',
-                            color_continuous_scale='Reds'
-                        )
-                        fig_product_approved.update_layout(
-                            height=350,
-                            yaxis=dict(tickformat=',', separatethousands=True)
-                        )
-                        st.plotly_chart(fig_product_approved, use_container_width=True)
+                        if not taaan_product_summary.empty:
+                            fig_product_approved = px.bar(
+                                taaan_product_summary,
+                                x='product',
+                                y='approved_deals',
+                                title="商材別承認数（TAAANデータ）",
+                                color_discrete_sequence=['#c62828']  # 赤
+                            )
+                            fig_product_approved.update_layout(
+                                height=350,
+                                yaxis=dict(tickformat=',', separatethousands=True)
+                            )
+                            st.plotly_chart(fig_product_approved, use_container_width=True)
+                        else:
+                            st.info("TAAANデータがありません")
                     
                     with col6:
-                        fig_product_revenue = px.bar(
-                            product_summary,
-                            x='product',
-                            y='total_revenue',
-                            title="商材別確定売上",
-                            color='total_revenue',
-                            color_continuous_scale='Greens'
-                        )
-                        fig_product_revenue.update_layout(
-                            height=350,
-                            yaxis=dict(tickformat=',', separatethousands=True)
-                        )
-                        st.plotly_chart(fig_product_revenue, use_container_width=True)
+                        if not taaan_product_summary.empty:
+                            fig_product_revenue = px.bar(
+                                taaan_product_summary,
+                                x='product',
+                                y='total_revenue',
+                                title="商材別確定売上（TAAANデータ）",
+                                color_discrete_sequence=['#00695c']  # 濃い緑
+                            )
+                            fig_product_revenue.update_layout(
+                                height=350,
+                                yaxis=dict(tickformat=',', separatethousands=True)
+                            )
+                            st.plotly_chart(fig_product_revenue, use_container_width=True)
+                        else:
+                            st.info("TAAANデータがありません")
                     
                     # 商材別詳細テーブル
                     st.subheader("商材別詳細")
                     
-                    # 表示するカラムを選択
-                    display_columns = [
-                        'product', 'total_calls', 'charge_connected', 'appointments', 
-                        'taaaan_deals', 'approved_deals', 'total_revenue', 'total_potential_revenue',
-                        'connect_rate', 'appointment_rate', 'approval_rate'
-                    ]
-                    
-                    # カラム名の日本語マッピング
-                    column_labels = {
-                        'product': '商材',
-                        'total_calls': '総架電数',
-                        'charge_connected': '担当コネクト数',
-                        'appointments': 'アポ獲得数',
-                        'taaaan_deals': 'TAAAN商談数',
-                        'approved_deals': '承認数',
-                        'total_revenue': '確定売上',
-                        'total_potential_revenue': '潜在売上',
-                        'connect_rate': '担当コネクト率(%)',
-                        'appointment_rate': 'アポ獲得率(%)',
-                        'approval_rate': '承認率(%)'
-                    }
-                    
-                    # 合計行を追加
-                    total_row = {
-                        'product': '合計',
-                        'total_calls': product_summary['total_calls'].sum(),
-                        'charge_connected': product_summary['charge_connected'].sum(),
-                        'appointments': product_summary['appointments'].sum(),
-                        'taaaan_deals': product_summary['taaaan_deals'].sum(),
-                        'approved_deals': product_summary['approved_deals'].sum(),
-                        'total_revenue': product_summary['total_revenue'].sum(),
-                        'total_potential_revenue': product_summary['total_potential_revenue'].sum(),
-                        'connect_rate': round((product_summary['charge_connected'].sum() / product_summary['total_calls'].sum() * 100), 1),
-                        'appointment_rate': round((product_summary['appointments'].sum() / product_summary['charge_connected'].sum() * 100), 1),
-                        'approval_rate': round((product_summary['approved_deals'].sum() / product_summary['taaaan_deals'].sum() * 100), 1)
-                    }
-                    
-                    # 合計行を追加してテーブル表示
-                    product_summary_with_total = product_summary[display_columns].copy()
-                    product_summary_with_total = pd.concat([
-                        product_summary_with_total,
-                        pd.DataFrame([total_row])
-                    ], ignore_index=True)
-                    
-                    # 数値のフォーマット
-                    for col in ['total_calls', 'charge_connected', 'appointments', 'taaaan_deals', 'approved_deals']:
-                        product_summary_with_total[col] = product_summary_with_total[col].apply(lambda x: f"{x:,}")
-                    
-                    for col in ['total_revenue', 'total_potential_revenue']:
-                        product_summary_with_total[col] = product_summary_with_total[col].apply(lambda x: f"¥{x:,}")
-                    
-                    for col in ['connect_rate', 'appointment_rate', 'approval_rate']:
-                        product_summary_with_total[col] = product_summary_with_total[col].apply(lambda x: f"{x}%")
-                    
-                    # カラム名を日本語に変更
-                    product_summary_with_total.columns = [column_labels.get(col, col) for col in product_summary_with_total.columns]
-                    
-                    st.dataframe(
-                        product_summary_with_total,
-                        use_container_width=True,
-                        hide_index=True
-                    )
-                    
-                    # データ整合性の警告
-                    if 'key_metrics' in summary_data:
-                        summary_taaaan = summary_data['key_metrics'].get('total_deals', 0)
-                        product_taaaan = product_summary['taaaan_deals'].sum()
-                        summary_approved = summary_data['key_metrics'].get('total_approved', 0)
-                        product_approved = product_summary['approved_deals'].sum()
-                        summary_revenue = summary_data['key_metrics'].get('total_revenue', 0)
-                        product_revenue = product_summary['total_revenue'].sum()
+                    # 日報データの詳細テーブル
+                    if not daily_product_summary.empty:
+                        st.subheader("📊 日報データ（架電数・担当コネクト数・アポ獲得数）")
                         
-                        # TAAAN商談数の整合性チェック
-                        if summary_taaaan != product_taaaan:
-                            diff = summary_taaaan - product_taaaan
-                            st.warning(f"⚠️ **TAAAN商談数整合性**: 月次サマリー({summary_taaaan:,}件)と商材別合計({product_taaaan:,}件)の差: {diff:,}件")
-                            st.info("ℹ️ **原因**: 商材未設定のTAAANデータが商材別集計に含まれていません")
+                        # 変換率の計算
+                        daily_product_summary['connect_rate'] = (
+                            (daily_product_summary['charge_connected'] / daily_product_summary['total_calls'] * 100)
+                            .fillna(0)
+                            .round(1)
+                        )
+                        daily_product_summary['appointment_rate'] = (
+                            (daily_product_summary['appointments'] / daily_product_summary['charge_connected'] * 100)
+                            .fillna(0)
+                            .round(1)
+                        )
                         
-                        # 承認数の整合性チェック
-                        if summary_approved != product_approved:
-                            diff = summary_approved - product_approved
-                            st.warning(f"⚠️ **承認数整合性**: 月次サマリー({summary_approved:,}件)と商材別合計({product_approved:,}件)の差: {diff:,}件")
-                            st.info("ℹ️ **原因**: 商材未設定の承認データが商材別集計に含まれていません")
+                        # 表示するカラムを選択
+                        daily_display_columns = [
+                            'product', 'total_calls', 'charge_connected', 'appointments',
+                            'connect_rate', 'appointment_rate'
+                        ]
                         
-                        # 報酬情報のデバッグ
-                        st.info(f"ℹ️ **報酬デバッグ**: 月次サマリー売上¥{summary_revenue:,}、商材別合計¥{product_revenue:,}")
+                        # カラム名の日本語マッピング
+                        daily_column_labels = {
+                            'product': '商材',
+                            'total_calls': '総架電数',
+                            'charge_connected': '担当コネクト数',
+                            'appointments': 'アポ獲得数',
+                            'connect_rate': '担当コネクト率(%)',
+                            'appointment_rate': 'アポ獲得率(%)'
+                        }
+                        
+                        # 合計行を追加
+                        daily_total_row = {
+                            'product': '合計',
+                            'total_calls': daily_product_summary['total_calls'].sum(),
+                            'charge_connected': daily_product_summary['charge_connected'].sum(),
+                            'appointments': daily_product_summary['appointments'].sum(),
+                            'connect_rate': 0,  # 合計行では計算しない
+                            'appointment_rate': 0  # 合計行では計算しない
+                        }
+                        
+                        # 合計行を追加
+                        daily_display_data = pd.concat([
+                            daily_product_summary[daily_display_columns],
+                            pd.DataFrame([daily_total_row])
+                        ], ignore_index=True)
+                        
+                        # テーブル表示
+                        st.dataframe(
+                            daily_display_data.rename(columns=daily_column_labels),
+                            use_container_width=True,
+                            hide_index=True
+                        )
+                    
+                    # TAAANデータの詳細テーブル
+                    if not taaan_product_summary.empty:
+                        st.subheader("📈 TAAANデータ（TAAAN商談数・承認数・確定売上）")
+                        
+                        # 承認率の計算
+                        taaan_product_summary['approval_rate'] = (
+                            (taaan_product_summary['approved_deals'] / taaan_product_summary['taaan_deals'] * 100)
+                            .fillna(0)
+                            .round(1)
+                        )
+                        
+                        # 表示するカラムを選択
+                        taaan_display_columns = [
+                            'product', 'taaan_deals', 'approved_deals', 'total_revenue', 'total_potential_revenue',
+                            'approval_rate'
+                        ]
+                        
+                        # カラム名の日本語マッピング
+                        taaan_column_labels = {
+                            'product': '商材',
+                            'taaan_deals': 'TAAAN商談数',
+                            'approved_deals': '承認数',
+                            'total_revenue': '確定売上',
+                            'total_potential_revenue': '潜在売上',
+                            'approval_rate': '承認率(%)'
+                        }
+                        
+                        # 合計行を追加
+                        taaan_total_row = {
+                            'product': '合計',
+                            'taaan_deals': taaan_product_summary['taaan_deals'].sum(),
+                            'approved_deals': taaan_product_summary['approved_deals'].sum(),
+                            'total_revenue': taaan_product_summary['total_revenue'].sum(),
+                            'total_potential_revenue': taaan_product_summary['total_potential_revenue'].sum(),
+                            'approval_rate': 0  # 合計行では計算しない
+                        }
+                        
+                        # 合計行を追加
+                        taaan_display_data = pd.concat([
+                            taaan_product_summary[taaan_display_columns],
+                            pd.DataFrame([taaan_total_row])
+                        ], ignore_index=True)
+                        
+                        # テーブル表示
+                        st.dataframe(
+                            taaan_display_data.rename(columns=taaan_column_labels),
+                            use_container_width=True,
+                            hide_index=True
+                        )
                 
                 with tab5:
                     st.subheader("詳細データ")

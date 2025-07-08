@@ -1,12 +1,12 @@
 {
   "metadata": {
     "report_period": "2025-01",
-    "generated_at": "2025-07-07T13:41:56.516Z",
+    "generated_at": "2025-07-08T07:32:12.439Z",
     "report_type": "monthly_summary"
   },
   "key_metrics": {
     "total_calls": 12163,
-    "total_hours": 1393.5,
+    "total_hours": 1388.5,
     "total_appointments": 219,
     "total_deals": 12,
     "total_approved": 9,
@@ -116,7 +116,7 @@
     },
     "sansan": {
       "total_calls": 2050,
-      "total_hours": 219.5,
+      "total_hours": 214.5,
       "total_appointments": 22,
       "total_deals": 0,
       "total_approved": 0,
@@ -329,9 +329,9 @@
   },
   "retention_metrics": {
     "total_staff": 111,
-    "active_staff": 6,
-    "high_risk_staff": 100,
-    "medium_risk_staff": 11,
+    "active_staff": 23,
+    "high_risk_staff": 95,
+    "medium_risk_staff": 16,
     "low_risk_staff": 0,
     "retention_rate": "45.26"
   },
@@ -339,7 +339,7 @@
     {
       "type": "critical",
       "message": "高リスク学生が危険レベルを超えています",
-      "value": "100名",
+      "value": "95名",
       "threshold": "15名"
     }
   ]

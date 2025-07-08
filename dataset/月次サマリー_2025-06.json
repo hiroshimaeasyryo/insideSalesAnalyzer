@@ -1,7 +1,7 @@
 {
   "metadata": {
     "report_period": "2025-06",
-    "generated_at": "2025-07-07T13:43:52.409Z",
+    "generated_at": "2025-07-08T07:33:48.917Z",
     "report_type": "monthly_summary"
   },
   "key_metrics": {
@@ -10,15 +10,15 @@
     "total_appointments": 188,
     "total_deals": 229,
     "total_approved": 150,
-    "total_rejected": 65,
+    "total_rejected": 67,
     "approval_rate": "65.50",
     "total_revenue": 4979000,
-    "total_potential_revenue": 411000
+    "total_potential_revenue": 356000
   },
   "deal_status_breakdown": {
     "approved": 150,
-    "rejected": 65,
-    "pending": 14,
+    "rejected": 67,
+    "pending": 12,
     "total": 229
   },
   "branch_performance": {
@@ -69,7 +69,7 @@
       "total_deals": 28,
       "total_approved": 18,
       "total_revenue": 563000,
-      "total_potential_revenue": 60000,
+      "total_potential_revenue": 40000,
       "approval_rate": "64.29"
     },
     "東京": {
@@ -89,7 +89,7 @@
       "total_deals": 86,
       "total_approved": 58,
       "total_revenue": 1996000,
-      "total_potential_revenue": 158000,
+      "total_potential_revenue": 123000,
       "approval_rate": "67.44"
     },
     "未設定": {
@@ -241,7 +241,7 @@
       "total_deals": 8,
       "total_approved": 7,
       "total_revenue": 245000,
-      "total_potential_revenue": 35000,
+      "total_potential_revenue": 0,
       "approval_rate": "87.50"
     },
     "AI法務プラットフォーム「LegalOn Cloud」": {
@@ -261,7 +261,7 @@
       "total_deals": 47,
       "total_approved": 27,
       "total_revenue": 824000,
-      "total_potential_revenue": 376000,
+      "total_potential_revenue": 356000,
       "approval_rate": "57.45"
     }
   },
@@ -389,9 +389,9 @@
   },
   "retention_metrics": {
     "total_staff": 111,
-    "active_staff": 6,
-    "high_risk_staff": 100,
-    "medium_risk_staff": 11,
+    "active_staff": 23,
+    "high_risk_staff": 95,
+    "medium_risk_staff": 16,
     "low_risk_staff": 0,
     "retention_rate": "44.14"
   },
@@ -399,7 +399,7 @@
     {
       "type": "critical",
       "message": "高リスク学生が危険レベルを超えています",
-      "value": "100名",
+      "value": "95名",
       "threshold": "15名"
     }
   ]

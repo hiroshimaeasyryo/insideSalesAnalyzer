@@ -186,7 +186,7 @@
         </div>
         <div class="stat-card">
           <h3>TAAAN入力</h3>
-          <div class="stat-value">{{ latest_conv.taaaan_entries | default(0) | int }}件</div>
+          <div class="stat-value">{{ latest_conv.taaan_entries | default(0) | int }}件</div>
         </div>
         <div class="stat-card">
           <h3>メーカーからの承認</h3>
@@ -194,7 +194,7 @@
         </div>
         <div class="stat-card">
           <h3>アポ→TAAAN率</h3>
-          <div class="stat-value">{{ (latest_conv.taaaan_rate * 100) | round(1) if latest_conv.taaaan_rate is not none else 'N/A' }}%</div>
+          <div class="stat-value">{{ (latest_conv.taaan_rate * 100) | round(1) if latest_conv.taaan_rate is not none else 'N/A' }}%</div>
         </div>
         <div class="stat-card">
           <h3>TAAAN→承認率</h3>
@@ -336,9 +336,9 @@ const monthlyEfficiency = monthlyData.map(x => x.eff);
 const convData = {{ conversion | selectattr('type', 'equalto', 'total') | sort(attribute='month') | list | tojson }};
 const convLabels = convData.map(x => x.month);
 const convApo = convData.map(x => x.self_reported_appointments);
-const convTaaaan = convData.map(x => x.taaaan_entries);
+const convtaaan = convData.map(x => x.taaan_entries);
 const convApproved = convData.map(x => x.approved_deals);
-const convTaaaanRate = convData.map(x => x.taaaan_rate !== null ? (x.taaaan_rate * 100).toFixed(1) : null);
+const convtaaanRate = convData.map(x => x.taaan_rate !== null ? (x.taaan_rate * 100).toFixed(1) : null);
 const convApprovalRate = convData.map(x => x.approval_rate !== null ? (x.approval_rate * 100).toFixed(1) : null);
 const convTrueApprovalRate = convData.map(x => x.true_approval_rate !== null ? (x.true_approval_rate * 100).toFixed(1) : null);
 
@@ -370,9 +370,9 @@ new Chart(document.getElementById('conversionTrend'), {
     labels: convLabels,
     datasets: [
       { label: '日報上のアポ獲得', data: convApo, borderColor: '#007bff', fill: false },
-      { label: 'TAAAN入力', data: convTaaaan, borderColor: '#28a745', fill: false },
+      { label: 'TAAAN入力', data: convtaaan, borderColor: '#28a745', fill: false },
       { label: 'メーカーからの承認', data: convApproved, borderColor: '#ff9800', fill: false },
-      { label: 'アポ→TAAAN率(%)', data: convTaaaanRate, borderColor: '#6c757d', borderDash: [5,5], yAxisID: 'y1', fill: false },
+      { label: 'アポ→TAAAN率(%)', data: convtaaanRate, borderColor: '#6c757d', borderDash: [5,5], yAxisID: 'y1', fill: false },
       { label: 'TAAAN→承認率(%)', data: convApprovalRate, borderColor: '#e91e63', borderDash: [5,5], yAxisID: 'y1', fill: false },
       { label: 'アポ→承認率(%)', data: convTrueApprovalRate, borderColor: '#00bcd4', borderDash: [5,5], yAxisID: 'y1', fill: false }
     ]

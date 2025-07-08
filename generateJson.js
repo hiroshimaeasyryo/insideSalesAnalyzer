@@ -849,8 +849,24 @@ function generateAnalysisJson() {
       }
     }
     
-    // 商材別集計
-    if (deal.product && monthData.products[deal.product]) {
+      // 商材別集計（TAAANデータから）
+    if (deal.product) {
+      // TAAANデータの商材情報を優先して使用
+      if (!monthData.products[deal.product]) {
+        monthData.products[deal.product] = {
+          product_name: deal.product,
+          total_calls: 0,
+          total_hours: 0,
+          total_appointments: 0,
+          total_deals: 0,
+          total_approved: 0,
+          total_rejected: 0,
+          total_revenue: 0,
+          total_potential_revenue: 0,
+          approval_rate: 0
+        };
+      }
+      
       monthData.products[deal.product].total_deals++;
       if (isApproved) {
         monthData.products[deal.product].total_approved++;
@@ -1014,7 +1030,7 @@ function generateAnalysisJson() {
     if (!month) return;
     if (!monthly_conversion[month]) {
       monthly_conversion[month] = {
-        total: {self_reported_appointments: 0, taaaan_entries: 0, approved_deals: 0},
+        total: {self_reported_appointments: 0, taaan_entries: 0, approved_deals: 0},
         by_staff: {},
         by_branch: {},
         by_product: {}
@@ -1034,13 +1050,13 @@ function generateAnalysisJson() {
     // 合計
     monthly_conversion[month].total.self_reported_appointments += totalApp;
     // スタッフ別
-    if (!monthly_conversion[month].by_staff[staff]) monthly_conversion[month].by_staff[staff] = {self_reported_appointments: 0, taaaan_entries: 0, approved_deals: 0};
+    if (!monthly_conversion[month].by_staff[staff]) monthly_conversion[month].by_staff[staff] = {self_reported_appointments: 0, taaan_entries: 0, approved_deals: 0};
     monthly_conversion[month].by_staff[staff].self_reported_appointments += totalApp;
     // 支部別
-    if (!monthly_conversion[month].by_branch[branch]) monthly_conversion[month].by_branch[branch] = {self_reported_appointments: 0, taaaan_entries: 0, approved_deals: 0};
+    if (!monthly_conversion[month].by_branch[branch]) monthly_conversion[month].by_branch[branch] = {self_reported_appointments: 0, taaan_entries: 0, approved_deals: 0};
     monthly_conversion[month].by_branch[branch].self_reported_appointments += totalApp;
     // 商材別
-    if (!monthly_conversion[month].by_product[product]) monthly_conversion[month].by_product[product] = {self_reported_appointments: 0, taaaan_entries: 0, approved_deals: 0};
+    if (!monthly_conversion[month].by_product[product]) monthly_conversion[month].by_product[product] = {self_reported_appointments: 0, taaan_entries: 0, approved_deals: 0};
     monthly_conversion[month].by_product[product].self_reported_appointments += totalApp;
   });
 
@@ -1051,14 +1067,16 @@ function generateAnalysisJson() {
     var staff = deal.staff || '未設定';
     var branch = (staffMap[deal.staff] && staffMap[deal.staff].branch) ? staffMap[deal.staff].branch : '未設定';
     var product = deal.product || '未設定';
+    
     // TAAAN入力
-    monthly_conversion[month].total.taaaan_entries++;
-    if (!monthly_conversion[month].by_staff[staff]) monthly_conversion[month].by_staff[staff] = {self_reported_appointments: 0, taaaan_entries: 0, approved_deals: 0};
-    monthly_conversion[month].by_staff[staff].taaaan_entries++;
-    if (!monthly_conversion[month].by_branch[branch]) monthly_conversion[month].by_branch[branch] = {self_reported_appointments: 0, taaaan_entries: 0, approved_deals: 0};
-    monthly_conversion[month].by_branch[branch].taaaan_entries++;
-    if (!monthly_conversion[month].by_product[product]) monthly_conversion[month].by_product[product] = {self_reported_appointments: 0, taaaan_entries: 0, approved_deals: 0};
-    monthly_conversion[month].by_product[product].taaaan_entries++;
+    monthly_conversion[month].total.taaan_entries++;
+    if (!monthly_conversion[month].by_staff[staff]) monthly_conversion[month].by_staff[staff] = {self_reported_appointments: 0, taaan_entries: 0, approved_deals: 0};
+    monthly_conversion[month].by_staff[staff].taaan_entries++;
+    if (!monthly_conversion[month].by_branch[branch]) monthly_conversion[month].by_branch[branch] = {self_reported_appointments: 0, taaan_entries: 0, approved_deals: 0};
+    monthly_conversion[month].by_branch[branch].taaan_entries++;
+    if (!monthly_conversion[month].by_product[product]) monthly_conversion[month].by_product[product] = {self_reported_appointments: 0, taaan_entries: 0, approved_deals: 0};
+    monthly_conversion[month].by_product[product].taaan_entries++;
+    
     // 承認
     if (deal.deal_status === '承認') {
       monthly_conversion[month].total.approved_deals++;
@@ -1072,28 +1090,28 @@ function generateAnalysisJson() {
   Object.keys(monthly_conversion).forEach(function(month) {
     var m = monthly_conversion[month];
     // total
-    m.total.taaaan_rate = m.total.self_reported_appointments > 0 ? m.total.taaaan_entries / m.total.self_reported_appointments : null;
-    m.total.approval_rate = m.total.taaaan_entries > 0 ? m.total.approved_deals / m.total.taaaan_entries : null;
+    m.total.taaan_rate = m.total.self_reported_appointments > 0 ? m.total.taaan_entries / m.total.self_reported_appointments : null;
+    m.total.approval_rate = m.total.taaan_entries > 0 ? m.total.approved_deals / m.total.taaan_entries : null;
     m.total.true_approval_rate = m.total.self_reported_appointments > 0 ? m.total.approved_deals / m.total.self_reported_appointments : null;
     // by_staff
     Object.keys(m.by_staff).forEach(function(staff) {
       var s = m.by_staff[staff];
-      s.taaaan_rate = s.self_reported_appointments > 0 ? s.taaaan_entries / s.self_reported_appointments : null;
-      s.approval_rate = s.taaaan_entries > 0 ? s.approved_deals / s.taaaan_entries : null;
+      s.taaan_rate = s.self_reported_appointments > 0 ? s.taaan_entries / s.self_reported_appointments : null;
+      s.approval_rate = s.taaan_entries > 0 ? s.approved_deals / s.taaan_entries : null;
       s.true_approval_rate = s.self_reported_appointments > 0 ? s.approved_deals / s.self_reported_appointments : null;
     });
     // by_branch
     Object.keys(m.by_branch).forEach(function(branch) {
       var b = m.by_branch[branch];
-      b.taaaan_rate = b.self_reported_appointments > 0 ? b.taaaan_entries / b.self_reported_appointments : null;
-      b.approval_rate = b.taaaan_entries > 0 ? b.approved_deals / b.taaaan_entries : null;
+      b.taaan_rate = b.self_reported_appointments > 0 ? b.taaan_entries / b.self_reported_appointments : null;
+      b.approval_rate = b.taaan_entries > 0 ? b.approved_deals / b.taaan_entries : null;
       b.true_approval_rate = b.self_reported_appointments > 0 ? b.approved_deals / b.self_reported_appointments : null;
     });
     // by_product
     Object.keys(m.by_product).forEach(function(product) {
       var p = m.by_product[product];
-      p.taaaan_rate = p.self_reported_appointments > 0 ? p.taaaan_entries / p.self_reported_appointments : null;
-      p.approval_rate = p.taaaan_entries > 0 ? p.approved_deals / p.taaaan_entries : null;
+      p.taaan_rate = p.self_reported_appointments > 0 ? p.taaan_entries / p.self_reported_appointments : null;
+      p.approval_rate = p.taaan_entries > 0 ? p.approved_deals / p.taaan_entries : null;
       p.true_approval_rate = p.self_reported_appointments > 0 ? p.approved_deals / p.self_reported_appointments : null;
     });
   });

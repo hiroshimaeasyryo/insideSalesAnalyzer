@@ -1,13 +1,13 @@
 {
   "metadata": {
     "report_period": "2024-12",
-    "generated_at": "2025-07-07T13:41:23.795Z",
+    "generated_at": "2025-07-08T07:31:47.451Z",
     "report_type": "monthly_summary"
   },
   "key_metrics": {
-    "total_calls": 11874,
-    "total_hours": 1306.5,
-    "total_appointments": 207,
+    "total_calls": 11974,
+    "total_hours": 1317.5,
+    "total_appointments": 208,
     "total_deals": 0,
     "total_approved": 0,
     "total_rejected": 0,
@@ -32,9 +32,9 @@
       "approval_rate": 0
     },
     "福岡": {
-      "total_calls": 1331,
-      "total_hours": 140.5,
-      "total_appointments": 19,
+      "total_calls": 1431,
+      "total_hours": 151.5,
+      "total_appointments": 20,
       "total_deals": 0,
       "total_approved": 0,
       "total_revenue": 0,
@@ -74,9 +74,9 @@
   },
   "product_performance": {
     "Bill One経費": {
-      "total_calls": 2892,
-      "total_hours": 321.5,
-      "total_appointments": 48,
+      "total_calls": 2992,
+      "total_hours": 332.5,
+      "total_appointments": 49,
       "total_deals": 0,
       "total_approved": 0,
       "total_revenue": 0,
@@ -281,6 +281,18 @@
       "total_potential_revenue": 0,
       "approval_rate": 0
     },
+    "山本 剛央": {
+      "staff_name": "山本 剛央",
+      "branch": "福岡",
+      "total_calls": 360,
+      "total_hours": 35,
+      "total_appointments": 18,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
     "桐生 那南": {
       "staff_name": "桐生 那南",
       "branch": null,
@@ -292,25 +304,13 @@
       "total_revenue": 0,
       "total_potential_revenue": 0,
       "approval_rate": 0
-    },
-    "生野 佑真": {
-      "staff_name": "生野 佑真",
-      "branch": null,
-      "total_calls": 348,
-      "total_hours": 36.5,
-      "total_appointments": 13,
-      "total_deals": 0,
-      "total_approved": 0,
-      "total_revenue": 0,
-      "total_potential_revenue": 0,
-      "approval_rate": 0
     }
   },
   "retention_metrics": {
     "total_staff": 111,
-    "active_staff": 6,
-    "high_risk_staff": 100,
-    "medium_risk_staff": 11,
+    "active_staff": 23,
+    "high_risk_staff": 95,
+    "medium_risk_staff": 16,
     "low_risk_staff": 0,
     "retention_rate": "47.31"
   },
@@ -318,7 +318,7 @@
     {
       "type": "critical",
       "message": "高リスク学生が危険レベルを超えています",
-      "value": "100名",
+      "value": "95名",
       "threshold": "15名"
     }
   ]
