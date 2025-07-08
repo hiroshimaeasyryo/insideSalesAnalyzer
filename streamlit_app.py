@@ -630,30 +630,48 @@ elif authentication_status:
                     # カラム名を統一
                     daily_trend.columns = ['date', 'total_calls', 'successful_calls', 'appointments']
                     
-                    # 日付をdatetimeに変換
+                    # 日付をdatetimeに変換（UTC→JST変換）
+                    daily_trend['date'] = pd.to_datetime(daily_trend['date'], utc=True).dt.tz_convert('Asia/Tokyo').dt.date
                     daily_trend['date'] = pd.to_datetime(daily_trend['date'])
+                    # ポイントを日付の中央（12:00）に配置
+                    daily_trend['date'] = daily_trend['date'] + pd.Timedelta(hours=12)
                     daily_trend = daily_trend.sort_values('date')
                     
                     # 土日判定を追加
                     daily_trend['is_weekend'] = daily_trend['date'].dt.dayofweek.isin([5, 6])  # 5=土曜日, 6=日曜日
                     
+                    # 土日ハイライト用の全日付範囲を作成（JST時間で）
+                    if not daily_trend.empty:
+                        # JST時間での日付範囲を作成
+                        date_range = pd.date_range(
+                            start=daily_trend['date'].min(),
+                            end=daily_trend['date'].max(),
+                            freq='D',
+                            tz='Asia/Tokyo'  # 日本時間で作成
+                        )
+                        weekend_dates = [d for d in date_range if d.weekday() >= 5]  # 土日のみ
+                    else:
+                        weekend_dates = []
+                    
                     with trend_tab1:
                         # 日別トレンドグラフ
                         fig_trend = go.Figure()
                         
-                        # 土日の背景色を追加
-                        for i, row in daily_trend.iterrows():
-                            if row['is_weekend']:
-                                fig_trend.add_vrect(
-                                    x0=row['date'] - pd.Timedelta(hours=12),
-                                    x1=row['date'] + pd.Timedelta(hours=12),
-                                    fillcolor="lightgray",
-                                    opacity=0.3,
-                                    layer="below",
-                                    line_width=0,
-                                    annotation_text="" if i == daily_trend.index[0] or not daily_trend.loc[i-1, 'is_weekend'] else "",
-                                    annotation_position="top left"
-                                )
+                        # 土日の背景色を追加（視覚効果のため半日前倒し）
+                        for weekend_date in weekend_dates:
+                            # タイムゾーンを除去して日付のみで範囲指定
+                            date_start = weekend_date.replace(tzinfo=None)
+                            # 視覚効果のため半日前倒し（前日の12:00から当日の12:00まで）
+                            visual_start = date_start - pd.Timedelta(hours=12)
+                            visual_end = date_start + pd.Timedelta(hours=12)
+                            fig_trend.add_vrect(
+                                x0=visual_start,
+                                x1=visual_end,
+                                fillcolor="lightgray",
+                                opacity=0.3,
+                                layer="below",
+                                line_width=0
+                            )
                         
                         # 総架電数
                         fig_trend.add_trace(go.Scatter(
@@ -662,7 +680,8 @@ elif authentication_status:
                             mode='lines+markers',
                             name='総架電数',
                             line=dict(color='blue', width=2),
-                            yaxis='y1'
+                            yaxis='y1',
+                            hovertemplate='%{x|%Y/%m/%d}<br>総架電数: %{y}件<extra></extra>'
                         ))
                         # 担当コネクト数
                         fig_trend.add_trace(go.Scatter(
@@ -671,7 +690,8 @@ elif authentication_status:
                             mode='lines+markers',
                             name='担当コネクト数',
                             line=dict(color='green', width=2),
-                            yaxis='y1'
+                            yaxis='y1',
+                            hovertemplate='%{x|%Y/%m/%d}<br>担当コネクト数: %{y}件<extra></extra>'
                         ))
                         # アポ獲得数（右軸）
                         fig_trend.add_trace(go.Scatter(
@@ -680,7 +700,8 @@ elif authentication_status:
                             mode='lines+markers',
                             name='アポ獲得数(右軸)',
                             line=dict(color='red', width=2, dash='dot'),
-                            yaxis='y2'
+                            yaxis='y2',
+                            hovertemplate='%{x|%Y/%m/%d}<br>アポ獲得数: %{y}件<extra></extra>'
                         ))
                         
                         fig_trend.update_layout(
@@ -689,7 +710,12 @@ elif authentication_status:
                             yaxis=dict(title='件数', side='left', showgrid=True, zeroline=True),
                             yaxis2=dict(title='アポ獲得数', side='right', overlaying='y', showgrid=False, zeroline=False),
                             height=400,
-                            legend=dict(orientation='h')
+                            legend=dict(orientation='h'),
+                            # 日本人にわかりやすい日付形式
+                            xaxis=dict(
+                                tickformat='%Y/%m/%d',
+                                hoverformat='%Y/%m/%d'
+                            )
                         )
                         
                         st.plotly_chart(fig_trend, use_container_width=True)
@@ -702,19 +728,21 @@ elif authentication_status:
                         
                         fig_cumulative = go.Figure()
                         
-                        # 土日の背景色を追加
-                        for i, row in daily_trend.iterrows():
-                            if row['is_weekend']:
-                                fig_cumulative.add_vrect(
-                                    x0=row['date'] - pd.Timedelta(hours=12),
-                                    x1=row['date'] + pd.Timedelta(hours=12),
-                                    fillcolor="lightgray",
-                                    opacity=0.3,
-                                    layer="below",
-                                    line_width=0,
-                                    annotation_text="" if i == daily_trend.index[0] or not daily_trend.loc[i-1, 'is_weekend'] else "",
-                                    annotation_position="top left"
-                                )
+                        # 土日の背景色を追加（視覚効果のため半日前倒し）
+                        for weekend_date in weekend_dates:
+                            # タイムゾーンを除去して日付のみで範囲指定
+                            date_start = weekend_date.replace(tzinfo=None)
+                            # 視覚効果のため半日前倒し（前日の12:00から当日の12:00まで）
+                            visual_start = date_start - pd.Timedelta(hours=12)
+                            visual_end = date_start + pd.Timedelta(hours=12)
+                            fig_cumulative.add_vrect(
+                                x0=visual_start,
+                                x1=visual_end,
+                                fillcolor="lightgray",
+                                opacity=0.3,
+                                layer="below",
+                                line_width=0
+                            )
                         
                         # 累計総架電数
                         fig_cumulative.add_trace(go.Scatter(
@@ -723,7 +751,8 @@ elif authentication_status:
                             mode='lines+markers',
                             name='累計総架電数',
                             line=dict(color='blue', width=2),
-                            yaxis='y1'
+                            yaxis='y1',
+                            hovertemplate='%{x|%Y/%m/%d}<br>累計総架電数: %{y}件<extra></extra>'
                         ))
                         # 累計担当コネクト数
                         fig_cumulative.add_trace(go.Scatter(
@@ -732,7 +761,8 @@ elif authentication_status:
                             mode='lines+markers',
                             name='累計担当コネクト数',
                             line=dict(color='green', width=2),
-                            yaxis='y1'
+                            yaxis='y1',
+                            hovertemplate='%{x|%Y/%m/%d}<br>累計担当コネクト数: %{y}件<extra></extra>'
                         ))
                         # 累計アポ獲得数（右軸）
                         fig_cumulative.add_trace(go.Scatter(
@@ -741,7 +771,8 @@ elif authentication_status:
                             mode='lines+markers',
                             name='累計アポ獲得数(右軸)',
                             line=dict(color='red', width=2, dash='dot'),
-                            yaxis='y2'
+                            yaxis='y2',
+                            hovertemplate='%{x|%Y/%m/%d}<br>累計アポ獲得数: %{y}件<extra></extra>'
                         ))
                         
                         fig_cumulative.update_layout(
@@ -750,7 +781,12 @@ elif authentication_status:
                             yaxis=dict(title='累計件数', side='left', showgrid=True, zeroline=True),
                             yaxis2=dict(title='累計アポ獲得数', side='right', overlaying='y', showgrid=False, zeroline=False),
                             height=400,
-                            legend=dict(orientation='h')
+                            legend=dict(orientation='h'),
+                            # 日本人にわかりやすい日付形式
+                            xaxis=dict(
+                                tickformat='%Y/%m/%d',
+                                hoverformat='%Y/%m/%d'
+                            )
                         )
                         
                         st.plotly_chart(fig_cumulative, use_container_width=True)
