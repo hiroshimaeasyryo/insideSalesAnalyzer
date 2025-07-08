@@ -174,6 +174,24 @@ elif authentication_status:
             st.error(f"❌ 予期しないエラーが発生しました: {e}")
             st.write(f"エラーの詳細: {type(e).__name__}")
             return None, None, None
+
+    @st.cache_data
+    def load_retention_data(month):
+        """指定された月の定着率分析データを読み込み"""
+        try:
+            data_dir = get_data_dir()
+            if data_dir is None:
+                return {}
+            
+            retention_file = os.path.join(data_dir, f'定着率分析_{month}.json')
+            
+            if os.path.exists(retention_file):
+                with open(retention_file, 'r', encoding='utf-8') as f:
+                    return json.load(f)
+            return {}
+        except Exception as e:
+            st.error(f"定着率分析データ読み込みエラー: {str(e)}")
+            return {}
     
     # --- グラフ共通のlegend設定関数 ---
     def update_legend(fig):
@@ -1508,255 +1526,683 @@ elif authentication_status:
                     ※日報とTAAANは独立したデータソースのため、商材情報が異なる場合があります。
                     """)
                     
-                    # 日報データから商材別集計（1-3の指標）
-                    call_col = 'call_count' if 'call_count' in df_basic.columns else 'total_calls'
-                    appointment_col = 'get_appointment' if 'get_appointment' in df_basic.columns else 'appointments'
-                    success_col = 'charge_connected' if 'charge_connected' in df_basic.columns else 'successful_calls'
+                    # 商材別分析のサブタブ
+                    subtab1, subtab2, subtab3 = st.tabs(["📊 商材別パフォーマンス", "🔗 支部×商材クロス分析", "📈 商材別3ヶ月比較"])
                     
-                    # 日報データのみから商材別集計（1-3の指標）
-                    daily_product_summary = df_basic.groupby('product').agg({
-                        call_col: 'sum',
-                        success_col: 'sum',
-                        appointment_col: 'sum'
-                    }).reset_index()
-                    
-                    # カラム名を統一
-                    daily_product_summary.columns = ['product', 'total_calls', 'charge_connected', 'appointments']
-                    
-                    # TAAANデータから商材別集計（4-6の指標）
-                    taaan_product_summary = pd.DataFrame()
-                    taaan_product_data = []
-                    if 'product_performance' in summary_data:
-                        for product, data in summary_data['product_performance'].items():
-                            taaan_product_data.append({
-                                'product': product,
-                                'taaan_deals': data.get('total_deals', 0),
-                                'approved_deals': data.get('total_approved', 0),
-                                'total_revenue': data.get('total_revenue', 0),
-                                'total_potential_revenue': data.get('total_potential_revenue', 0)
-                            })
-                        taaan_product_summary = pd.DataFrame(taaan_product_data)
-                    else:
-                        st.warning("⚠️ **TAAANデータが見つかりません**: 商材別分析ではTAAAN関連の指標を表示できません")
-                    
-                    # 商材別グラフ（4つのグラフを2行で表示）
-                    st.subheader("商材別パフォーマンス")
-                    
-                    # 1行目: 架電数、担当コネクト数、アポ獲得数（日報データ）
-                    col1, col2, col3 = st.columns(3)
-                    
-                    with col1:
+                    with subtab1:
+                        # 商材別パフォーマンス
+                        st.subheader("商材別パフォーマンス")
+                        
+                        # 日報データから商材別集計（1-3の指標）
+                        call_col = 'call_count' if 'call_count' in df_basic.columns else 'total_calls'
+                        appointment_col = 'get_appointment' if 'get_appointment' in df_basic.columns else 'appointments'
+                        success_col = 'charge_connected' if 'charge_connected' in df_basic.columns else 'successful_calls'
+                        
+                        # 日報データのみから商材別集計（1-3の指標）
+                        daily_product_summary = df_basic.groupby('product').agg({
+                            call_col: 'sum',
+                            success_col: 'sum',
+                            appointment_col: 'sum'
+                        }).reset_index()
+                        
+                        # カラム名を統一
+                        daily_product_summary.columns = ['product', 'total_calls', 'charge_connected', 'appointments']
+                        
+                        # TAAANデータから商材別集計（4-6の指標）
+                        taaan_product_summary = pd.DataFrame()
+                        taaan_product_data = []
+                        if 'product_performance' in summary_data:
+                            for product, data in summary_data['product_performance'].items():
+                                taaan_product_data.append({
+                                    'product': product,
+                                    'taaan_deals': data.get('total_deals', 0),
+                                    'approved_deals': data.get('total_approved', 0),
+                                    'total_revenue': data.get('total_revenue', 0),
+                                    'total_potential_revenue': data.get('total_potential_revenue', 0)
+                                })
+                            taaan_product_summary = pd.DataFrame(taaan_product_data)
+                        else:
+                            st.warning("⚠️ **TAAANデータが見つかりません**: 商材別分析ではTAAAN関連の指標を表示できません")
+                        
+                        # 商材別グラフ（6つのグラフを2行で表示）
+                        
+                        # 1行目: 架電数、担当コネクト数、アポ獲得数（日報データ）
+                        col1, col2, col3 = st.columns(3)
+                        
+                        with col1:
+                            if not daily_product_summary.empty:
+                                fig_product_calls = px.bar(
+                                    daily_product_summary,
+                                    x='product',
+                                    y='total_calls',
+                                    title="商材別架電数（日報データ）",
+                                    color_discrete_sequence=['#1976d2']  # 青
+                                )
+                                fig_product_calls.update_layout(
+                                    height=350,
+                                    yaxis=dict(tickformat=',', separatethousands=True)
+                                )
+                                st.plotly_chart(fig_product_calls, use_container_width=True)
+                            else:
+                                st.info("日報データがありません")
+                        
+                        with col2:
+                            if not daily_product_summary.empty:
+                                fig_product_connect = px.bar(
+                                    daily_product_summary,
+                                    x='product',
+                                    y='charge_connected',
+                                    title="商材別担当コネクト数（日報データ）",
+                                    color_discrete_sequence=['#388e3c']  # 緑
+                                )
+                                fig_product_connect.update_layout(
+                                    height=350,
+                                    yaxis=dict(tickformat=',', separatethousands=True)
+                                )
+                                st.plotly_chart(fig_product_connect, use_container_width=True)
+                            else:
+                                st.info("日報データがありません")
+                        
+                        with col3:
+                            if not daily_product_summary.empty:
+                                fig_product_appointments = px.bar(
+                                    daily_product_summary,
+                                    x='product',
+                                    y='appointments',
+                                    title="商材別アポ獲得数（日報データ）",
+                                    color_discrete_sequence=['#f57c00']  # オレンジ
+                                )
+                                fig_product_appointments.update_layout(
+                                    height=350,
+                                    yaxis=dict(tickformat=',', separatethousands=True)
+                                )
+                                st.plotly_chart(fig_product_appointments, use_container_width=True)
+                            else:
+                                st.info("日報データがありません")
+                        
+                        # 2行目: TAAAN商談数、承認数、売上（TAAANデータ）
+                        col4, col5, col6 = st.columns(3)
+                        
+                        with col4:
+                            if not taaan_product_summary.empty:
+                                fig_product_taaan = px.bar(
+                                    taaan_product_summary,
+                                    x='product',
+                                    y='taaan_deals',
+                                    title="商材別TAAAN商談数（TAAANデータ）",
+                                    color_discrete_sequence=['#7b1fa2']  # 紫
+                                )
+                                fig_product_taaan.update_layout(
+                                    height=350,
+                                    yaxis=dict(tickformat=',', separatethousands=True)
+                                )
+                                st.plotly_chart(fig_product_taaan, use_container_width=True)
+                            else:
+                                st.info("TAAANデータがありません")
+                        
+                        with col5:
+                            if not taaan_product_summary.empty:
+                                fig_product_approved = px.bar(
+                                    taaan_product_summary,
+                                    x='product',
+                                    y='approved_deals',
+                                    title="商材別承認数（TAAANデータ）",
+                                    color_discrete_sequence=['#c62828']  # 赤
+                                )
+                                fig_product_approved.update_layout(
+                                    height=350,
+                                    yaxis=dict(tickformat=',', separatethousands=True)
+                                )
+                                st.plotly_chart(fig_product_approved, use_container_width=True)
+                            else:
+                                st.info("TAAANデータがありません")
+                        
+                        with col6:
+                            if not taaan_product_summary.empty:
+                                fig_product_revenue = px.bar(
+                                    taaan_product_summary,
+                                    x='product',
+                                    y='total_revenue',
+                                    title="商材別確定売上（TAAANデータ）",
+                                    color_discrete_sequence=['#00695c']  # ダークグリーン
+                                )
+                                fig_product_revenue.update_layout(
+                                    height=350,
+                                    yaxis=dict(tickformat=',', separatethousands=True)
+                                )
+                                st.plotly_chart(fig_product_revenue, use_container_width=True)
+                            else:
+                                st.info("TAAANデータがありません")
+                        
+                        # 商材別詳細テーブル
+                        st.subheader("商材別詳細")
+                        
+                        # 日報データの詳細テーブル
                         if not daily_product_summary.empty:
-                            fig_product_calls = px.bar(
-                                daily_product_summary,
-                                x='product',
-                                y='total_calls',
-                                title="商材別架電数（日報データ）",
-                                color_discrete_sequence=['#1976d2']  # 青
+                            st.subheader("📊 日報データ（架電数・担当コネクト数・アポ獲得数）")
+                            
+                            # 変換率の計算
+                            daily_product_summary['connect_rate'] = (
+                                (daily_product_summary['charge_connected'] / daily_product_summary['total_calls'] * 100)
+                                .fillna(0)
+                                .round(1)
                             )
-                            fig_product_calls.update_layout(
-                                height=350,
-                                yaxis=dict(tickformat=',', separatethousands=True)
+                            daily_product_summary['appointment_rate'] = (
+                                (daily_product_summary['appointments'] / daily_product_summary['charge_connected'] * 100)
+                                .fillna(0)
+                                .round(1)
                             )
-                            st.plotly_chart(fig_product_calls, use_container_width=True)
-                        else:
-                            st.info("日報データがありません")
                     
-                    with col2:
-                        if not daily_product_summary.empty:
-                            fig_product_connect = px.bar(
-                                daily_product_summary,
-                                x='product',
-                                y='charge_connected',
-                                title="商材別担当コネクト数（日報データ）",
-                                color_discrete_sequence=['#388e3c']  # 緑
-                            )
-                            fig_product_connect.update_layout(
-                                height=350,
-                                yaxis=dict(tickformat=',', separatethousands=True)
-                            )
-                            st.plotly_chart(fig_product_connect, use_container_width=True)
-                        else:
-                            st.info("日報データがありません")
+                    # 表示するカラムを選択
+                            daily_display_columns = [
+                        'product', 'total_calls', 'charge_connected', 'appointments', 
+                                'connect_rate', 'appointment_rate'
+                    ]
                     
-                    with col3:
-                        if not daily_product_summary.empty:
-                            fig_product_appointments = px.bar(
-                                daily_product_summary,
-                                x='product',
-                                y='appointments',
-                                title="商材別アポ獲得数（日報データ）",
-                                color_discrete_sequence=['#f57c00']  # オレンジ
-                            )
-                            fig_product_appointments.update_layout(
-                                height=350,
-                                yaxis=dict(tickformat=',', separatethousands=True)
-                            )
-                            st.plotly_chart(fig_product_appointments, use_container_width=True)
-                        else:
-                            st.info("日報データがありません")
+                    # カラム名の日本語マッピング
+                            daily_column_labels = {
+                        'product': '商材',
+                        'total_calls': '総架電数',
+                        'charge_connected': '担当コネクト数',
+                        'appointments': 'アポ獲得数',
+                        'connect_rate': '担当コネクト率(%)',
+                                'appointment_rate': 'アポ獲得率(%)'
+                    }
                     
-                    # 2行目: TAAAN商談数、承認数、売上（TAAANデータ）
-                    col4, col5, col6 = st.columns(3)
+                    # 合計行を追加
+                            daily_total_row = {
+                        'product': '合計',
+                                'total_calls': daily_product_summary['total_calls'].sum(),
+                                'charge_connected': daily_product_summary['charge_connected'].sum(),
+                                'appointments': daily_product_summary['appointments'].sum(),
+                                'connect_rate': 0,  # 合計行では計算しない
+                                'appointment_rate': 0  # 合計行では計算しない
+                            }
+                            
+                            # 合計行を追加
+                            daily_display_data = pd.concat([
+                                daily_product_summary[daily_display_columns],
+                                pd.DataFrame([daily_total_row])
+                    ], ignore_index=True)
                     
-                    with col4:
+                            # テーブル表示
+                            st.dataframe(
+                                daily_display_data.rename(columns=daily_column_labels),
+                                use_container_width=True,
+                                hide_index=True
+                            )
+                        
+                        # TAAANデータの詳細テーブル
                         if not taaan_product_summary.empty:
-                            fig_product_taaan = px.bar(
-                                taaan_product_summary,
-                                x='product',
-                                y='taaan_deals',
-                                title="商材別TAAAN商談数（TAAANデータ）",
-                                color_discrete_sequence=['#7b1fa2']  # 紫
+                            st.subheader("📈 TAAANデータ（TAAAN商談数・承認数・確定売上）")
+                            
+                            # 承認率の計算
+                            taaan_product_summary['approval_rate'] = (
+                                (taaan_product_summary['approved_deals'] / taaan_product_summary['taaan_deals'] * 100)
+                                .fillna(0)
+                                .round(1)
                             )
-                            fig_product_taaan.update_layout(
-                                height=350,
-                                yaxis=dict(tickformat=',', separatethousands=True)
-                            )
-                            st.plotly_chart(fig_product_taaan, use_container_width=True)
-                        else:
-                            st.info("TAAANデータがありません")
+                            
+                            # 表示するカラムを選択
+                            taaan_display_columns = [
+                                'product', 'taaan_deals', 'approved_deals', 'total_revenue', 'total_potential_revenue',
+                                'approval_rate'
+                            ]
+                            
+                            # カラム名の日本語マッピング
+                            taaan_column_labels = {
+                                'product': '商材',
+                                'taaan_deals': 'TAAAN商談数',
+                                'approved_deals': '承認数',
+                                'total_revenue': '確定売上',
+                                'total_potential_revenue': '潜在売上',
+                                'approval_rate': '承認率(%)'
+                            }
+                            
+                            # 合計行を追加
+                            taaan_total_row = {
+                                'product': '合計',
+                                'taaan_deals': taaan_product_summary['taaan_deals'].sum(),
+                                'approved_deals': taaan_product_summary['approved_deals'].sum(),
+                                'total_revenue': taaan_product_summary['total_revenue'].sum(),
+                                'total_potential_revenue': taaan_product_summary['total_potential_revenue'].sum(),
+                                'approval_rate': 0  # 合計行では計算しない
+                            }
+                            
+                            # 合計行を追加
+                            taaan_display_data = pd.concat([
+                                taaan_product_summary[taaan_display_columns],
+                                pd.DataFrame([taaan_total_row])
+                            ], ignore_index=True)
+                            
+                            # テーブル表示
+                    st.dataframe(
+                                taaan_display_data.rename(columns=taaan_column_labels),
+                        use_container_width=True,
+                        hide_index=True
+                    )
                     
-                    with col5:
-                        if not taaan_product_summary.empty:
-                            fig_product_approved = px.bar(
-                                taaan_product_summary,
-                                x='product',
-                                y='approved_deals',
-                                title="商材別承認数（TAAANデータ）",
-                                color_discrete_sequence=['#c62828']  # 赤
-                            )
-                            fig_product_approved.update_layout(
-                                height=350,
-                                yaxis=dict(tickformat=',', separatethousands=True)
-                            )
-                            st.plotly_chart(fig_product_approved, use_container_width=True)
-                        else:
-                            st.info("TAAANデータがありません")
-                    
-                    with col6:
-                        if not taaan_product_summary.empty:
-                            fig_product_revenue = px.bar(
-                                taaan_product_summary,
-                                x='product',
-                                y='total_revenue',
-                                title="商材別確定売上（TAAANデータ）",
-                                color_discrete_sequence=['#00695c']  # 濃い緑
-                            )
-                            fig_product_revenue.update_layout(
-                                height=350,
-                                yaxis=dict(tickformat=',', separatethousands=True)
-                            )
-                            st.plotly_chart(fig_product_revenue, use_container_width=True)
-                        else:
-                            st.info("TAAANデータがありません")
-                    
-                    # 商材別詳細テーブル
-                    st.subheader("商材別詳細")
-                    
-                    # 日報データの詳細テーブル
-                    if not daily_product_summary.empty:
-                        st.subheader("📊 日報データ（架電数・担当コネクト数・アポ獲得数）")
+                    with subtab2:
+                        # 支部×商材クロス分析
+                        st.subheader("支部×商材クロス分析")
                         
-                        # 変換率の計算
-                        daily_product_summary['connect_rate'] = (
-                            (daily_product_summary['charge_connected'] / daily_product_summary['total_calls'] * 100)
-                            .fillna(0)
-                            .round(1)
-                        )
-                        daily_product_summary['appointment_rate'] = (
-                            (daily_product_summary['appointments'] / daily_product_summary['charge_connected'] * 100)
-                            .fillna(0)
-                            .round(1)
-                        )
+                        # 分析指標の選択（ボタン形式）
+                        st.write("**分析指標を選択**")
+                        col1, col2, col3, col4, col5, col6 = st.columns(6)
                         
-                        # 表示するカラムを選択
-                        daily_display_columns = [
-                            'product', 'total_calls', 'charge_connected', 'appointments',
-                            'connect_rate', 'appointment_rate'
-                        ]
+                        with col1:
+                            if st.button("📞 架電数", use_container_width=True, key="btn_calls"):
+                                st.session_state.analysis_metric = "架電数"
+                        with col2:
+                            if st.button("📱 担当コネクト数", use_container_width=True, key="btn_connects"):
+                                st.session_state.analysis_metric = "担当コネクト数"
+                        with col3:
+                            if st.button("📅 アポ獲得数", use_container_width=True, key="btn_appointments"):
+                                st.session_state.analysis_metric = "アポ獲得数"
+                        with col4:
+                            if st.button("💼 TAAAN商談数", use_container_width=True, key="btn_taaan"):
+                                st.session_state.analysis_metric = "TAAAN商談数"
+                        with col5:
+                            if st.button("✅ 承認数", use_container_width=True, key="btn_approved"):
+                                st.session_state.analysis_metric = "承認数"
+                        with col6:
+                            if st.button("💰 確定売上", use_container_width=True, key="btn_revenue"):
+                                st.session_state.analysis_metric = "確定売上"
                         
-                        # カラム名の日本語マッピング
-                        daily_column_labels = {
-                            'product': '商材',
-                            'total_calls': '総架電数',
-                            'charge_connected': '担当コネクト数',
-                            'appointments': 'アポ獲得数',
-                            'connect_rate': '担当コネクト率(%)',
-                            'appointment_rate': 'アポ獲得率(%)'
+                        # デフォルトの分析指標を設定
+                        if 'analysis_metric' not in st.session_state:
+                            st.session_state.analysis_metric = "架電数"
+                        
+                        analysis_metric = st.session_state.analysis_metric
+                        
+                        # 現在選択されている指標を表示
+                        st.info(f"📊 現在の分析指標: **{analysis_metric}**")
+                        
+                        # 日報データから支部×商材のクロス集計
+                        if analysis_metric in ["架電数", "担当コネクト数", "アポ獲得数"]:
+                            if not df_basic.empty:
+                                metric_mapping = {
+                                    "架電数": call_col,
+                                    "担当コネクト数": success_col,
+                                    "アポ獲得数": appointment_col
+                                }
+                                
+                                # 支部×商材のピボットテーブル作成
+                                pivot_data = df_basic.pivot_table(
+                                    values=metric_mapping[analysis_metric],
+                                    index='branch',
+                                    columns='product',
+                                    aggfunc='sum',
+                                    fill_value=0
+                                )
+                                
+                                st.subheader(f"支部×商材 {analysis_metric}マトリックス（日報データ）")
+                                
+                                # ヒートマップ表示
+                                fig_heatmap = px.imshow(
+                                    pivot_data.values,
+                                    x=pivot_data.columns,
+                                    y=pivot_data.index,
+                                    aspect='auto',
+                                    color_continuous_scale='Blues',
+                                    title=f"支部×商材 {analysis_metric}ヒートマップ",
+                                    text_auto=True  # 値を表示
+                                )
+                                fig_heatmap.update_layout(
+                                    height=500,
+                                    xaxis_title="商材",
+                                    yaxis_title="支部"
+                                )
+                                st.plotly_chart(fig_heatmap, use_container_width=True)
+                                
+                                # データテーブル表示
+                                st.subheader("詳細データ")
+                                st.dataframe(pivot_data, use_container_width=True)
+                            else:
+                                st.info("日報データがありません")
+                        
+                        # TAAANデータのクロス分析は現在のデータ構造では対応不可
+                        elif analysis_metric in ["TAAAN商談数", "承認数", "確定売上"]:
+                            st.info(f"💡 **{analysis_metric}の支部×商材クロス分析**は現在のデータ構造では対応していません。")
+                    
+                    with subtab3:
+                        # 商材別3ヶ月比較
+                        st.subheader("商材別3ヶ月比較")
+                        
+                        # 現在の月から過去3ヶ月のデータを取得
+                        def get_prev_months(month_str, n=3):
+                            try:
+                                from datetime import datetime, timedelta
+                                import calendar
+                                
+                                # 月文字列をパース
+                                year, month = map(int, month_str.split('-'))
+                                months = []
+                                
+                                for i in range(n):
+                                    if month - i <= 0:
+                                        new_month = 12 + (month - i)
+                                        new_year = year - 1
+                                    else:
+                                        new_month = month - i
+                                        new_year = year
+                                    months.append(f"{new_year:04d}-{new_month:02d}")
+                                
+                                return months[::-1]  # 古い順に並び替え
+                            except:
+                                return [month_str]
+                        
+                        target_months = get_prev_months(selected_month, 3)
+                        
+                        # 過去3ヶ月のデータを読み込み（日報データとTAAANデータを分離）
+                        monthly_daily_data = {}  # 日報データ
+                        monthly_taaan_data = {}  # TAAANデータ
+                        
+                        for month in target_months:
+                            try:
+                                basic_data, detail_data, summary_data = load_data(month)
+                                
+                                # 日報データ（monthly_analysis）を取得
+                                if basic_data and 'monthly_analysis' in basic_data and month in basic_data['monthly_analysis']:
+                                    try:
+                                        # extract_daily_activity_from_staff関数を使用してデータを抽出
+                                        staff_dict = basic_data["monthly_analysis"][month]["staff"]
+                                        basic_df = extract_daily_activity_from_staff(staff_dict)
+                                        
+                                        if not basic_df.empty and 'product' in basic_df.columns:
+                                            # カラム名を動的に決定
+                                            call_col_name = 'call_count' if 'call_count' in basic_df.columns else 'total_calls'
+                                            success_col_name = 'charge_connected' if 'charge_connected' in basic_df.columns else 'successful_calls'
+                                            appointment_col_name = 'get_appointment' if 'get_appointment' in basic_df.columns else 'appointments'
+                                            
+                                            daily_summary = basic_df.groupby('product').agg({
+                                                call_col_name: 'sum',
+                                                success_col_name: 'sum',
+                                                appointment_col_name: 'sum'
+                                            }).reset_index()
+                                            
+                                            # カラム名を統一
+                                            daily_summary.columns = ['product', 'call_count', 'charge_connected', 'get_appointment']
+                                            daily_summary['month'] = month
+                                            monthly_daily_data[month] = daily_summary
+                                    except Exception as e:
+                                        st.warning(f"⚠️ {month}の日報データ抽出に失敗: {str(e)}")
+                                
+                                # TAAANデータ（月次サマリー）を取得
+                                if summary_data and 'product_performance' in summary_data:
+                                    taaan_product_data = []
+                                    for product, data in summary_data['product_performance'].items():
+                                        taaan_product_data.append({
+                                            'product': product,
+                                            'taaan_deals': data.get('total_deals', 0),
+                                            'approved_deals': data.get('approved_deals', 0),
+                                            'total_revenue': data.get('total_revenue', 0),
+                                            'month': month
+                                        })
+                                    if taaan_product_data:
+                                        taaan_summary = pd.DataFrame(taaan_product_data)
+                                        monthly_taaan_data[month] = taaan_summary
+                                    
+                            except Exception as e:
+                                st.warning(f"⚠️ {month}のデータ読み込みに失敗: {str(e)}")
+                                continue
+                        
+                        # デバッグ情報
+                        st.info(f"🔍 **対象月**: {', '.join(target_months)}")
+                        st.info(f"📊 **日報データ読み込み成功月**: {', '.join(monthly_daily_data.keys()) if monthly_daily_data else 'なし'}")
+                        st.info(f"💼 **TAAANデータ読み込み成功月**: {', '.join(monthly_taaan_data.keys()) if monthly_taaan_data else 'なし'}")
+                        
+                        # カスタムスタイル設定
+                        st.markdown("""
+                        <style>
+                        .stButton > button {
+                            width: 100%;
+                            margin: 4px 0;
                         }
-                        
-                        # 合計行を追加
-                        daily_total_row = {
-                            'product': '合計',
-                            'total_calls': daily_product_summary['total_calls'].sum(),
-                            'charge_connected': daily_product_summary['charge_connected'].sum(),
-                            'appointments': daily_product_summary['appointments'].sum(),
-                            'connect_rate': 0,  # 合計行では計算しない
-                            'appointment_rate': 0  # 合計行では計算しない
+                        .data-source-info {
+                            background-color: #f8f9fa;
+                            border: 2px dashed #dee2e6;
+                            border-radius: 12px;
+                            padding: 20px;
+                            text-align: center;
+                            color: #6c757d;
+                            margin: 8px 0;
                         }
+                        </style>
+                        """, unsafe_allow_html=True)
                         
-                        # 合計行を追加
-                        daily_display_data = pd.concat([
-                            daily_product_summary[daily_display_columns],
-                            pd.DataFrame([daily_total_row])
-                        ], ignore_index=True)
+                        # レイアウトを2カラムに分割
+                        sidebar_col, main_col = st.columns([1, 3])
                         
-                        # テーブル表示
-                        st.dataframe(
-                            daily_display_data.rename(columns=daily_column_labels),
-                            use_container_width=True,
-                            hide_index=True
-                        )
-                    
-                    # TAAANデータの詳細テーブル
-                    if not taaan_product_summary.empty:
-                        st.subheader("📈 TAAANデータ（TAAAN商談数・承認数・確定売上）")
+                        # データソース選択（モダンなカードデザイン）
+                        with sidebar_col:
+                            st.markdown("#### データソース選択")
+                            
+                            # データの存在チェック
+                            daily_available = bool(monthly_daily_data)
+                            taaan_available = bool(monthly_taaan_data)
+                            
+                            # セッション状態でデータソース選択を管理
+                            if 'selected_data_source' not in st.session_state:
+                                if daily_available:
+                                    st.session_state.selected_data_source = "daily"
+                                elif taaan_available:
+                                    st.session_state.selected_data_source = "taaan"
+                                else:
+                                    st.session_state.selected_data_source = None
+                            
+                            # 日報データボタン
+                            if daily_available:
+                                daily_active = st.session_state.selected_data_source == "daily"
+                                
+                                if st.button(
+                                    "📊 日報データ", 
+                                    key="daily_card_button",
+                                    help="架電数・担当コネクト・アポ獲得の日報データを表示",
+                                    use_container_width=True,
+                                    type="primary" if daily_active else "secondary"
+                                ):
+                                    st.session_state.selected_data_source = "daily"
+                                    st.rerun()
+                            
+                            # TAAANデータボタン
+                            if taaan_available:
+                                taaan_active = st.session_state.selected_data_source == "taaan"
+                                
+                                if st.button(
+                                    "💼 TAAANデータ", 
+                                    key="taaan_card_button",
+                                    help="TAAAN商談数・承認数・確定売上データを表示",
+                                    use_container_width=True,
+                                    type="primary" if taaan_active else "secondary"
+                                ):
+                                    st.session_state.selected_data_source = "taaan"
+                                    st.rerun()
+                            
+                            # 利用可能なデータがない場合
+                            if not daily_available and not taaan_available:
+                                st.markdown("""
+                                <div class="data-source-info">
+                                    <div style="font-size: 24px; margin-bottom: 8px;">❌</div>
+                                    <div>データが見つかりません</div>
+                                </div>
+                                """, unsafe_allow_html=True)
                         
-                        # 承認率の計算
-                        taaan_product_summary['approval_rate'] = (
-                            (taaan_product_summary['approved_deals'] / taaan_product_summary['taaan_deals'] * 100)
-                            .fillna(0)
-                            .round(1)
-                        )
-                        
-                        # 表示するカラムを選択
-                        taaan_display_columns = [
-                            'product', 'taaan_deals', 'approved_deals', 'total_revenue', 'total_potential_revenue',
-                            'approval_rate'
-                        ]
-                        
-                        # カラム名の日本語マッピング
-                        taaan_column_labels = {
-                            'product': '商材',
-                            'taaan_deals': 'TAAAN商談数',
-                            'approved_deals': '承認数',
-                            'total_revenue': '確定売上',
-                            'total_potential_revenue': '潜在売上',
-                            'approval_rate': '承認率(%)'
-                        }
-                        
-                        # 合計行を追加
-                        taaan_total_row = {
-                            'product': '合計',
-                            'taaan_deals': taaan_product_summary['taaan_deals'].sum(),
-                            'approved_deals': taaan_product_summary['approved_deals'].sum(),
-                            'total_revenue': taaan_product_summary['total_revenue'].sum(),
-                            'total_potential_revenue': taaan_product_summary['total_potential_revenue'].sum(),
-                            'approval_rate': 0  # 合計行では計算しない
-                        }
-                        
-                        # 合計行を追加
-                        taaan_display_data = pd.concat([
-                            taaan_product_summary[taaan_display_columns],
-                            pd.DataFrame([taaan_total_row])
-                        ], ignore_index=True)
-                        
-                        # テーブル表示
-                        st.dataframe(
-                            taaan_display_data.rename(columns=taaan_column_labels),
-                            use_container_width=True,
-                            hide_index=True
-                        )
+                        # メインコンテンツエリア
+                        with main_col:
+                            if not daily_available and not taaan_available:
+                                st.warning("過去3ヶ月のデータが見つかりません。")
+                            elif st.session_state.selected_data_source == "daily" and daily_available:
+                                # 日報データの3ヶ月比較
+                                st.markdown("### 📊 日報データ（架電数、担当コネクト数、アポ獲得数）の3ヶ月推移")
+                                
+                                # 全ての月の日報データを結合
+                                all_daily_data = pd.concat(monthly_daily_data.values(), ignore_index=True)
+                                
+                                # 指標選択ボタン
+                                st.markdown("#### 比較指標")
+                                daily_metric_options = ["架電数", "担当コネクト数", "アポ獲得数"]
+                                daily_metric_cols = st.columns(len(daily_metric_options))
+                                
+                                # セッション状態で選択された指標を管理
+                                if 'daily_selected_metric' not in st.session_state:
+                                    st.session_state.daily_selected_metric = "架電数"
+                                
+                                for i, metric in enumerate(daily_metric_options):
+                                    with daily_metric_cols[i]:
+                                        if st.button(
+                                            metric,
+                                            key=f"daily_metric_{metric}",
+                                            use_container_width=True,
+                                            type="primary" if st.session_state.daily_selected_metric == metric else "secondary"
+                                        ):
+                                            st.session_state.daily_selected_metric = metric
+                                
+                                daily_comparison_metric = st.session_state.daily_selected_metric
+                                
+                                # 商材選択
+                                available_daily_products = sorted(all_daily_data['product'].unique())
+                                selected_daily_products = st.multiselect(
+                                    "比較したい商材を選択（複数選択可）",
+                                    available_daily_products,
+                                    default=available_daily_products[:5] if len(available_daily_products) >= 5 else available_daily_products,
+                                    key="daily_products"
+                                )
+                                
+                                if selected_daily_products:
+                                    # 選択された商材のデータをフィルタ
+                                    filtered_daily_data = all_daily_data[all_daily_data['product'].isin(selected_daily_products)]
+                                    
+                                    daily_metric_col_mapping = {
+                                        "架電数": "call_count",
+                                        "担当コネクト数": "charge_connected",
+                                        "アポ獲得数": "get_appointment"
+                                    }
+                                    
+                                    # 月次推移グラフ
+                                    fig_daily_trend = px.line(
+                                        filtered_daily_data,
+                                        x='month',
+                                        y=daily_metric_col_mapping[daily_comparison_metric],
+                                        color='product',
+                                        title=f"日報データ: 商材別{daily_comparison_metric}の3ヶ月推移",
+                                        markers=True
+                                    )
+                                    fig_daily_trend.update_layout(
+                                        height=400,
+                                        xaxis_title="月",
+                                        yaxis_title=daily_comparison_metric
+                                    )
+                                    st.plotly_chart(fig_daily_trend, use_container_width=True)
+                                    
+                                    # 月次比較テーブル
+                                    st.subheader("月次比較テーブル")
+                                    pivot_daily_comparison = filtered_daily_data.pivot_table(
+                                        values=daily_metric_col_mapping[daily_comparison_metric],
+                                        index='product',
+                                        columns='month',
+                                        aggfunc='sum',
+                                        fill_value=0
+                                    )
+                                    
+                                    # 増減率の計算
+                                    if len(pivot_daily_comparison.columns) >= 2:
+                                        latest_month = pivot_daily_comparison.columns[-1]
+                                        prev_month = pivot_daily_comparison.columns[-2]
+                                        pivot_daily_comparison['増減率(%)'] = (
+                                            (pivot_daily_comparison[latest_month] - pivot_daily_comparison[prev_month]) / 
+                                            pivot_daily_comparison[prev_month].replace(0, float('nan')) * 100
+                                        ).round(1)
+                                    
+                                    st.dataframe(pivot_daily_comparison, use_container_width=True)
+                                else:
+                                    st.info("比較したい商材を選択してください。")
+                            
+                            elif st.session_state.selected_data_source == "taaan" and taaan_available:
+                                # TAAANデータの3ヶ月比較
+                                st.markdown("### 💼 TAAANデータ（TAAAN商談数、承認数、確定売上）の3ヶ月推移")
+                                
+                                # 全ての月のTAAANデータを結合
+                                all_taaan_data = pd.concat(monthly_taaan_data.values(), ignore_index=True)
+                                
+                                # 指標選択ボタン
+                                st.markdown("#### 比較指標")
+                                taaan_metric_options = ["TAAAN商談数", "承認数", "確定売上"]
+                                taaan_metric_cols = st.columns(len(taaan_metric_options))
+                                
+                                # セッション状態で選択された指標を管理
+                                if 'taaan_selected_metric' not in st.session_state:
+                                    st.session_state.taaan_selected_metric = "TAAAN商談数"
+                                
+                                for i, metric in enumerate(taaan_metric_options):
+                                    with taaan_metric_cols[i]:
+                                        if st.button(
+                                            metric,
+                                            key=f"taaan_metric_{metric}",
+                                            use_container_width=True,
+                                            type="primary" if st.session_state.taaan_selected_metric == metric else "secondary"
+                                        ):
+                                            st.session_state.taaan_selected_metric = metric
+                                
+                                taaan_comparison_metric = st.session_state.taaan_selected_metric
+                                
+                                # 商材選択
+                                available_taaan_products = sorted(all_taaan_data['product'].unique())
+                                selected_taaan_products = st.multiselect(
+                                    "比較したい商材を選択（複数選択可）",
+                                    available_taaan_products,
+                                    default=available_taaan_products[:5] if len(available_taaan_products) >= 5 else available_taaan_products,
+                                    key="taaan_products"
+                                )
+                                
+                                if selected_taaan_products:
+                                    # 選択された商材のデータをフィルタ
+                                    filtered_taaan_data = all_taaan_data[all_taaan_data['product'].isin(selected_taaan_products)]
+                                    
+                                    taaan_metric_col_mapping = {
+                                        "TAAAN商談数": "taaan_deals",
+                                        "承認数": "approved_deals",
+                                        "確定売上": "total_revenue"
+                                    }
+                                    
+                                    # 月次推移グラフ
+                                    fig_taaan_trend = px.line(
+                                        filtered_taaan_data,
+                                        x='month',
+                                        y=taaan_metric_col_mapping[taaan_comparison_metric],
+                                        color='product',
+                                        title=f"TAAANデータ: 商材別{taaan_comparison_metric}の3ヶ月推移",
+                                        markers=True
+                                    )
+                                    fig_taaan_trend.update_layout(
+                                        height=400,
+                                        xaxis_title="月",
+                                        yaxis_title=taaan_comparison_metric
+                                    )
+                                    st.plotly_chart(fig_taaan_trend, use_container_width=True)
+                                    
+                                    # 月次比較テーブル
+                                    st.subheader("月次比較テーブル")
+                                    pivot_taaan_comparison = filtered_taaan_data.pivot_table(
+                                        values=taaan_metric_col_mapping[taaan_comparison_metric],
+                                        index='product',
+                                        columns='month',
+                                        aggfunc='sum',
+                                        fill_value=0
+                                    )
+                                    
+                                    # 増減率の計算
+                                    if len(pivot_taaan_comparison.columns) >= 2:
+                                        latest_month = pivot_taaan_comparison.columns[-1]
+                                        prev_month = pivot_taaan_comparison.columns[-2]
+                                        pivot_taaan_comparison['増減率(%)'] = (
+                                            (pivot_taaan_comparison[latest_month] - pivot_taaan_comparison[prev_month]) / 
+                                            pivot_taaan_comparison[prev_month].replace(0, float('nan')) * 100
+                                        ).round(1)
+                                    
+                                    st.dataframe(pivot_taaan_comparison, use_container_width=True)
+                                else:
+                                    st.info("比較したい商材を選択してください。")
                 
                 with tab5:
                     st.subheader("詳細データ")
