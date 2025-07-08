@@ -758,6 +758,18 @@ elif authentication_status:
                 with tab2:
                     st.subheader("支部別分析")
 
+                    # --- 統一した支部の色パレットを定義 ---
+                    branch_colors = {
+                        '東京': '#ff6b6b',      # 赤
+                        '横浜': '#4ecdc4',      # ティール
+                        '名古屋': '#45b7d1',    # 青
+                        '福岡': '#96ceb4',      # 緑
+                        '新潟': '#feca57',      # オレンジ
+                        '大分': '#ff9ff3',      # ピンク
+                        '未設定': '#95a5a6',    # グレー
+                        '社員': '#6c5ce7'       # 紫（未設定と区別）
+                    }
+
                     # --- サブタブ共通で使う支部別集計処理をここで必ず実行 ---
                     call_col = 'call_count' if 'call_count' in df_basic.columns else 'total_calls'
                     appointment_col = 'get_appointment' if 'get_appointment' in df_basic.columns else 'appointments'
@@ -825,108 +837,164 @@ elif authentication_status:
                     ])
 
                     with subtab1:
-                        st.markdown("#### 実数（従来の支部別パフォーマンス）")
+                        st.markdown("#### 実数")
                         col1, col2, col3 = st.columns(3)
                         with col1:
-                            fig_branch_calls = px.bar(
-                                branch_summary,
-                                x='branch',
-                                y='total_calls',
+                            # go.Figureを使用して手動で凡例を追加
+                            fig_branch_calls = go.Figure()
+                            # 支部ごとに異なる色でバーを作成
+                            for branch in branch_summary['branch']:
+                                branch_data = branch_summary[branch_summary['branch'] == branch]
+                                fig_branch_calls.add_trace(go.Bar(
+                                    x=[branch],
+                                    y=branch_data['total_calls'],
+                                    name=branch,
+                                    marker_color=branch_colors.get(branch, '#95a5a6'),
+                                    showlegend=False
+                                ))
+                            fig_branch_calls.update_layout(
                                 title=indicator_labels.get('call_count', '架電数'),
-                                color='total_calls',
-                                color_continuous_scale='Blues'
+                                yaxis_title=indicator_labels.get('call_count', '架電数'),
+                                showlegend=False
                             )
-                            fig_branch_calls.update_layout(yaxis_title=indicator_labels.get('call_count', '架電数'))
-                            fig_branch_calls = update_legend(fig_branch_calls)
                             st.plotly_chart(fig_branch_calls, use_container_width=True)
                         with col2:
                             if 'call_hours' in branch_summary.columns:
-                                fig_branch_hours = px.bar(
-                                    branch_summary,
-                                    x='branch',
-                                    y='call_hours',
+                                # go.Figureを使用して手動で凡例を追加
+                                fig_branch_hours = go.Figure()
+                                # 支部ごとに異なる色でバーを作成
+                                for branch in branch_summary['branch']:
+                                    branch_data = branch_summary[branch_summary['branch'] == branch]
+                                    fig_branch_hours.add_trace(go.Bar(
+                                        x=[branch],
+                                        y=branch_data['call_hours'],
+                                        name=branch,
+                                        marker_color=branch_colors.get(branch, '#95a5a6'),
+                                        showlegend=False
+                                    ))
+                                fig_branch_hours.update_layout(
                                     title=indicator_labels.get('call_hours', '架電時間数'),
-                                    color='call_hours',
-                                    color_continuous_scale='Teal'
+                                    yaxis_title=indicator_labels.get('call_hours', '架電時間数'),
+                                    showlegend=False
                                 )
-                                fig_branch_hours.update_layout(yaxis_title=indicator_labels.get('call_hours', '架電時間数'))
-                                fig_branch_hours = update_legend(fig_branch_hours)
                                 st.plotly_chart(fig_branch_hours, use_container_width=True)
                             else:
                                 st.info("架電時間データがありません")
                         with col3:
-                            fig_branch_connect = px.bar(
-                                branch_summary,
-                                x='branch',
-                                y='charge_connected',
+                            # go.Figureを使用して手動で凡例を追加
+                            fig_branch_connect = go.Figure()
+                            # 支部ごとに異なる色でバーを作成
+                            for branch in branch_summary['branch']:
+                                branch_data = branch_summary[branch_summary['branch'] == branch]
+                                fig_branch_connect.add_trace(go.Bar(
+                                    x=[branch],
+                                    y=branch_data['charge_connected'],
+                                    name=branch,
+                                    marker_color=branch_colors.get(branch, '#95a5a6'),
+                                    showlegend=False
+                                ))
+                            fig_branch_connect.update_layout(
                                 title=indicator_labels.get('charge_connected', '担当コネクト数'),
-                                color='charge_connected',
-                                color_continuous_scale='Greens'
+                                yaxis_title=indicator_labels.get('charge_connected', '担当コネクト数'),
+                                showlegend=False
                             )
-                            fig_branch_connect.update_layout(yaxis_title=indicator_labels.get('charge_connected', '担当コネクト数'))
-                            fig_branch_connect = update_legend(fig_branch_connect)
                             st.plotly_chart(fig_branch_connect, use_container_width=True)
                         col4, col5, col6 = st.columns(3)
                         with col4:
-                            fig_branch_appointments = px.bar(
-                                branch_summary,
-                                x='branch',
-                                y='appointments',
+                            # go.Figureを使用して手動で凡例を追加
+                            fig_branch_appointments = go.Figure()
+                            # 支部ごとに異なる色でバーを作成
+                            for branch in branch_summary['branch']:
+                                branch_data = branch_summary[branch_summary['branch'] == branch]
+                                fig_branch_appointments.add_trace(go.Bar(
+                                    x=[branch],
+                                    y=branch_data['appointments'],
+                                    name=branch,
+                                    marker_color=branch_colors.get(branch, '#95a5a6'),
+                                    showlegend=False
+                                ))
+                            fig_branch_appointments.update_layout(
                                 title=indicator_labels.get('get_appointment', 'アポ獲得数'),
-                                color='appointments',
-                                color_continuous_scale='Oranges'
+                                yaxis_title=indicator_labels.get('get_appointment', 'アポ獲得数'),
+                                showlegend=False
                             )
-                            fig_branch_appointments.update_layout(yaxis_title=indicator_labels.get('get_appointment', 'アポ獲得数'))
-                            fig_branch_appointments = update_legend(fig_branch_appointments)
                             st.plotly_chart(fig_branch_appointments, use_container_width=True)
                         with col5:
-                            fig_branch_taaaan = px.bar(
-                                branch_summary,
-                                x='branch',
-                                y='taaaan_deals',
+                            # go.Figureを使用して手動で凡例を追加
+                            fig_branch_taaaan = go.Figure()
+                            # 支部ごとに異なる色でバーを作成
+                            for branch in branch_summary['branch']:
+                                branch_data = branch_summary[branch_summary['branch'] == branch]
+                                fig_branch_taaaan.add_trace(go.Bar(
+                                    x=[branch],
+                                    y=branch_data['taaaan_deals'],
+                                    name=branch,
+                                    marker_color=branch_colors.get(branch, '#95a5a6'),
+                                    showlegend=False
+                                ))
+                            fig_branch_taaaan.update_layout(
                                 title=indicator_labels.get('total_deals', 'TAAAN商談数'),
-                                color='taaaan_deals',
-                                color_continuous_scale='Purples'
+                                yaxis_title=indicator_labels.get('total_deals', 'TAAAN商談数'),
+                                showlegend=False
                             )
-                            fig_branch_taaaan.update_layout(yaxis_title=indicator_labels.get('total_deals', 'TAAAN商談数'))
-                            fig_branch_taaaan = update_legend(fig_branch_taaaan)
                             st.plotly_chart(fig_branch_taaaan, use_container_width=True)
                         with col6:
-                            fig_branch_approved = px.bar(
-                                branch_summary,
-                                x='branch',
-                                y='approved_deals',
+                            # go.Figureを使用して手動で凡例を追加
+                            fig_branch_approved = go.Figure()
+                            # 支部ごとに異なる色でバーを作成
+                            for branch in branch_summary['branch']:
+                                branch_data = branch_summary[branch_summary['branch'] == branch]
+                                fig_branch_approved.add_trace(go.Bar(
+                                    x=[branch],
+                                    y=branch_data['approved_deals'],
+                                    name=branch,
+                                    marker_color=branch_colors.get(branch, '#95a5a6'),
+                                    showlegend=False
+                                ))
+                            fig_branch_approved.update_layout(
                                 title=indicator_labels.get('total_approved', '承認数'),
-                                color='approved_deals',
-                                color_continuous_scale='Reds'
+                                yaxis_title=indicator_labels.get('total_approved', '承認数'),
+                                showlegend=False
                             )
-                            fig_branch_approved.update_layout(yaxis_title=indicator_labels.get('total_approved', '承認数'))
-                            fig_branch_approved = update_legend(fig_branch_approved)
                             st.plotly_chart(fig_branch_approved, use_container_width=True)
                         col7, col8 = st.columns(2)
                         with col7:
-                            fig_branch_reward = px.bar(
-                                branch_summary,
-                                x='branch',
-                                y='total_revenue',
+                            # go.Figureを使用して手動で凡例を追加
+                            fig_branch_reward = go.Figure()
+                            # 支部ごとに異なる色でバーを作成
+                            for branch in branch_summary['branch']:
+                                branch_data = branch_summary[branch_summary['branch'] == branch]
+                                fig_branch_reward.add_trace(go.Bar(
+                                    x=[branch],
+                                    y=branch_data['total_revenue'],
+                                    name=branch,
+                                    marker_color=branch_colors.get(branch, '#95a5a6'),
+                                    showlegend=False
+                                ))
+                            fig_branch_reward.update_layout(
                                 title=indicator_labels.get('total_revenue', '報酬合計額'),
-                                color='total_revenue',
-                                color_continuous_scale='Greens'
+                                yaxis_title=indicator_labels.get('total_revenue', '報酬合計額'),
+                                showlegend=False
                             )
-                            fig_branch_reward.update_layout(yaxis_title=indicator_labels.get('total_revenue', '報酬合計額'))
-                            fig_branch_reward = update_legend(fig_branch_reward)
                             st.plotly_chart(fig_branch_reward, use_container_width=True)
                         with col8:
-                            fig_branch_staff = px.bar(
-                                branch_summary,
-                                x='branch',
-                                y='unique_staff_count',
+                            # go.Figureを使用して手動で凡例を追加
+                            fig_branch_staff = go.Figure()
+                            # 支部ごとに異なる色でバーを作成
+                            for branch in branch_summary['branch']:
+                                branch_data = branch_summary[branch_summary['branch'] == branch]
+                                fig_branch_staff.add_trace(go.Bar(
+                                    x=[branch],
+                                    y=branch_data['unique_staff_count'],
+                                    name=branch,
+                                    marker_color=branch_colors.get(branch, '#95a5a6'),
+                                    showlegend=False
+                                ))
+                            fig_branch_staff.update_layout(
                                 title=indicator_labels.get('unique_staff_count', 'ユニーク稼働者数'),
-                                color='unique_staff_count',
-                                color_continuous_scale='Viridis'
+                                yaxis_title=indicator_labels.get('unique_staff_count', 'ユニーク稼働者数'),
+                                showlegend=False
                             )
-                            fig_branch_staff.update_layout(yaxis_title=indicator_labels.get('unique_staff_count', 'ユニーク稼働者数'))
-                            fig_branch_staff = update_legend(fig_branch_staff)
                             st.plotly_chart(fig_branch_staff, use_container_width=True)
 
                     with subtab2:
@@ -941,36 +1009,70 @@ elif authentication_status:
                         unit_df['revenue_per_staff'] = unit_df['total_revenue'] / unit_df['unique_staff_count'].replace(0, float('nan'))
                         col1, col2, col3 = st.columns(3)
                         with col1:
-                            fig = px.bar(unit_df, x='branch', y='total_calls_per_staff', title=indicator_labels['total_calls_per_staff'], color='total_calls_per_staff', color_continuous_scale='Blues')
-                            fig.update_layout(yaxis_title=indicator_labels['total_calls_per_staff'])
-                            fig = update_legend(fig)
-                            st.plotly_chart(fig, use_container_width=True)
-                            fig = px.bar(unit_df, x='branch', y='call_hours_per_staff', title=indicator_labels['call_hours_per_staff'], color='call_hours_per_staff', color_continuous_scale='Teal')
-                            fig.update_layout(yaxis_title=indicator_labels['call_hours_per_staff'])
-                            fig = update_legend(fig)
-                            st.plotly_chart(fig, use_container_width=True)
+                            for y_col, label in [
+                                ('total_calls_per_staff', indicator_labels['total_calls_per_staff']),
+                                ('taaaan_deals_per_staff', indicator_labels['taaaan_deals_per_staff'])
+                            ]:
+                                fig = go.Figure()
+                                for branch in unit_df['branch']:
+                                    branch_data = unit_df[unit_df['branch'] == branch]
+                                    fig.add_trace(go.Bar(
+                                        x=[branch],
+                                        y=branch_data[y_col],
+                                        name=branch,
+                                        marker_color=branch_colors.get(branch, '#95a5a6'),
+                                        showlegend=False
+                                    ))
+                                fig.update_layout(
+                                    title=label,
+                                    yaxis_title=label,
+                                    showlegend=False
+                                )
+                                st.plotly_chart(fig, use_container_width=True)
                         with col2:
-                            fig = px.bar(unit_df, x='branch', y='charge_connected_per_staff', title=indicator_labels['charge_connected_per_staff'], color='charge_connected_per_staff', color_continuous_scale='Greens')
-                            fig.update_layout(yaxis_title=indicator_labels['charge_connected_per_staff'])
-                            fig = update_legend(fig)
-                            st.plotly_chart(fig, use_container_width=True)
-                            fig = px.bar(unit_df, x='branch', y='appointments_per_staff', title=indicator_labels['appointments_per_staff'], color='appointments_per_staff', color_continuous_scale='Oranges')
-                            fig.update_layout(yaxis_title=indicator_labels['appointments_per_staff'])
-                            fig = update_legend(fig)
-                            st.plotly_chart(fig, use_container_width=True)
+                            for y_col, label in [
+                                ('call_hours_per_staff', indicator_labels['call_hours_per_staff']),
+                                ('approved_deals_per_staff', indicator_labels['approved_deals_per_staff'])
+                            ]:
+                                fig = go.Figure()
+                                for branch in unit_df['branch']:
+                                    branch_data = unit_df[unit_df['branch'] == branch]
+                                    fig.add_trace(go.Bar(
+                                        x=[branch],
+                                        y=branch_data[y_col],
+                                        name=branch,
+                                        marker_color=branch_colors.get(branch, '#95a5a6'),
+                                        showlegend=False
+                                    ))
+                                fig.update_layout(
+                                    title=label,
+                                    yaxis_title=label,
+                                    showlegend=False
+                                )
+                                st.plotly_chart(fig, use_container_width=True)
                         with col3:
-                            fig = px.bar(unit_df, x='branch', y='taaaan_deals_per_staff', title=indicator_labels['taaaan_deals_per_staff'], color='taaaan_deals_per_staff', color_continuous_scale='Purples')
-                            fig.update_layout(yaxis_title=indicator_labels['taaaan_deals_per_staff'])
-                            fig = update_legend(fig)
-                            st.plotly_chart(fig, use_container_width=True)
-                            fig = px.bar(unit_df, x='branch', y='approved_deals_per_staff', title=indicator_labels['approved_deals_per_staff'], color='approved_deals_per_staff', color_continuous_scale='Reds')
-                            fig.update_layout(yaxis_title=indicator_labels['approved_deals_per_staff'])
-                            fig = update_legend(fig)
-                            st.plotly_chart(fig, use_container_width=True)
-                            fig = px.bar(unit_df, x='branch', y='revenue_per_staff', title=indicator_labels['revenue_per_staff'], color='revenue_per_staff', color_continuous_scale='Greens')
-                            fig.update_layout(yaxis_title=indicator_labels['revenue_per_staff'])
-                            fig = update_legend(fig)
-                            st.plotly_chart(fig, use_container_width=True)
+                            for y_col, label in [
+                                ('charge_connected_per_staff', indicator_labels['charge_connected_per_staff']),
+                                ('appointments_per_staff', indicator_labels['appointments_per_staff']),
+                                ('revenue_per_staff', indicator_labels['revenue_per_staff'])
+                            ]:
+                                fig = go.Figure()
+                                for branch in unit_df['branch']:
+                                    branch_data = unit_df[unit_df['branch'] == branch]
+                                    fig.add_trace(go.Bar(
+                                        x=[branch],
+                                        y=branch_data[y_col],
+                                        name=branch,
+                                        marker_color=branch_colors.get(branch, '#95a5a6'),
+                                        showlegend=False
+                                    ))
+                                fig.update_layout(
+                                    title=label,
+                                    yaxis_title=label,
+                                    showlegend=False
+                                )
+                                st.plotly_chart(fig, use_container_width=True)
+
                         st.markdown("##### 時間あたり指標")
                         unit_df['total_calls_per_hour'] = unit_df['total_calls'] / unit_df['call_hours'].replace(0, float('nan')) if 'call_hours' in unit_df.columns else float('nan')
                         unit_df['charge_connected_per_hour'] = unit_df['charge_connected'] / unit_df['call_hours'].replace(0, float('nan')) if 'call_hours' in unit_df.columns else float('nan')
@@ -980,32 +1082,68 @@ elif authentication_status:
                         unit_df['revenue_per_hour'] = unit_df['total_revenue'] / unit_df['call_hours'].replace(0, float('nan')) if 'call_hours' in unit_df.columns else float('nan')
                         col4, col5, col6 = st.columns(3)
                         with col4:
-                            fig = px.bar(unit_df, x='branch', y='total_calls_per_hour', title=indicator_labels['total_calls_per_hour'], color='total_calls_per_hour', color_continuous_scale='Blues')
-                            fig.update_layout(yaxis_title=indicator_labels['total_calls_per_hour'])
-                            fig = update_legend(fig)
-                            st.plotly_chart(fig, use_container_width=True)
-                            fig = px.bar(unit_df, x='branch', y='charge_connected_per_hour', title=indicator_labels['charge_connected_per_hour'], color='charge_connected_per_hour', color_continuous_scale='Greens')
-                            fig.update_layout(yaxis_title=indicator_labels['charge_connected_per_hour'])
-                            fig = update_legend(fig)
-                            st.plotly_chart(fig, use_container_width=True)
+                            for y_col, label in [
+                                ('total_calls_per_hour', indicator_labels['total_calls_per_hour']),
+                                ('taaaan_deals_per_hour', indicator_labels['taaaan_deals_per_hour'])
+                            ]:
+                                fig = go.Figure()
+                                for branch in unit_df['branch']:
+                                    branch_data = unit_df[unit_df['branch'] == branch]
+                                    fig.add_trace(go.Bar(
+                                        x=[branch],
+                                        y=branch_data[y_col],
+                                        name=branch,
+                                        marker_color=branch_colors.get(branch, '#95a5a6'),
+                                        showlegend=False
+                                    ))
+                                fig.update_layout(
+                                    title=label,
+                                    yaxis_title=label,
+                                    showlegend=False
+                                )
+                                st.plotly_chart(fig, use_container_width=True)
                         with col5:
-                            fig = px.bar(unit_df, x='branch', y='appointments_per_hour', title=indicator_labels['appointments_per_hour'], color='appointments_per_hour', color_continuous_scale='Oranges')
-                            fig.update_layout(yaxis_title=indicator_labels['appointments_per_hour'])
-                            fig = update_legend(fig)
-                            st.plotly_chart(fig, use_container_width=True)
-                            fig = px.bar(unit_df, x='branch', y='taaaan_deals_per_hour', title=indicator_labels['taaaan_deals_per_hour'], color='taaaan_deals_per_hour', color_continuous_scale='Purples')
-                            fig.update_layout(yaxis_title=indicator_labels['taaaan_deals_per_hour'])
-                            fig = update_legend(fig)
-                            st.plotly_chart(fig, use_container_width=True)
+                            for y_col, label in [
+                                ('charge_connected_per_hour', indicator_labels['charge_connected_per_hour']),
+                                ('approved_deals_per_hour', indicator_labels['approved_deals_per_hour'])
+                            ]:
+                                fig = go.Figure()
+                                for branch in unit_df['branch']:
+                                    branch_data = unit_df[unit_df['branch'] == branch]
+                                    fig.add_trace(go.Bar(
+                                        x=[branch],
+                                        y=branch_data[y_col],
+                                        name=branch,
+                                        marker_color=branch_colors.get(branch, '#95a5a6'),
+                                        showlegend=False
+                                    ))
+                                fig.update_layout(
+                                    title=label,
+                                    yaxis_title=label,
+                                    showlegend=False
+                                )
+                                st.plotly_chart(fig, use_container_width=True)
                         with col6:
-                            fig = px.bar(unit_df, x='branch', y='approved_deals_per_hour', title=indicator_labels['approved_deals_per_hour'], color='approved_deals_per_hour', color_continuous_scale='Reds')
-                            fig.update_layout(yaxis_title=indicator_labels['approved_deals_per_hour'])
-                            fig = update_legend(fig)
-                            st.plotly_chart(fig, use_container_width=True)
-                            fig = px.bar(unit_df, x='branch', y='revenue_per_hour', title=indicator_labels['revenue_per_hour'], color='revenue_per_hour', color_continuous_scale='Greens')
-                            fig.update_layout(yaxis_title=indicator_labels['revenue_per_hour'])
-                            fig = update_legend(fig)
-                            st.plotly_chart(fig, use_container_width=True)
+                            for y_col, label in [
+                                ('appointments_per_hour', indicator_labels['appointments_per_hour']),
+                                ('revenue_per_hour', indicator_labels['revenue_per_hour'])
+                            ]:
+                                fig = go.Figure()
+                                for branch in unit_df['branch']:
+                                    branch_data = unit_df[unit_df['branch'] == branch]
+                                    fig.add_trace(go.Bar(
+                                        x=[branch],
+                                        y=branch_data[y_col],
+                                        name=branch,
+                                        marker_color=branch_colors.get(branch, '#95a5a6'),
+                                        showlegend=False
+                                    ))
+                                fig.update_layout(
+                                    title=label,
+                                    yaxis_title=label,
+                                    showlegend=False
+                                )
+                                st.plotly_chart(fig, use_container_width=True)
 
                     with subtab3:
                         st.markdown("#### 実数3ヶ月比較")
@@ -1065,14 +1203,25 @@ elif authentication_status:
                                                 plot_df.append({"month": m, "branch": row['branch'], "value": row[col]})
                                     if plot_df:
                                         plot_df = pd.DataFrame(plot_df)
+                                        # 統一した色パレットを使用
+                                        color_sequence = [branch_colors.get(branch, '#95a5a6') for branch in plot_df['branch'].unique()]
                                         fig = px.line(
                                             plot_df, x='month', y='value', color='branch', markers=True,
-                                            title=f'{label}（支部別3ヶ月比較）', color_discrete_sequence=px.colors.qualitative.Set1,
+                                            color_discrete_sequence=color_sequence,
                                             labels={"value": label, "month": "月", "branch": "支部"}
                                         )
                                         fig.update_xaxes(type='category', tickvals=compare_months, ticktext=compare_months)
-                                        fig.update_layout(yaxis_title=label)
-                                        fig = update_legend(fig)
+                                        fig.update_layout(
+                                            yaxis_title=label,
+                                            legend=dict(
+                                                orientation='h',
+                                                yanchor='bottom',
+                                                y=-0.5,
+                                                xanchor='center',
+                                                x=0.5,
+                                                font=dict(family='"Meiryo", "Yu Gothic", "Noto Sans JP", "sans-serif"', size=12)
+                                            )
+                                        )
                                         st.plotly_chart(fig, use_container_width=True)
                                     else:
                                         st.info("データがありません")
@@ -1130,14 +1279,25 @@ elif authentication_status:
                                                 plot_df.append({"month": m, "branch": row['branch'], "value": row[col]})
                                     if plot_df:
                                         plot_df = pd.DataFrame(plot_df)
+                                        # 統一した色パレットを使用
+                                        color_sequence = [branch_colors.get(branch, '#95a5a6') for branch in plot_df['branch'].unique()]
                                         fig = px.line(
                                             plot_df, x='month', y='value', color='branch', markers=True,
-                                            title=f'{label}（支部別3ヶ月比較）', color_discrete_sequence=px.colors.qualitative.Set1,
+                                            color_discrete_sequence=color_sequence,
                                             labels={"value": label, "month": "月", "branch": "支部"}
                                         )
                                         fig.update_xaxes(type='category', tickvals=compare_months, ticktext=compare_months)
-                                        fig.update_layout(yaxis_title=label)
-                                        fig = update_legend(fig)
+                                        fig.update_layout(
+                                            yaxis_title=label,
+                                            legend=dict(
+                                                orientation='h',
+                                                yanchor='bottom',
+                                                y=-0.5,
+                                                xanchor='center',
+                                                x=0.5,
+                                                font=dict(family='"Meiryo", "Yu Gothic", "Noto Sans JP", "sans-serif"', size=12)
+                                            )
+                                        )
                                         st.plotly_chart(fig, use_container_width=True)
                                     else:
                                         st.info("データがありません")
@@ -1175,15 +1335,16 @@ elif authentication_status:
                         .round(1)
                     )
                     
-                    # 支部別の色を定義
+                    # 支部別の色を定義（支部別分析と統一）
                     branch_colors = {
-                        '東京': '#ff6b6b',
-                        '横浜': '#4ecdc4',
-                        '名古屋': '#45b7d1',
-                        '福岡': '#96ceb4',
-                        '新潟': '#feca57',
-                        '大分': '#ff9ff3',
-                        '未設定': '#95a5a6'
+                        '東京': '#ff6b6b',      # 赤
+                        '横浜': '#4ecdc4',      # ティール
+                        '名古屋': '#45b7d1',    # 青
+                        '福岡': '#96ceb4',      # 緑
+                        '新潟': '#feca57',      # オレンジ
+                        '大分': '#ff9ff3',      # ピンク
+                        '未設定': '#95a5a6',    # グレー
+                        '社員': '#6c5ce7'       # 紫（未設定と区別）
                     }
                     
                     # ランキング表示
