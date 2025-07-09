@@ -1,7 +1,7 @@
 {
   "metadata": {
     "report_period": "2025-02",
-    "generated_at": "2025-07-08T07:32:31.885Z",
+    "generated_at": "2025-07-09T10:34:31.494Z",
     "report_type": "monthly_summary"
   },
   "key_metrics": {
@@ -11,9 +11,7 @@
     "total_deals": 9,
     "total_approved": 3,
     "total_rejected": 6,
-    "approval_rate": "33.33",
-    "total_revenue": 145000,
-    "total_potential_revenue": 0
+    "approval_rate": "33.33"
   },
   "deal_status_breakdown": {
     "approved": 3,
@@ -370,8 +368,8 @@
   "retention_metrics": {
     "total_staff": 111,
     "active_staff": 23,
-    "high_risk_staff": 95,
-    "medium_risk_staff": 16,
+    "high_risk_staff": 96,
+    "medium_risk_staff": 15,
     "low_risk_staff": 0,
     "retention_rate": "47.42"
   },
@@ -385,7 +383,7 @@
     {
       "type": "critical",
       "message": "高リスク学生が危険レベルを超えています",
-      "value": "95名",
+      "value": "96名",
       "threshold": "15名"
     }
   ]
