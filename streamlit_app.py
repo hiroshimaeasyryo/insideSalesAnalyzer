@@ -525,8 +525,14 @@ elif authentication_status:
                 appointments = df_basic['get_appointment'].sum() if 'get_appointment' in df_basic.columns else 0
                 total_deals = summary_data['key_metrics'].get('total_deals', 0) if 'key_metrics' in summary_data else 0
                 total_approved = summary_data['key_metrics'].get('total_approved', 0) if 'key_metrics' in summary_data else 0
-                total_revenue = summary_data['key_metrics'].get('total_revenue', 0) if 'key_metrics' in summary_data else 0
-                total_potential_revenue = summary_data['key_metrics'].get('total_potential_revenue', 0) if 'key_metrics' in summary_data else 0
+                
+                # 売上データは branch_performance から合計を計算
+                total_revenue = 0
+                total_potential_revenue = 0
+                if 'branch_performance' in summary_data:
+                    for branch, data in summary_data['branch_performance'].items():
+                        total_revenue += data.get('total_revenue', 0)
+                        total_potential_revenue += data.get('total_potential_revenue', 0)
 
                 # --- カードスタイルで指標を表示 ---
                 card_style = """

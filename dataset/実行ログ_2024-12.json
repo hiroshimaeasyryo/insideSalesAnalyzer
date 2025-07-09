@@ -1,5 +1,5 @@
 {
-  "execution_time": "2025-07-08T07:31:52.943Z",
+  "execution_time": "2025-07-09T10:33:46.778Z",
   "report_period": "2024-12",
   "files_created": [
     "月次サマリー_2024-12.json",
@@ -11,8 +11,8 @@
   "config_version": "1.0",
   "summary": {
     "total_staff": 111,
-    "total_calls": 126628,
-    "total_deals": 423,
-    "approval_rate": "43.74"
+    "total_calls": 127831,
+    "total_deals": 425,
+    "approval_rate": "44.24"
   }
 }

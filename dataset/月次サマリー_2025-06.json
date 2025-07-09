@@ -1,25 +1,23 @@
 {
   "metadata": {
     "report_period": "2025-06",
-    "generated_at": "2025-07-08T07:33:48.917Z",
+    "generated_at": "2025-07-09T10:36:10.275Z",
     "report_type": "monthly_summary"
   },
   "key_metrics": {
     "total_calls": 14837,
     "total_hours": 1451.5,
     "total_appointments": 188,
-    "total_deals": 229,
+    "total_deals": 228,
     "total_approved": 150,
     "total_rejected": 67,
-    "approval_rate": "65.50",
-    "total_revenue": 4979000,
-    "total_potential_revenue": 356000
+    "approval_rate": "65.79"
   },
   "deal_status_breakdown": {
     "approved": 150,
     "rejected": 67,
-    "pending": 12,
-    "total": 229
+    "pending": 11,
+    "total": 228
   },
   "branch_performance": {
     "名古屋": {
@@ -76,11 +74,11 @@
       "total_calls": 709,
       "total_hours": 73,
       "total_appointments": 20,
-      "total_deals": 3,
+      "total_deals": 2,
       "total_approved": 1,
       "total_revenue": 40000,
-      "total_potential_revenue": 50000,
-      "approval_rate": "33.33"
+      "total_potential_revenue": 0,
+      "approval_rate": "50.00"
     },
     "社員": {
       "total_calls": 15,
@@ -258,11 +256,11 @@
       "total_calls": 0,
       "total_hours": 0,
       "total_appointments": 0,
-      "total_deals": 47,
+      "total_deals": 46,
       "total_approved": 27,
       "total_revenue": 824000,
-      "total_potential_revenue": 356000,
-      "approval_rate": "57.45"
+      "total_potential_revenue": 306000,
+      "approval_rate": "58.70"
     }
   },
   "staff_performance": {
@@ -390,8 +388,8 @@
   "retention_metrics": {
     "total_staff": 111,
     "active_staff": 23,
-    "high_risk_staff": 95,
-    "medium_risk_staff": 16,
+    "high_risk_staff": 96,
+    "medium_risk_staff": 15,
     "low_risk_staff": 0,
     "retention_rate": "44.14"
   },
@@ -399,7 +397,7 @@
     {
       "type": "critical",
       "message": "高リスク学生が危険レベルを超えています",
-      "value": "95名",
+      "value": "96名",
       "threshold": "15名"
     }
   ]
