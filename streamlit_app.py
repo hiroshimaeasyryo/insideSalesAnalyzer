@@ -96,8 +96,78 @@ elif authentication_status:
                     st.success("🌐 Google Drive接続中")
                     st.caption(f"フォルダID: {data_source_status['google_drive']['folder_id'][:8]}...")
                 else:
-                    st.info("📁 ローカルファイル使用中")
+                    st.error("📁 ローカルファイル使用中")
                     st.caption(f"パス: dataset/")
+                    
+                    # 詳細デバッグ情報
+                    with st.expander("🔍 デバッグ情報"):
+                        config = get_config()
+                        
+                        st.write("**設定状態:**")
+                        st.write(f"- PRODUCTION_MODE: {config.PRODUCTION_MODE}")
+                        st.write(f"- GOOGLE_DRIVE_ENABLED: {config.GOOGLE_DRIVE_ENABLED}")
+                        st.write(f"- USE_LOCAL_FALLBACK: {config.USE_LOCAL_FALLBACK}")
+                        st.write(f"- FOLDER_ID: {config.GOOGLE_DRIVE_FOLDER_ID}")
+                        
+                        # Streamlit Secrets チェック
+                        st.write("**Streamlit Secrets状態:**")
+                        try:
+                            secrets_available = hasattr(st, 'secrets')
+                            st.write(f"- Secrets利用可能: {'✅' if secrets_available else '❌'}")
+                            
+                            if secrets_available:
+                                secrets_keys = list(st.secrets.keys())
+                                st.write(f"- 設定済みキー: {secrets_keys}")
+                                
+                                # google_driveセクション確認
+                                if 'google_drive' in st.secrets:
+                                    gd_keys = list(st.secrets['google_drive'].keys())
+                                    st.write(f"- google_driveキー: {gd_keys}")
+                                    if 'service_account' in st.secrets['google_drive']:
+                                        sa_value = st.secrets['google_drive']['service_account']
+                                        st.write(f"- service_account長さ: {len(sa_value)}")
+                                else:
+                                    st.write("- google_driveセクション: ❌ なし")
+                        except Exception as e:
+                            st.write(f"- Secretsエラー: {str(e)}")
+                        
+                        # 環境変数チェック
+                        st.write("**環境変数状態:**")
+                        service_account_env = os.getenv('GOOGLE_SERVICE_ACCOUNT')
+                        st.write(f"- GOOGLE_SERVICE_ACCOUNT: {'✅ 設定済み' if service_account_env else '❌ 未設定'}")
+                        
+                        if service_account_env:
+                            try:
+                                import json
+                                service_data = json.loads(service_account_env)
+                                st.write(f"- プロジェクトID: {service_data.get('project_id', 'N/A')}")
+                                st.write(f"- クライアントメール: {service_data.get('client_email', 'N/A')[:30]}...")
+                            except Exception as e:
+                                st.write(f"- JSON解析エラー: {str(e)[:50]}...")
+                        
+                        # Google Drive接続テスト
+                        st.write("**接続テスト:**")
+                        
+                        # キャッシュ無し強制テスト
+                        success, message = loader.test_drive_connection_fresh()
+                        if success:
+                            st.write(f"- 強制リフレッシュテスト: ✅ {message}")
+                        else:
+                            st.write(f"- 強制リフレッシュテスト: ❌ 失敗")
+                            st.write(f"- エラー詳細: {message[:100]}...")
+                        
+                        # 通常テスト
+                        try:
+                            from google_drive_utils import get_drive_client
+                            client = get_drive_client(
+                                service_account_file=config.GOOGLE_SERVICE_ACCOUNT_FILE,
+                                folder_id=config.GOOGLE_DRIVE_FOLDER_ID
+                            )
+                            files = client.list_files_in_folder()
+                            st.write(f"- 通常テスト: ✅ 成功 ({len(files)}ファイル)")
+                        except Exception as e:
+                            st.write(f"- 通常テスト: ❌ 失敗")
+                            st.write(f"- エラー: {str(e)[:100]}...")
                 
                 # キャッシュ情報表示
                 cache_info = data_source_status.get('cache', {})

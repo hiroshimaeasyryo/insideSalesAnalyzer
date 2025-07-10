@@ -41,6 +41,24 @@ class DataLoader:
             except Exception as e:
                 return False
     
+    def test_drive_connection_fresh(self) -> tuple:
+        """Google Drive接続を強制的に再テスト（キャッシュなし）"""
+        if not self.config.GOOGLE_DRIVE_ENABLED or not self.config.GOOGLE_DRIVE_FOLDER_ID:
+            return False, "Google Drive設定が無効"
+        
+        try:
+            from google_drive_utils import get_drive_client
+            # 強制リフレッシュで新しいクライアントを作成
+            client = get_drive_client(
+                service_account_file=self.config.GOOGLE_SERVICE_ACCOUNT_FILE,
+                folder_id=self.config.GOOGLE_DRIVE_FOLDER_ID,
+                force_refresh=True
+            )
+            files = client.list_files_in_folder()
+            return True, f"成功 ({len(files)}ファイル)"
+        except Exception as e:
+            return False, str(e)
+    
     def _get_cache_key(self, filename: str) -> str:
         """キャッシュキーを生成"""
         return f"{filename}_{self.config.GOOGLE_DRIVE_FOLDER_ID}"
@@ -211,6 +229,13 @@ class DataLoader:
         
         # LRUキャッシュもクリア
         self.is_drive_available.cache_clear()
+        
+        # Google Driveクライアントもリセット
+        try:
+            from google_drive_utils import reset_drive_client
+            reset_drive_client()
+        except ImportError:
+            pass
     
     def get_cache_info(self) -> Dict[str, Any]:
         """キャッシュ情報を取得"""

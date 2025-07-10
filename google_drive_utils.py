@@ -36,24 +36,41 @@ class GoogleDriveClient:
         try:
             # 環境変数からサービスアカウント情報を取得（Streamlit Cloud対応）
             if 'GOOGLE_SERVICE_ACCOUNT' in os.environ:
-                import json
-                service_account_info = json.loads(os.environ['GOOGLE_SERVICE_ACCOUNT'])
+                print("環境変数からサービスアカウント情報を読み込み中...")
+                service_account_env = os.environ['GOOGLE_SERVICE_ACCOUNT']
+                
+                if not service_account_env.strip():
+                    raise ValueError("GOOGLE_SERVICE_ACCOUNT環境変数が空です")
+                
+                try:
+                    service_account_info = json.loads(service_account_env)
+                    print(f"サービスアカウント情報解析成功: プロジェクトID={service_account_info.get('project_id')}")
+                except json.JSONDecodeError as e:
+                    raise ValueError(f"サービスアカウント情報のJSON解析に失敗: {e}")
+                
                 credentials = Credentials.from_service_account_info(
                     service_account_info,
                     scopes=['https://www.googleapis.com/auth/drive.readonly']
                 )
+                print("認証情報作成成功")
+                
             # ローカルファイルから読み込み
             elif os.path.exists(self.service_account_file):
+                print(f"ローカルファイルからサービスアカウント情報を読み込み: {self.service_account_file}")
                 credentials = Credentials.from_service_account_file(
                     self.service_account_file,
                     scopes=['https://www.googleapis.com/auth/drive.readonly']
                 )
             else:
-                raise FileNotFoundError(f"サービスアカウントファイルが見つかりません: {self.service_account_file}")
+                available_vars = [k for k in os.environ.keys() if 'GOOGLE' in k]
+                raise FileNotFoundError(f"サービスアカウント認証情報が見つかりません。環境変数: {available_vars}, ファイル: {self.service_account_file}")
             
+            print("Google Drive API サービス構築中...")
             self.service = build('drive', 'v3', credentials=credentials)
+            print("Google Drive API 認証完了")
             
         except Exception as e:
+            print(f"Google Drive 認証エラー詳細: {type(e).__name__}: {str(e)}")
             raise
     
     def list_files_in_folder(self, folder_id=None, file_extension='.json'):
@@ -156,23 +173,31 @@ class GoogleDriveClient:
 # グローバルクライアントインスタンス
 _drive_client = None
 
-def get_drive_client(service_account_file=None, folder_id=None):
+def get_drive_client(service_account_file=None, folder_id=None, force_refresh=False):
     """
     Google Driveクライアントのシングルトンインスタンスを取得
     
     Args:
         service_account_file (str): サービスアカウントJSONファイルのパス
         folder_id (str): Google DriveフォルダID
+        force_refresh (bool): 強制的に新しいインスタンスを作成
         
     Returns:
         GoogleDriveClient: クライアントインスタンス
     """
     global _drive_client
     
-    if _drive_client is None:
+    if _drive_client is None or force_refresh:
+        print(f"Google Driveクライアント{'再作成' if force_refresh else '作成'}中...")
         _drive_client = GoogleDriveClient(service_account_file, folder_id)
     
     return _drive_client
+
+def reset_drive_client():
+    """グローバルクライアントインスタンスをリセット"""
+    global _drive_client
+    _drive_client = None
+    print("Google Drive クライアントをリセットしました")
 
 def load_json_from_drive(filename, folder_id=None, service_account_file=None):
     """

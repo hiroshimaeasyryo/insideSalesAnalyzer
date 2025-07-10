@@ -42,19 +42,27 @@ class Config:
     def _load_from_streamlit_secrets(self):
         """Streamlit Secrets から設定を読み込み"""
         try:
-            if hasattr(st, 'secrets') and 'google_drive' in st.secrets:
-                secrets = st.secrets['google_drive']
+            if hasattr(st, 'secrets'):
+                # 直接設定されたトップレベルのsecretsを処理
+                for key in ['PRODUCTION_MODE', 'GOOGLE_DRIVE_ENABLED', 'USE_LOCAL_FALLBACK', 'GOOGLE_DRIVE_FOLDER_ID']:
+                    if key in st.secrets:
+                        os.environ[key] = str(st.secrets[key])
                 
-                # 環境変数として設定
-                for key, value in secrets.items():
-                    if key == 'service_account' and isinstance(value, str):
-                        # JSON文字列をパース
-                        os.environ['GOOGLE_SERVICE_ACCOUNT'] = value
-                    else:
-                        os.environ[key.upper()] = str(value)
+                # google_driveセクションを処理
+                if 'google_drive' in st.secrets:
+                    secrets = st.secrets['google_drive']
+                    
+                    # 環境変数として設定
+                    for key, value in secrets.items():
+                        if key == 'service_account' and isinstance(value, str):
+                            # JSON文字列を環境変数に設定
+                            os.environ['GOOGLE_SERVICE_ACCOUNT'] = value
+                        else:
+                            os.environ[key.upper()] = str(value)
                 
         except Exception as e:
-            # Streamlit Secrets が利用できない場合は警告なしで続行
+            # エラーログを出力（デバッグ用）
+            print(f"Streamlit Secrets読み込みエラー: {e}")
             pass
     
     def _get_env(self, key: str, default: Optional[str] = None) -> Optional[str]:
