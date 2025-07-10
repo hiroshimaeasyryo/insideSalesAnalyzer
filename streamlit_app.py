@@ -1524,7 +1524,7 @@ elif authentication_status:
                     st.subheader("商材別分析")
                     
                     # 商材別分析のサブタブ
-                    subtab1, subtab2, subtab3 = st.tabs(["📊 商材別パフォーマンス", "🔗 支部×商材クロス分析", "📈 商材別3ヶ月比較"])
+                    subtab1, subtab2, subtab3, subtab4 = st.tabs(["📊 商材別パフォーマンス", "🔗 支部×商材クロス分析", "📈 商材別3ヶ月比較", "📋 商材別詳細"])
                     
                     with subtab1:
                         # 商材別パフォーマンス
@@ -1616,59 +1616,6 @@ elif authentication_status:
                                 st.plotly_chart(fig_product_revenue, use_container_width=True)
                             else:
                                 st.info("TAAANデータがありません")
-                        
-                                            # 商材別詳細テーブル
-                    st.subheader("商材別詳細")
-                    
-                    # TAAANデータの詳細テーブル
-                    if not taaan_product_summary.empty:
-                        st.subheader("📈 TAAANデータ（TAAAN商談数・承認数・確定売上）")
-                        
-                        # 承認率の計算
-                        taaan_product_summary['approval_rate'] = (
-                            (taaan_product_summary['approved_deals'] / taaan_product_summary['taaan_deals'] * 100)
-                            .fillna(0)
-                            .round(1)
-                        )
-                        
-                        # 表示するカラムを選択
-                        taaan_display_columns = [
-                            'product', 'taaan_deals', 'approved_deals', 'total_revenue', 'total_potential_revenue',
-                            'approval_rate'
-                        ]
-                        
-                        # カラム名の日本語マッピング
-                        taaan_column_labels = {
-                            'product': '商材',
-                            'taaan_deals': 'TAAAN商談数',
-                            'approved_deals': '承認数',
-                            'total_revenue': '確定売上',
-                            'total_potential_revenue': '潜在売上',
-                            'approval_rate': '承認率(%)'
-                        }
-                        
-                        # 合計行を追加
-                        taaan_total_row = {
-                            'product': '合計',
-                            'taaan_deals': taaan_product_summary['taaan_deals'].sum(),
-                            'approved_deals': taaan_product_summary['approved_deals'].sum(),
-                            'total_revenue': taaan_product_summary['total_revenue'].sum(),
-                            'total_potential_revenue': taaan_product_summary['total_potential_revenue'].sum(),
-                            'approval_rate': 0  # 合計行では計算しない
-                        }
-                        
-                        # 合計行を追加
-                        taaan_display_data = pd.concat([
-                            taaan_product_summary[taaan_display_columns],
-                            pd.DataFrame([taaan_total_row])
-                        ], ignore_index=True)
-                        
-                        # テーブル表示
-                        st.dataframe(
-                            taaan_display_data.rename(columns=taaan_column_labels),
-                            use_container_width=True,
-                            hide_index=True
-                        )
                     
                     with subtab2:
                         # 支部×商材クロス分析
@@ -1760,17 +1707,16 @@ elif authentication_status:
                                                     colorbar=dict(title=analysis_metric)
                                                 )
                                             )
+                                            # ホバー時の情報を日本語に設定
+                                            fig_cross.update_traces(
+                                                hovertemplate="<b>支部</b>: %{y}<br><b>商材</b>: %{x}<br><b>" + analysis_metric + "</b>: %{z:,.0f}<extra></extra>"
+                                            )
+                                            
                                             fig_cross.update_layout(
                                                 title=f"{analysis_metric}の支部×商材クロス分析",
                                                 height=500,
                                                 xaxis_title="商材",
                                                 yaxis_title="支部"
-                                            )
-                                            st.plotly_chart(fig_cross, use_container_width=True)
-                                            
-                                            # ホバー時の情報を日本語に設定
-                                            fig_cross.update_traces(
-                                                hovertemplate="<b>支部</b>: %{y}<br><b>商材</b>: %{x}<br><b>" + analysis_metric + "</b>: %{z:,.0f}<extra></extra>"
                                             )
                                             st.plotly_chart(fig_cross, use_container_width=True)
                                             
@@ -2045,6 +1991,62 @@ elif authentication_status:
                                 st.dataframe(formatted_pivot, use_container_width=True)
                             else:
                                 st.info("比較したい商材を選択してください。")
+                    
+                    with subtab4:
+                        # 商材別詳細
+                        st.subheader("商材別詳細")
+                        
+                        # TAAANデータの詳細テーブル
+                        if not taaan_product_summary.empty:
+                            st.subheader("📈 TAAANデータ（TAAAN商談数・承認数・確定売上）")
+                            
+                            # 承認率の計算
+                            taaan_product_summary['approval_rate'] = (
+                                (taaan_product_summary['approved_deals'] / taaan_product_summary['taaan_deals'] * 100)
+                                .fillna(0)
+                                .round(1)
+                            )
+                            
+                            # 表示するカラムを選択
+                            taaan_display_columns = [
+                                'product', 'taaan_deals', 'approved_deals', 'total_revenue', 'total_potential_revenue',
+                                'approval_rate'
+                            ]
+                            
+                            # カラム名の日本語マッピング
+                            taaan_column_labels = {
+                                'product': '商材',
+                                'taaan_deals': 'TAAAN商談数',
+                                'approved_deals': '承認数',
+                                'total_revenue': '確定売上',
+                                'total_potential_revenue': '潜在売上',
+                                'approval_rate': '承認率(%)'
+                            }
+                            
+                            # 合計行を追加
+                            taaan_total_row = {
+                                'product': '合計',
+                                'taaan_deals': taaan_product_summary['taaan_deals'].sum(),
+                                'approved_deals': taaan_product_summary['approved_deals'].sum(),
+                                'total_revenue': taaan_product_summary['total_revenue'].sum(),
+                                'total_potential_revenue': taaan_product_summary['total_potential_revenue'].sum(),
+                                'approval_rate': 0  # 合計行では計算しない
+                            }
+                            
+                            # 合計行を追加
+                            taaan_display_data = pd.concat([
+                                taaan_product_summary[taaan_display_columns],
+                                pd.DataFrame([taaan_total_row])
+                            ], ignore_index=True)
+                            
+                            # テーブル表示
+                            st.dataframe(
+                                taaan_display_data.rename(columns=taaan_column_labels),
+                                use_container_width=True,
+                                hide_index=True
+                            )
+                        else:
+                            st.warning("⚠️ TAAANデータが見つかりません。商材別詳細を表示するにはTAAANデータが必要です。")
                 
                 with tab5:
                     st.subheader("詳細データ")
