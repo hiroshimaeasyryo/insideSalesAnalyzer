@@ -49,6 +49,30 @@ class DataLoader:
         Returns:
             Optional[Dict]: JSONデータ（読み込み失敗時はNone）
         """
+        # 本番環境モードの場合はGoogle Driveのみ使用
+        if self.config.PRODUCTION_MODE:
+            if not self.config.GOOGLE_DRIVE_ENABLED or not self.config.GOOGLE_DRIVE_FOLDER_ID:
+                raise RuntimeError(
+                    "本番環境モードではGoogle Drive設定が必須です。"
+                    "GOOGLE_DRIVE_ENABLED=true および GOOGLE_DRIVE_FOLDER_ID を設定してください。"
+                )
+            
+            if not self.is_drive_available():
+                raise RuntimeError(
+                    "本番環境モードでGoogle Drive接続に失敗しました。"
+                    "サービスアカウント認証情報とネットワーク接続を確認してください。"
+                )
+            
+            # Google Driveからのみ読み込み（フォールバックなし）
+            print(f"🌐 [本番モード] Google Driveから読み込み中: {filename}")
+            data = load_json_from_drive(
+                filename,
+                folder_id=self.config.GOOGLE_DRIVE_FOLDER_ID,
+                service_account_file=self.config.GOOGLE_SERVICE_ACCOUNT_FILE
+            )
+            print(f"✅ [本番モード] Google Drive読み込み成功: {filename}")
+            return data
+        
         # 1. Google Driveから読み込みを試行
         if self.is_drive_available():
             try:
@@ -65,7 +89,10 @@ class DataLoader:
                 if not self.config.USE_LOCAL_FALLBACK:
                     raise
         
-        # 2. ローカルファイルシステムから読み込み
+        # 2. ローカルファイルシステムから読み込み（開発環境のみ）
+        if not self.config.USE_LOCAL_FALLBACK:
+            raise RuntimeError(f"Google Drive読み込みに失敗し、ローカルフォールバックが無効化されています: {filename}")
+        
         return self._load_local_file(filename)
     
     def _load_local_file(self, filename: str) -> Optional[Dict[Any, Any]]:

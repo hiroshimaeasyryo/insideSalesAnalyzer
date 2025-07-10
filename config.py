@@ -13,6 +13,39 @@ from dotenv import load_dotenv
 # .envファイルを読み込み
 load_dotenv()
 
+# Streamlit Cloud用の設定読み込み
+def _load_streamlit_secrets():
+    """Streamlit Secretsからの設定読み込み"""
+    try:
+        import streamlit as st
+        if hasattr(st, 'secrets') and 'google_drive' in st.secrets:
+            secrets = st.secrets.google_drive
+            
+            # 環境変数として設定（既存の環境変数を上書きしない）
+            if not os.getenv('GOOGLE_DRIVE_ENABLED'):
+                os.environ['GOOGLE_DRIVE_ENABLED'] = str(secrets.get("enabled", "false"))
+            if not os.getenv('GOOGLE_DRIVE_FOLDER_ID'):
+                os.environ['GOOGLE_DRIVE_FOLDER_ID'] = secrets.get("folder_id", "")
+            if not os.getenv('PRODUCTION_MODE'):
+                os.environ['PRODUCTION_MODE'] = str(secrets.get("production_mode", "false"))
+            if not os.getenv('USE_LOCAL_FALLBACK'):
+                os.environ['USE_LOCAL_FALLBACK'] = str(secrets.get("use_local_fallback", "true"))
+            
+            # サービスアカウント情報
+            if "service_account" in secrets and not os.getenv('GOOGLE_SERVICE_ACCOUNT'):
+                os.environ['GOOGLE_SERVICE_ACCOUNT'] = secrets.service_account
+                
+            print("✅ Streamlit Secrets から設定を読み込みました")
+            
+    except ImportError:
+        # Streamlitが利用できない環境（開発環境など）
+        pass
+    except Exception as e:
+        print(f"⚠️ Streamlit Secrets読み込みエラー: {e}")
+
+# Streamlit Secrets読み込み実行
+_load_streamlit_secrets()
+
 class Config:
     """アプリケーション設定クラス"""
     
@@ -26,6 +59,9 @@ class Config:
     
     # フォールバック設定
     USE_LOCAL_FALLBACK = os.getenv('USE_LOCAL_FALLBACK', 'true').lower() == 'true'
+    
+    # 本番環境での強制モード（Google Driveのみ使用）
+    PRODUCTION_MODE = os.getenv('PRODUCTION_MODE', 'false').lower() == 'true'
     
     @classmethod
     def get_data_source_info(cls):

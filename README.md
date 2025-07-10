@@ -103,6 +103,48 @@ git push origin main
 - **Streamlit無料プラン制限**: 200MB/ファイル
 - **✅ 制限内で十分余裕**
 
+## 🔐 セキュリティ・本番環境
+
+### 🛡️ データ保護
+- **機微データの除外**: `dataset/`フォルダはリポジトリに含まれません
+- **読み取り専用権限**: Google Drive接続は読み取り専用
+- **環境別制御**: 本番環境と開発環境での異なるセキュリティレベル
+
+### 🔑 認証・アクセス制御
+- サービスアカウントベースの認証
+- 認証情報の環境変数管理
+- Google Cloud Console での権限管理
+
+### 🚀 本番環境向け機能
+- **PRODUCTION_MODE**: 本番環境での強化されたセキュリティ
+- **フォールバック制御**: ローカルファイル代替機能の有効/無効
+- **環境別設定**: プラットフォーム固有の設定サポート
+
+### 🔧 本番環境設定
+詳細な本番環境設定は [`PRODUCTION_SETUP.md`](PRODUCTION_SETUP.md) を参照：
+
+#### 基本設定
+```bash
+# 本番環境の推奨設定
+export PRODUCTION_MODE=true
+export USE_LOCAL_FALLBACK=false
+export GOOGLE_DRIVE_ENABLED=true
+export GOOGLE_DRIVE_FOLDER_ID=your-folder-id
+export GOOGLE_SERVICE_ACCOUNT='{"type": "service_account", ...}'
+```
+
+#### プラットフォーム対応
+- ✅ Streamlit Cloud (Secrets管理)
+- ✅ Heroku (環境変数)
+- ✅ Vercel (環境変数)
+- ✅ AWS/GCP/Azure (環境変数)
+
+#### 設定確認
+```bash
+# 本番環境での設定確認
+python debug_env.py
+```
+
 ## 🔧 カスタマイズ
 
 ### データパスの変更
@@ -119,7 +161,37 @@ with open(f'data/基本分析_{month}.json', 'r', encoding='utf-8') as f:
 
 ## 🛠️ トラブルシューティング
 
-### Google Drive関連
+### 🚀 本番環境関連
+
+#### 本番環境でGoogle Drive読み込みが失敗する
+**症状**: ローカルでは動作するが、本番環境でフォールバックが発生
+
+**原因**:
+- 環境変数の設定不備
+- サービスアカウント認証情報の問題  
+- ネットワーク/ファイアウォールの制限
+
+**解決策**:
+```bash
+# 設定確認
+python debug_env.py
+
+# 本番環境モードでテスト
+PRODUCTION_MODE=true USE_LOCAL_FALLBACK=false python debug_env.py
+```
+
+詳細は [`PRODUCTION_SETUP.md`](PRODUCTION_SETUP.md) を参照
+
+#### 機微データがリポジトリに含まれる
+**解決策**:
+```bash
+# データファイルを除外
+git rm -r --cached dataset/*.json
+git add .gitignore
+git commit -m "Remove sensitive data from repository"
+```
+
+### 🌐 Google Drive関連
 
 #### 🌐 接続エラー
 ```bash

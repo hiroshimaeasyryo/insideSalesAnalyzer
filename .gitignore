@@ -6,6 +6,10 @@ service_account_*.json
 .env
 .env.local
 
+# 機微データ（本番環境ではGoogle Driveから読み込み）
+dataset/
+!dataset/.gitkeep
+
 # Python
 __pycache__/
 *.py[cod]
