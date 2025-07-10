@@ -1,7 +1,7 @@
 {
   "metadata": {
     "report_period": "2025-02",
-    "generated_at": "2025-07-09T10:34:31.494Z",
+    "generated_at": "2025-07-09T14:26:21.582Z",
     "report_type": "monthly_summary"
   },
   "key_metrics": {
@@ -232,7 +232,7 @@
       "total_potential_revenue": 0,
       "approval_rate": "28.57"
     },
-    "マネーフォワードクラウド連結会計": {
+    "マネーフォワード クラウド連結会計": {
       "total_calls": 0,
       "total_hours": 0,
       "total_appointments": 0,
@@ -386,5 +386,115 @@
       "value": "96名",
       "threshold": "15名"
     }
-  ]
+  ],
+  "branch_product_cross_analysis": {
+    "taaan_deals": {
+      "社員": {
+        "LegalForce": 0,
+        "Bill One": 0,
+        "sansan": 0,
+        "Bill One経費": 0,
+        "TOKIUM": 0,
+        "Cynthialy": 0,
+        "Legalscape": 0,
+        "クラウド契約": 0,
+        "KANPAIイベント": 0,
+        "mog": 0,
+        "manebi": 0,
+        "flier": 0,
+        "シューマツワーカー": 0,
+        "マネーフォワード クラウド契約": 1,
+        "マネーフォワード クラウド連結会計": 0
+      },
+      "未設定": {
+        "LegalForce": 0,
+        "Bill One": 0,
+        "sansan": 0,
+        "Bill One経費": 0,
+        "TOKIUM": 0,
+        "Cynthialy": 0,
+        "Legalscape": 0,
+        "クラウド契約": 0,
+        "KANPAIイベント": 0,
+        "mog": 0,
+        "manebi": 0,
+        "flier": 0,
+        "シューマツワーカー": 0,
+        "マネーフォワード クラウド契約": 6,
+        "マネーフォワード クラウド連結会計": 2
+      }
+    },
+    "approved_deals": {
+      "社員": {
+        "LegalForce": 0,
+        "Bill One": 0,
+        "sansan": 0,
+        "Bill One経費": 0,
+        "TOKIUM": 0,
+        "Cynthialy": 0,
+        "Legalscape": 0,
+        "クラウド契約": 0,
+        "KANPAIイベント": 0,
+        "mog": 0,
+        "manebi": 0,
+        "flier": 0,
+        "シューマツワーカー": 0,
+        "マネーフォワード クラウド契約": 0,
+        "マネーフォワード クラウド連結会計": 0
+      },
+      "未設定": {
+        "LegalForce": 0,
+        "Bill One": 0,
+        "sansan": 0,
+        "Bill One経費": 0,
+        "TOKIUM": 0,
+        "Cynthialy": 0,
+        "Legalscape": 0,
+        "クラウド契約": 0,
+        "KANPAIイベント": 0,
+        "mog": 0,
+        "manebi": 0,
+        "flier": 0,
+        "シューマツワーカー": 0,
+        "マネーフォワード クラウド契約": 2,
+        "マネーフォワード クラウド連結会計": 1
+      }
+    },
+    "total_revenue": {
+      "社員": {
+        "LegalForce": 0,
+        "Bill One": 0,
+        "sansan": 0,
+        "Bill One経費": 0,
+        "TOKIUM": 0,
+        "Cynthialy": 0,
+        "Legalscape": 0,
+        "クラウド契約": 0,
+        "KANPAIイベント": 0,
+        "mog": 0,
+        "manebi": 0,
+        "flier": 0,
+        "シューマツワーカー": 0,
+        "マネーフォワード クラウド契約": 0,
+        "マネーフォワード クラウド連結会計": 0
+      },
+      "未設定": {
+        "LegalForce": 0,
+        "Bill One": 0,
+        "sansan": 0,
+        "Bill One経費": 0,
+        "TOKIUM": 0,
+        "Cynthialy": 0,
+        "Legalscape": 0,
+        "クラウド契約": 0,
+        "KANPAIイベント": 0,
+        "mog": 0,
+        "manebi": 0,
+        "flier": 0,
+        "シューマツワーカー": 0,
+        "マネーフォワード クラウド契約": 112778,
+        "マネーフォワード クラウド連結会計": 32222
+      }
+    }
+  }
 }

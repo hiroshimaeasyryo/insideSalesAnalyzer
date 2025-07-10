@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generated_at": "2025-07-09T10:31:57.607Z",
+    "generated_at": "2025-07-09T14:23:21.566Z",
     "data_period": {
       "start_month": "2024-01",
       "end_month": "2025-07"
@@ -24737,8 +24737,8 @@
           "total_potential_revenue": 0,
           "approval_rate": 0
         },
-        "マネーフォワードクラウド連結会計": {
-          "product_name": "マネーフォワードクラウド連結会計",
+        "マネーフォワード クラウド連結会計": {
+          "product_name": "マネーフォワード クラウド連結会計",
           "total_calls": 0,
           "total_hours": 0,
           "total_appointments": 0,
@@ -32444,8 +32444,8 @@
           "total_potential_revenue": 0,
           "approval_rate": "28.57"
         },
-        "マネーフォワードクラウド連結会計": {
-          "product_name": "マネーフォワードクラウド連結会計",
+        "マネーフォワード クラウド連結会計": {
+          "product_name": "マネーフォワード クラウド連結会計",
           "total_calls": 0,
           "total_hours": 0,
           "total_appointments": 0,
@@ -55669,12 +55669,12 @@
           "total_calls": 170,
           "total_hours": 23.5,
           "total_appointments": 8,
-          "total_deals": 0,
-          "total_approved": 0,
-          "total_rejected": 0,
-          "total_revenue": 0,
+          "total_deals": 4,
+          "total_approved": 1,
+          "total_rejected": 3,
+          "total_revenue": 33000,
           "total_potential_revenue": 0,
-          "approval_rate": 0
+          "approval_rate": "25.00"
         },
         "digital builder": {
           "product_name": "digital builder",
@@ -55716,12 +55716,12 @@
           "total_calls": 0,
           "total_hours": 0,
           "total_appointments": 0,
-          "total_deals": 7,
-          "total_approved": 2,
-          "total_rejected": 5,
-          "total_revenue": 66000,
+          "total_deals": 3,
+          "total_approved": 1,
+          "total_rejected": 2,
+          "total_revenue": 33000,
           "total_potential_revenue": 0,
-          "approval_rate": "28.57"
+          "approval_rate": "33.33"
         }
       },
       "staff": {
@@ -61423,11 +61423,12 @@
           "total_calls": 8813,
           "total_hours": 901.5,
           "total_appointments": 93,
-          "total_deals": 0,
-          "total_approved": 0,
-          "total_revenue": 0,
+          "total_deals": 61,
+          "total_approved": 34,
+          "total_revenue": 1290000,
           "total_potential_revenue": 0,
-          "approval_rate": 0
+          "approval_rate": "55.74",
+          "total_rejected": null
         },
         "Bill One経費": {
           "product_name": "Bill One経費",
@@ -61458,12 +61459,12 @@
           "total_calls": 359,
           "total_hours": 46,
           "total_appointments": 22,
-          "total_deals": 0,
-          "total_approved": 0,
-          "total_rejected": 0,
-          "total_revenue": 0,
-          "total_potential_revenue": 0,
-          "approval_rate": 0
+          "total_deals": 40,
+          "total_approved": 23,
+          "total_rejected": 7,
+          "total_revenue": 725000,
+          "total_potential_revenue": 273000,
+          "approval_rate": "57.50"
         },
         "sansan": {
           "product_name": "sansan",
@@ -61546,8 +61547,8 @@
           "total_potential_revenue": 0,
           "approval_rate": "71.43"
         },
-        "営業DXサービスSansan": {
-          "product_name": "営業DXサービスSansan",
+        "Sansan": {
+          "product_name": "Sansan",
           "total_calls": 0,
           "total_hours": 0,
           "total_appointments": 0,
@@ -61558,20 +61559,8 @@
           "total_potential_revenue": 0,
           "approval_rate": "79.59"
         },
-        "インボイス管理サービスBill One": {
-          "product_name": "インボイス管理サービスBill One",
-          "total_calls": 0,
-          "total_hours": 0,
-          "total_appointments": 0,
-          "total_deals": 61,
-          "total_approved": 34,
-          "total_rejected": 27,
-          "total_revenue": 1290000,
-          "total_potential_revenue": 0,
-          "approval_rate": "55.74"
-        },
-        "AIコンストシェルジュ「光/Hikari」": {
-          "product_name": "AIコンストシェルジュ「光/Hikari」",
+        "光/Hikari": {
+          "product_name": "光/Hikari",
           "total_calls": 0,
           "total_hours": 0,
           "total_appointments": 0,
@@ -61582,8 +61571,8 @@
           "total_potential_revenue": 0,
           "approval_rate": "87.50"
         },
-        "AI法務プラットフォーム「LegalOn Cloud」": {
-          "product_name": "AI法務プラットフォーム「LegalOn Cloud」",
+        "LegalOn Cloud": {
+          "product_name": "LegalOn Cloud",
           "total_calls": 0,
           "total_hours": 0,
           "total_appointments": 0,
@@ -61599,12 +61588,24 @@
           "total_calls": 0,
           "total_hours": 0,
           "total_appointments": 0,
-          "total_deals": 46,
-          "total_approved": 27,
-          "total_rejected": 8,
-          "total_revenue": 824000,
-          "total_potential_revenue": 306000,
-          "approval_rate": "58.70"
+          "total_deals": 3,
+          "total_approved": 2,
+          "total_rejected": 0,
+          "total_revenue": 66000,
+          "total_potential_revenue": 33000,
+          "approval_rate": "66.67"
+        },
+        "TOKIUMアシスタント": {
+          "product_name": "TOKIUMアシスタント",
+          "total_calls": 0,
+          "total_hours": 0,
+          "total_appointments": 0,
+          "total_deals": 3,
+          "total_approved": 2,
+          "total_rejected": 1,
+          "total_revenue": 33000,
+          "total_potential_revenue": 0,
+          "approval_rate": "66.67"
         }
       },
       "staff": {
@@ -68150,9 +68151,9 @@
         "横浜": {
           "branch_name": "横浜",
           "staff_count": 3,
-          "total_calls": 298,
-          "total_hours": 31,
-          "total_appointments": 4,
+          "total_calls": 327,
+          "total_hours": 34,
+          "total_appointments": 5,
           "total_deals": 12,
           "total_approved": 2,
           "total_rejected": 1,
@@ -68204,11 +68205,12 @@
           "total_calls": 1782,
           "total_hours": 186.5,
           "total_appointments": 12,
-          "total_deals": 0,
-          "total_approved": 0,
-          "total_revenue": 0,
-          "total_potential_revenue": 0,
-          "approval_rate": 0
+          "total_deals": 79,
+          "total_approved": 3,
+          "total_revenue": 110000,
+          "total_potential_revenue": 2445000,
+          "approval_rate": "3.80",
+          "total_rejected": null
         },
         "Bill One経費": {
           "product_name": "Bill One経費",
@@ -68238,17 +68240,17 @@
           "total_calls": 34,
           "total_hours": 8,
           "total_appointments": 3,
-          "total_deals": 0,
-          "total_approved": 0,
-          "total_revenue": 0,
-          "total_potential_revenue": 0,
-          "approval_rate": 0
+          "total_deals": 14,
+          "total_approved": 4,
+          "total_revenue": 140000,
+          "total_potential_revenue": 406000,
+          "approval_rate": "28.57"
         },
         "sansan": {
           "product_name": "sansan",
-          "total_calls": 648,
-          "total_hours": 67,
-          "total_appointments": 7,
+          "total_calls": 677,
+          "total_hours": 70,
+          "total_appointments": 8,
           "total_deals": 0,
           "total_approved": 0,
           "total_revenue": 0,
@@ -68278,20 +68280,8 @@
           "total_potential_revenue": 0,
           "approval_rate": 0
         },
-        "インボイス管理サービスBill One": {
-          "product_name": "インボイス管理サービスBill One",
-          "total_calls": 0,
-          "total_hours": 0,
-          "total_appointments": 0,
-          "total_deals": 79,
-          "total_approved": 3,
-          "total_rejected": 13,
-          "total_revenue": 110000,
-          "total_potential_revenue": 2445000,
-          "approval_rate": "3.80"
-        },
-        "AIコンストシェルジュ「光/Hikari」": {
-          "product_name": "AIコンストシェルジュ「光/Hikari」",
+        "光/Hikari": {
+          "product_name": "光/Hikari",
           "total_calls": 0,
           "total_hours": 0,
           "total_appointments": 0,
@@ -68314,20 +68304,20 @@
           "total_potential_revenue": 200000,
           "approval_rate": "0.00"
         },
-        "営業DXサービスSansan": {
-          "product_name": "営業DXサービスSansan",
+        "Sansan": {
+          "product_name": "Sansan",
           "total_calls": 0,
           "total_hours": 0,
           "total_appointments": 0,
-          "total_deals": 16,
+          "total_deals": 13,
           "total_approved": 3,
           "total_rejected": 1,
           "total_revenue": 95000,
-          "total_potential_revenue": 370000,
-          "approval_rate": "18.75"
+          "total_potential_revenue": 270000,
+          "approval_rate": "23.08"
         },
-        "@Tovas": {
-          "product_name": "@Tovas",
+        "@TOVAS": {
+          "product_name": "@TOVAS",
           "total_calls": 0,
           "total_hours": 0,
           "total_appointments": 0,
@@ -68338,8 +68328,8 @@
           "total_potential_revenue": 210000,
           "approval_rate": "0.00"
         },
-        "AI法務プラットフォーム「LegalOn Cloud」": {
-          "product_name": "AI法務プラットフォーム「LegalOn Cloud」",
+        "LegalOn Cloud": {
+          "product_name": "LegalOn Cloud",
           "total_calls": 0,
           "total_hours": 0,
           "total_appointments": 0,
@@ -68355,12 +68345,12 @@
           "total_calls": 0,
           "total_hours": 0,
           "total_appointments": 0,
-          "total_deals": 14,
-          "total_approved": 4,
+          "total_deals": 3,
+          "total_approved": 0,
           "total_rejected": 0,
-          "total_revenue": 140000,
-          "total_potential_revenue": 406000,
-          "approval_rate": "28.57"
+          "total_revenue": 0,
+          "total_potential_revenue": 100000,
+          "approval_rate": "0.00"
         }
       },
       "staff": {
@@ -68715,9 +68705,9 @@
           "staff_name": "上西 瑠菜",
           "branch": "横浜",
           "join_date": "2024-11-28T00:15:56.000Z",
-          "total_calls": 128,
-          "total_hours": 14,
-          "total_appointments": 1,
+          "total_calls": 157,
+          "total_hours": 17,
+          "total_appointments": 2,
           "total_deals": 4,
           "total_approved": 2,
           "total_rejected": 1,
@@ -68752,6 +68742,21 @@
                 "charge_connected": 7,
                 "charge_bk": 7,
                 "get_appointment": 0
+              },
+              "sub_products": []
+            },
+            {
+              "date": "2025-07-08T15:00:00.000Z",
+              "main_product": {
+                "product": "sansan",
+                "call_hours": 3,
+                "call_count": 29,
+                "reception_bk": 3,
+                "no_one_in_charge": 19,
+                "disconnect": 2,
+                "charge_connected": 5,
+                "charge_bk": 4,
+                "get_appointment": 1
               },
               "sub_products": []
             }
@@ -70244,9 +70249,9 @@
         }
       },
       "summary": {
-        "total_calls": 3134,
-        "total_hours": 334.5,
-        "total_appointments": 33,
+        "total_calls": 3163,
+        "total_hours": 337.5,
+        "total_appointments": 34,
         "total_deals": 151,
         "total_approved": 14,
         "total_rejected": 15,
@@ -70257,9 +70262,9 @@
     }
   },
   "summary_by_period": {
-    "total_calls": 127831,
-    "total_hours": 13681.5,
-    "total_appointments": 2177,
+    "total_calls": 127860,
+    "total_hours": 13684.5,
+    "total_appointments": 2178,
     "total_deals": 425,
     "total_approved": 188,
     "total_rejected": 104,
@@ -72386,7 +72391,7 @@
           "approval_rate": null,
           "true_approval_rate": 0
         },
-        "マネーフォワードクラウド連結会計": {
+        "マネーフォワード クラウド連結会計": {
           "self_reported_appointments": 0,
           "taaan_entries": 4,
           "approved_deals": 3,
@@ -73034,7 +73039,7 @@
           "approval_rate": 0.2857142857142857,
           "true_approval_rate": null
         },
-        "マネーフォワードクラウド連結会計": {
+        "マネーフォワード クラウド連結会計": {
           "self_reported_appointments": 0,
           "taaan_entries": 2,
           "approved_deals": 1,
@@ -74652,11 +74657,11 @@
         },
         "TOKIUM": {
           "self_reported_appointments": 2,
-          "taaan_entries": 0,
-          "approved_deals": 0,
-          "taaan_rate": 0,
-          "approval_rate": null,
-          "true_approval_rate": 0
+          "taaan_entries": 4,
+          "approved_deals": 1,
+          "taaan_rate": 2,
+          "approval_rate": 0.25,
+          "true_approval_rate": 0.5
         },
         "flier": {
           "self_reported_appointments": 2,
@@ -74668,10 +74673,10 @@
         },
         "未設定": {
           "self_reported_appointments": 0,
-          "taaan_entries": 7,
-          "approved_deals": 2,
+          "taaan_entries": 3,
+          "approved_deals": 1,
           "taaan_rate": null,
-          "approval_rate": 0.2857142857142857,
+          "approval_rate": 0.3333333333333333,
           "true_approval_rate": null
         }
       }
@@ -75228,11 +75233,11 @@
       "by_product": {
         "Bill One": {
           "self_reported_appointments": 120,
-          "taaan_entries": 0,
-          "approved_deals": 0,
-          "taaan_rate": 0,
-          "approval_rate": null,
-          "true_approval_rate": 0
+          "taaan_entries": 61,
+          "approved_deals": 34,
+          "taaan_rate": 0.5083333333333333,
+          "approval_rate": 0.5573770491803278,
+          "true_approval_rate": 0.2833333333333333
         },
         "Bill One経費": {
           "self_reported_appointments": 9,
@@ -75252,11 +75257,11 @@
         },
         "TOKIUM": {
           "self_reported_appointments": 12,
-          "taaan_entries": 0,
-          "approved_deals": 0,
-          "taaan_rate": 0,
-          "approval_rate": null,
-          "true_approval_rate": 0
+          "taaan_entries": 40,
+          "approved_deals": 23,
+          "taaan_rate": 3.3333333333333335,
+          "approval_rate": 0.575,
+          "true_approval_rate": 1.9166666666666667
         },
         "Cynthialy": {
           "self_reported_appointments": 12,
@@ -75298,7 +75303,7 @@
           "approval_rate": 0.7142857142857143,
           "true_approval_rate": null
         },
-        "営業DXサービスSansan": {
+        "Sansan": {
           "self_reported_appointments": 0,
           "taaan_entries": 49,
           "approved_deals": 39,
@@ -75306,15 +75311,7 @@
           "approval_rate": 0.7959183673469388,
           "true_approval_rate": null
         },
-        "インボイス管理サービスBill One": {
-          "self_reported_appointments": 0,
-          "taaan_entries": 61,
-          "approved_deals": 34,
-          "taaan_rate": null,
-          "approval_rate": 0.5573770491803278,
-          "true_approval_rate": null
-        },
-        "AIコンストシェルジュ「光/Hikari」": {
+        "光/Hikari": {
           "self_reported_appointments": 0,
           "taaan_entries": 8,
           "approved_deals": 7,
@@ -75322,7 +75319,7 @@
           "approval_rate": 0.875,
           "true_approval_rate": null
         },
-        "AI法務プラットフォーム「LegalOn Cloud」": {
+        "LegalOn Cloud": {
           "self_reported_appointments": 0,
           "taaan_entries": 10,
           "approved_deals": 3,
@@ -75332,22 +75329,30 @@
         },
         "未設定": {
           "self_reported_appointments": 0,
-          "taaan_entries": 46,
-          "approved_deals": 27,
+          "taaan_entries": 3,
+          "approved_deals": 2,
           "taaan_rate": null,
-          "approval_rate": 0.5869565217391305,
+          "approval_rate": 0.6666666666666666,
+          "true_approval_rate": null
+        },
+        "TOKIUMアシスタント": {
+          "self_reported_appointments": 0,
+          "taaan_entries": 3,
+          "approved_deals": 2,
+          "taaan_rate": null,
+          "approval_rate": 0.6666666666666666,
           "true_approval_rate": null
         }
       }
     },
     "2025-07": {
       "total": {
-        "self_reported_appointments": 33,
+        "self_reported_appointments": 34,
         "taaan_entries": 151,
         "approved_deals": 14,
-        "taaan_rate": 4.575757575757576,
+        "taaan_rate": 4.4411764705882355,
         "approval_rate": 0.09271523178807947,
-        "true_approval_rate": 0.42424242424242425
+        "true_approval_rate": 0.4117647058823529
       },
       "by_staff": {
         "本田 寛弥": {
@@ -75415,12 +75420,12 @@
           "true_approval_rate": 0
         },
         "上西 瑠菜": {
-          "self_reported_appointments": 1,
+          "self_reported_appointments": 2,
           "taaan_entries": 4,
           "approved_deals": 2,
-          "taaan_rate": 4,
+          "taaan_rate": 2,
           "approval_rate": 0.5,
-          "true_approval_rate": 2
+          "true_approval_rate": 1
         },
         "西本 空": {
           "self_reported_appointments": 0,
@@ -75809,12 +75814,12 @@
           "true_approval_rate": 0.5
         },
         "横浜": {
-          "self_reported_appointments": 4,
+          "self_reported_appointments": 5,
           "taaan_entries": 12,
           "approved_deals": 2,
-          "taaan_rate": 3,
+          "taaan_rate": 2.4,
           "approval_rate": 0.16666666666666666,
-          "true_approval_rate": 0.5
+          "true_approval_rate": 0.4
         },
         "名古屋": {
           "self_reported_appointments": 2,
@@ -75828,11 +75833,11 @@
       "by_product": {
         "Bill One": {
           "self_reported_appointments": 17,
-          "taaan_entries": 0,
-          "approved_deals": 0,
-          "taaan_rate": 0,
-          "approval_rate": null,
-          "true_approval_rate": 0
+          "taaan_entries": 79,
+          "approved_deals": 3,
+          "taaan_rate": 4.647058823529412,
+          "approval_rate": 0.0379746835443038,
+          "true_approval_rate": 0.17647058823529413
         },
         "Bill One経費": {
           "self_reported_appointments": 5,
@@ -75844,14 +75849,14 @@
         },
         "TOKIUM": {
           "self_reported_appointments": 2,
-          "taaan_entries": 0,
-          "approved_deals": 0,
-          "taaan_rate": 0,
-          "approval_rate": null,
-          "true_approval_rate": 0
+          "taaan_entries": 14,
+          "approved_deals": 4,
+          "taaan_rate": 7,
+          "approval_rate": 0.2857142857142857,
+          "true_approval_rate": 2
         },
         "sansan": {
-          "self_reported_appointments": 8,
+          "self_reported_appointments": 9,
           "taaan_entries": 0,
           "approved_deals": 0,
           "taaan_rate": 0,
@@ -75866,15 +75871,7 @@
           "approval_rate": null,
           "true_approval_rate": 0
         },
-        "インボイス管理サービスBill One": {
-          "self_reported_appointments": 0,
-          "taaan_entries": 79,
-          "approved_deals": 3,
-          "taaan_rate": null,
-          "approval_rate": 0.0379746835443038,
-          "true_approval_rate": null
-        },
-        "AIコンストシェルジュ「光/Hikari」": {
+        "光/Hikari": {
           "self_reported_appointments": 0,
           "taaan_entries": 2,
           "approved_deals": 1,
@@ -75890,15 +75887,15 @@
           "approval_rate": 0,
           "true_approval_rate": null
         },
-        "営業DXサービスSansan": {
+        "Sansan": {
           "self_reported_appointments": 0,
-          "taaan_entries": 16,
+          "taaan_entries": 13,
           "approved_deals": 3,
           "taaan_rate": null,
-          "approval_rate": 0.1875,
+          "approval_rate": 0.23076923076923078,
           "true_approval_rate": null
         },
-        "@Tovas": {
+        "@TOVAS": {
           "self_reported_appointments": 0,
           "taaan_entries": 6,
           "approved_deals": 0,
@@ -75906,7 +75903,7 @@
           "approval_rate": 0,
           "true_approval_rate": null
         },
-        "AI法務プラットフォーム「LegalOn Cloud」": {
+        "LegalOn Cloud": {
           "self_reported_appointments": 0,
           "taaan_entries": 5,
           "approved_deals": 0,
@@ -75916,10 +75913,10 @@
         },
         "未設定": {
           "self_reported_appointments": 0,
-          "taaan_entries": 14,
-          "approved_deals": 4,
+          "taaan_entries": 3,
+          "approved_deals": 0,
           "taaan_rate": null,
-          "approval_rate": 0.2857142857142857,
+          "approval_rate": 0,
           "true_approval_rate": null
         }
       }

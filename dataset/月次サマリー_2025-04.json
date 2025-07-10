@@ -1,7 +1,7 @@
 {
   "metadata": {
     "report_period": "2025-04",
-    "generated_at": "2025-07-09T10:35:20.518Z",
+    "generated_at": "2025-07-09T14:27:24.135Z",
     "report_type": "monthly_summary"
   },
   "key_metrics": {
@@ -346,5 +346,55 @@
       "value": "96名",
       "threshold": "15名"
     }
-  ]
+  ],
+  "branch_product_cross_analysis": {
+    "taaan_deals": {
+      "未設定": {
+        "Bill One": 0,
+        "LegalForce": 0,
+        "セミナー案件": 0,
+        "Bill One経費": 0,
+        "sansan": 0,
+        "mog": 0,
+        "digital builder": 0,
+        "Legalscape": 0,
+        "TOKIUM": 0,
+        "Cynthialy": 0,
+        "flier": 0,
+        "マネーフォワード クラウド契約": 15
+      }
+    },
+    "approved_deals": {
+      "未設定": {
+        "Bill One": 0,
+        "LegalForce": 0,
+        "セミナー案件": 0,
+        "Bill One経費": 0,
+        "sansan": 0,
+        "mog": 0,
+        "digital builder": 0,
+        "Legalscape": 0,
+        "TOKIUM": 0,
+        "Cynthialy": 0,
+        "flier": 0,
+        "マネーフォワード クラウド契約": 8
+      }
+    },
+    "total_revenue": {
+      "未設定": {
+        "Bill One": 0,
+        "LegalForce": 0,
+        "セミナー案件": 0,
+        "Bill One経費": 0,
+        "sansan": 0,
+        "mog": 0,
+        "digital builder": 0,
+        "Legalscape": 0,
+        "TOKIUM": 0,
+        "Cynthialy": 0,
+        "flier": 0,
+        "マネーフォワード クラウド契約": 400000
+      }
+    }
+  }
 }

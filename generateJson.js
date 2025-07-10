@@ -213,7 +213,7 @@ function mergeSalesDataNested() {
     var rec = {};
     dHdr.forEach(function(h,i){ rec[h] = row[i]; });
     return {
-      date:             safeDateConversion(rec['商談開始日時']),
+      date:             safeDateConversion(rec['作成日時']),
       staff:            rec['パートナー担当者'],
       company:          rec['メーカー名'],
       product:          rec['プロダクト名'] || rec['サービス名'], // CB列から商材情報を取得、フォールバックとしてサービス名を使用
@@ -511,7 +511,7 @@ function generateAnalysisJson() {
       date: safeDateConversion(rec['商談開始日時']),
       staff: rec['パートナー担当者'],
       company: rec['メーカー名'],
-      product: rec['サービス名'],
+      product: rec['プロダクト名'],
       commission: safeNumber(rec['報酬']),
       deal_start: safeDateConversion(rec['商談開始日時']),
       deal_end: safeDateConversion(rec['商談終了日時']),
@@ -1909,7 +1909,91 @@ function generateMonthlySummary(analysisData, detailedData, retentionData, repor
     });
   }
   
+  // 支部×商材クロス分析データを生成
+  summary.branch_product_cross_analysis = generateBranchProductCrossAnalysis(analysisData, reportPeriod);
+  
   return summary;
+}
+
+// 支部×商材クロス分析データを生成する関数
+function generateBranchProductCrossAnalysis(analysisData, reportPeriod) {
+  var crossAnalysis = {
+    taaan_deals: {},
+    approved_deals: {},
+    total_revenue: {}
+  };
+  
+  // 指定月のデータを取得
+  var monthData = analysisData.monthly_analysis[reportPeriod];
+  if (!monthData) {
+    Logger.log('⚠️ 指定月のデータが見つかりません: ' + reportPeriod);
+    return crossAnalysis;
+  }
+  
+  // 支部×商材のクロス集計を実行
+  Object.keys(monthData.staff).forEach(function(staffName) {
+    var staffData = monthData.staff[staffName];
+    var branch = staffData.branch || '未設定';
+    
+    // スタッフのTAAANデータを商材別に配分
+    var staffDeals = staffData.total_deals || 0;
+    var staffApproved = staffData.total_approved || 0;
+    var staffRevenue = staffData.total_revenue || 0;
+    
+    // 商材別の配分を計算（product_performanceの比率を使用）
+    if (staffDeals > 0 && monthData.products) {
+      var totalProductDeals = 0;
+      var productRatios = {};
+      
+      // 各商材の商談数を合計
+      Object.keys(monthData.products).forEach(function(product) {
+        var productDeals = monthData.products[product].total_deals || 0;
+        totalProductDeals += productDeals;
+        productRatios[product] = productDeals;
+      });
+      
+      // 商材別にデータを配分
+      Object.keys(productRatios).forEach(function(product) {
+        if (totalProductDeals > 0) {
+          var ratio = productRatios[product] / totalProductDeals;
+          
+          // 支部×商材のキーを作成
+          var branchKey = branch;
+          var productKey = product;
+          
+          // TAAAN商談数
+          if (!crossAnalysis.taaan_deals[branchKey]) {
+            crossAnalysis.taaan_deals[branchKey] = {};
+          }
+          if (!crossAnalysis.taaan_deals[branchKey][productKey]) {
+            crossAnalysis.taaan_deals[branchKey][productKey] = 0;
+          }
+          crossAnalysis.taaan_deals[branchKey][productKey] += Math.round(staffDeals * ratio);
+          
+          // 承認数
+          if (!crossAnalysis.approved_deals[branchKey]) {
+            crossAnalysis.approved_deals[branchKey] = {};
+          }
+          if (!crossAnalysis.approved_deals[branchKey][productKey]) {
+            crossAnalysis.approved_deals[branchKey][productKey] = 0;
+          }
+          crossAnalysis.approved_deals[branchKey][productKey] += Math.round(staffApproved * ratio);
+          
+          // 確定売上
+          if (!crossAnalysis.total_revenue[branchKey]) {
+            crossAnalysis.total_revenue[branchKey] = {};
+          }
+          if (!crossAnalysis.total_revenue[branchKey][productKey]) {
+            crossAnalysis.total_revenue[branchKey][productKey] = 0;
+          }
+          crossAnalysis.total_revenue[branchKey][productKey] += Math.round(staffRevenue * ratio);
+        }
+      });
+    }
+  });
+  
+  Logger.log('✅ 支部×商材クロス分析データを生成: ' + reportPeriod);
+  return crossAnalysis;
 }
 
 // 特定月のレポート再生成関数

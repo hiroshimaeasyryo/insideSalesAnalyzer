@@ -1,13 +1,13 @@
 {
   "metadata": {
     "report_period": "2025-07",
-    "generated_at": "2025-07-09T10:36:32.116Z",
+    "generated_at": "2025-07-09T14:28:56.701Z",
     "report_type": "monthly_summary"
   },
   "key_metrics": {
-    "total_calls": 3134,
-    "total_hours": 334.5,
-    "total_appointments": 33,
+    "total_calls": 3163,
+    "total_hours": 337.5,
+    "total_appointments": 34,
     "total_deals": 151,
     "total_approved": 14,
     "total_rejected": 15,
@@ -71,9 +71,9 @@
       "approval_rate": "4.65"
     },
     "横浜": {
-      "total_calls": 298,
-      "total_hours": 31,
-      "total_appointments": 4,
+      "total_calls": 327,
+      "total_hours": 34,
+      "total_appointments": 5,
       "total_deals": 12,
       "total_approved": 2,
       "total_revenue": 55000,
@@ -106,11 +106,11 @@
       "total_calls": 1782,
       "total_hours": 186.5,
       "total_appointments": 12,
-      "total_deals": 0,
-      "total_approved": 0,
-      "total_revenue": 0,
-      "total_potential_revenue": 0,
-      "approval_rate": 0
+      "total_deals": 79,
+      "total_approved": 3,
+      "total_revenue": 110000,
+      "total_potential_revenue": 2445000,
+      "approval_rate": "3.80"
     },
     "Bill One経費": {
       "total_calls": 598,
@@ -136,16 +136,16 @@
       "total_calls": 34,
       "total_hours": 8,
       "total_appointments": 3,
-      "total_deals": 0,
-      "total_approved": 0,
-      "total_revenue": 0,
-      "total_potential_revenue": 0,
-      "approval_rate": 0
+      "total_deals": 14,
+      "total_approved": 4,
+      "total_revenue": 140000,
+      "total_potential_revenue": 406000,
+      "approval_rate": "28.57"
     },
     "sansan": {
-      "total_calls": 648,
-      "total_hours": 67,
-      "total_appointments": 7,
+      "total_calls": 677,
+      "total_hours": 70,
+      "total_appointments": 8,
       "total_deals": 0,
       "total_approved": 0,
       "total_revenue": 0,
@@ -172,17 +172,7 @@
       "total_potential_revenue": 0,
       "approval_rate": 0
     },
-    "インボイス管理サービスBill One": {
-      "total_calls": 0,
-      "total_hours": 0,
-      "total_appointments": 0,
-      "total_deals": 79,
-      "total_approved": 3,
-      "total_revenue": 110000,
-      "total_potential_revenue": 2445000,
-      "approval_rate": "3.80"
-    },
-    "AIコンストシェルジュ「光/Hikari」": {
+    "光/Hikari": {
       "total_calls": 0,
       "total_hours": 0,
       "total_appointments": 0,
@@ -202,17 +192,17 @@
       "total_potential_revenue": 200000,
       "approval_rate": "0.00"
     },
-    "営業DXサービスSansan": {
+    "Sansan": {
       "total_calls": 0,
       "total_hours": 0,
       "total_appointments": 0,
-      "total_deals": 16,
+      "total_deals": 13,
       "total_approved": 3,
       "total_revenue": 95000,
-      "total_potential_revenue": 370000,
-      "approval_rate": "18.75"
+      "total_potential_revenue": 270000,
+      "approval_rate": "23.08"
     },
-    "@Tovas": {
+    "@TOVAS": {
       "total_calls": 0,
       "total_hours": 0,
       "total_appointments": 0,
@@ -222,7 +212,7 @@
       "total_potential_revenue": 210000,
       "approval_rate": "0.00"
     },
-    "AI法務プラットフォーム「LegalOn Cloud」": {
+    "LegalOn Cloud": {
       "total_calls": 0,
       "total_hours": 0,
       "total_appointments": 0,
@@ -236,11 +226,11 @@
       "total_calls": 0,
       "total_hours": 0,
       "total_appointments": 0,
-      "total_deals": 14,
-      "total_approved": 4,
-      "total_revenue": 140000,
-      "total_potential_revenue": 406000,
-      "approval_rate": "28.57"
+      "total_deals": 3,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 100000,
+      "approval_rate": "0.00"
     }
   },
   "staff_performance": {
@@ -255,6 +245,18 @@
       "total_revenue": 0,
       "total_potential_revenue": 0,
       "approval_rate": 0
+    },
+    "上西 瑠菜": {
+      "staff_name": "上西 瑠菜",
+      "branch": "横浜",
+      "total_calls": 157,
+      "total_hours": 17,
+      "total_appointments": 2,
+      "total_deals": 4,
+      "total_approved": 2,
+      "total_revenue": 55000,
+      "total_potential_revenue": 30000,
+      "approval_rate": "50.00"
     },
     "奥井 天明": {
       "staff_name": "奥井 天明",
@@ -291,18 +293,6 @@
       "total_revenue": 0,
       "total_potential_revenue": 140000,
       "approval_rate": "0.00"
-    },
-    "上西 瑠菜": {
-      "staff_name": "上西 瑠菜",
-      "branch": "横浜",
-      "total_calls": 128,
-      "total_hours": 14,
-      "total_appointments": 1,
-      "total_deals": 4,
-      "total_approved": 2,
-      "total_revenue": 55000,
-      "total_potential_revenue": 30000,
-      "approval_rate": "50.00"
     },
     "家合 琉維": {
       "staff_name": "家合 琉維",
@@ -386,5 +376,328 @@
       "value": "96名",
       "threshold": "15名"
     }
-  ]
+  ],
+  "branch_product_cross_analysis": {
+    "taaan_deals": {
+      "東京": {
+        "Bill One": 4,
+        "Bill One経費": 1,
+        "Cynthialy": 0,
+        "TOKIUM": 1,
+        "sansan": 0,
+        "LegalForce": 0,
+        "Tovas": 0,
+        "光/Hikari": 0,
+        "Digital Billder": 0,
+        "Sansan": 1,
+        "@TOVAS": 0,
+        "LegalOn Cloud": 0,
+        "未設定": 0
+      },
+      "#N/A": {
+        "Bill One": 1,
+        "Bill One経費": 0,
+        "Cynthialy": 0,
+        "TOKIUM": 0,
+        "sansan": 0,
+        "LegalForce": 0,
+        "Tovas": 0,
+        "光/Hikari": 0,
+        "Digital Billder": 0,
+        "Sansan": 0,
+        "@TOVAS": 0,
+        "LegalOn Cloud": 0,
+        "未設定": 0
+      },
+      "福岡": {
+        "Bill One": 15,
+        "Bill One経費": 4,
+        "Cynthialy": 0,
+        "TOKIUM": 2,
+        "sansan": 0,
+        "LegalForce": 0,
+        "Tovas": 0,
+        "光/Hikari": 0,
+        "Digital Billder": 0,
+        "Sansan": 2,
+        "@TOVAS": 1,
+        "LegalOn Cloud": 0,
+        "未設定": 0
+      },
+      "未設定": {
+        "Bill One": 49,
+        "Bill One経費": 13,
+        "Cynthialy": 0,
+        "TOKIUM": 7,
+        "sansan": 0,
+        "LegalForce": 0,
+        "Tovas": 0,
+        "光/Hikari": 1,
+        "Digital Billder": 1,
+        "Sansan": 7,
+        "@TOVAS": 2,
+        "LegalOn Cloud": 1,
+        "未設定": 1
+      },
+      "社員": {
+        "Bill One": 7,
+        "Bill One経費": 2,
+        "Cynthialy": 0,
+        "TOKIUM": 1,
+        "sansan": 0,
+        "LegalForce": 0,
+        "Tovas": 0,
+        "光/Hikari": 0,
+        "Digital Billder": 0,
+        "Sansan": 1,
+        "@TOVAS": 1,
+        "LegalOn Cloud": 0,
+        "未設定": 0
+      },
+      "横浜": {
+        "Bill One": 7,
+        "Bill One経費": 2,
+        "Cynthialy": 0,
+        "TOKIUM": 1,
+        "sansan": 0,
+        "LegalForce": 0,
+        "Tovas": 0,
+        "光/Hikari": 0,
+        "Digital Billder": 0,
+        "Sansan": 1,
+        "@TOVAS": 0,
+        "LegalOn Cloud": 0,
+        "未設定": 0
+      },
+      "新潟": {
+        "Bill One": 1,
+        "Bill One経費": 0,
+        "Cynthialy": 0,
+        "TOKIUM": 0,
+        "sansan": 0,
+        "LegalForce": 0,
+        "Tovas": 0,
+        "光/Hikari": 0,
+        "Digital Billder": 0,
+        "Sansan": 0,
+        "@TOVAS": 0,
+        "LegalOn Cloud": 0,
+        "未設定": 0
+      }
+    },
+    "approved_deals": {
+      "東京": {
+        "Bill One": 1,
+        "Bill One経費": 0,
+        "Cynthialy": 0,
+        "TOKIUM": 0,
+        "sansan": 0,
+        "LegalForce": 0,
+        "Tovas": 0,
+        "光/Hikari": 0,
+        "Digital Billder": 0,
+        "Sansan": 0,
+        "@TOVAS": 0,
+        "LegalOn Cloud": 0,
+        "未設定": 0
+      },
+      "#N/A": {
+        "Bill One": 0,
+        "Bill One経費": 0,
+        "Cynthialy": 0,
+        "TOKIUM": 0,
+        "sansan": 0,
+        "LegalForce": 0,
+        "Tovas": 0,
+        "光/Hikari": 0,
+        "Digital Billder": 0,
+        "Sansan": 0,
+        "@TOVAS": 0,
+        "LegalOn Cloud": 0,
+        "未設定": 0
+      },
+      "福岡": {
+        "Bill One": 2,
+        "Bill One経費": 0,
+        "Cynthialy": 0,
+        "TOKIUM": 0,
+        "sansan": 0,
+        "LegalForce": 0,
+        "Tovas": 0,
+        "光/Hikari": 0,
+        "Digital Billder": 0,
+        "Sansan": 0,
+        "@TOVAS": 0,
+        "LegalOn Cloud": 0,
+        "未設定": 0
+      },
+      "未設定": {
+        "Bill One": 5,
+        "Bill One経費": 1,
+        "Cynthialy": 0,
+        "TOKIUM": 0,
+        "sansan": 0,
+        "LegalForce": 0,
+        "Tovas": 0,
+        "光/Hikari": 0,
+        "Digital Billder": 0,
+        "Sansan": 0,
+        "@TOVAS": 0,
+        "LegalOn Cloud": 0,
+        "未設定": 0
+      },
+      "社員": {
+        "Bill One": 0,
+        "Bill One経費": 0,
+        "Cynthialy": 0,
+        "TOKIUM": 0,
+        "sansan": 0,
+        "LegalForce": 0,
+        "Tovas": 0,
+        "光/Hikari": 0,
+        "Digital Billder": 0,
+        "Sansan": 0,
+        "@TOVAS": 0,
+        "LegalOn Cloud": 0,
+        "未設定": 0
+      },
+      "横浜": {
+        "Bill One": 1,
+        "Bill One経費": 0,
+        "Cynthialy": 0,
+        "TOKIUM": 0,
+        "sansan": 0,
+        "LegalForce": 0,
+        "Tovas": 0,
+        "光/Hikari": 0,
+        "Digital Billder": 0,
+        "Sansan": 0,
+        "@TOVAS": 0,
+        "LegalOn Cloud": 0,
+        "未設定": 0
+      },
+      "新潟": {
+        "Bill One": 0,
+        "Bill One経費": 0,
+        "Cynthialy": 0,
+        "TOKIUM": 0,
+        "sansan": 0,
+        "LegalForce": 0,
+        "Tovas": 0,
+        "光/Hikari": 0,
+        "Digital Billder": 0,
+        "Sansan": 0,
+        "@TOVAS": 0,
+        "LegalOn Cloud": 0,
+        "未設定": 0
+      }
+    },
+    "total_revenue": {
+      "東京": {
+        "Bill One": 47086,
+        "Bill One経費": 14305,
+        "Cynthialy": 0,
+        "TOKIUM": 8344,
+        "sansan": 0,
+        "LegalForce": 0,
+        "Tovas": 0,
+        "光/Hikari": 1192,
+        "Digital Billder": 2980,
+        "Sansan": 7748,
+        "@TOVAS": 3576,
+        "LegalOn Cloud": 2980,
+        "未設定": 1788
+      },
+      "#N/A": {
+        "Bill One": 0,
+        "Bill One経費": 0,
+        "Cynthialy": 0,
+        "TOKIUM": 0,
+        "sansan": 0,
+        "LegalForce": 0,
+        "Tovas": 0,
+        "光/Hikari": 0,
+        "Digital Billder": 0,
+        "Sansan": 0,
+        "@TOVAS": 0,
+        "LegalOn Cloud": 0,
+        "未設定": 0
+      },
+      "福岡": {
+        "Bill One": 41855,
+        "Bill One経費": 12715,
+        "Cynthialy": 0,
+        "TOKIUM": 7417,
+        "sansan": 0,
+        "LegalForce": 0,
+        "Tovas": 0,
+        "光/Hikari": 1060,
+        "Digital Billder": 2649,
+        "Sansan": 6888,
+        "@TOVAS": 3179,
+        "LegalOn Cloud": 2649,
+        "未設定": 1589
+      },
+      "未設定": {
+        "Bill One": 128178,
+        "Bill One経費": 38941,
+        "Cynthialy": 0,
+        "TOKIUM": 22716,
+        "sansan": 0,
+        "LegalForce": 0,
+        "Tovas": 0,
+        "光/Hikari": 3246,
+        "Digital Billder": 8113,
+        "Sansan": 21093,
+        "@TOVAS": 9735,
+        "LegalOn Cloud": 8113,
+        "未設定": 4867
+      },
+      "社員": {
+        "Bill One": 0,
+        "Bill One経費": 0,
+        "Cynthialy": 0,
+        "TOKIUM": 0,
+        "sansan": 0,
+        "LegalForce": 0,
+        "Tovas": 0,
+        "光/Hikari": 0,
+        "Digital Billder": 0,
+        "Sansan": 0,
+        "@TOVAS": 0,
+        "LegalOn Cloud": 0,
+        "未設定": 0
+      },
+      "横浜": {
+        "Bill One": 28775,
+        "Bill One経費": 8742,
+        "Cynthialy": 0,
+        "TOKIUM": 5099,
+        "sansan": 0,
+        "LegalForce": 0,
+        "Tovas": 0,
+        "光/Hikari": 728,
+        "Digital Billder": 1821,
+        "Sansan": 4735,
+        "@TOVAS": 2185,
+        "LegalOn Cloud": 1821,
+        "未設定": 1093
+      },
+      "新潟": {
+        "Bill One": 0,
+        "Bill One経費": 0,
+        "Cynthialy": 0,
+        "TOKIUM": 0,
+        "sansan": 0,
+        "LegalForce": 0,
+        "Tovas": 0,
+        "光/Hikari": 0,
+        "Digital Billder": 0,
+        "Sansan": 0,
+        "@TOVAS": 0,
+        "LegalOn Cloud": 0,
+        "未設定": 0
+      }
+    }
+  }
 }

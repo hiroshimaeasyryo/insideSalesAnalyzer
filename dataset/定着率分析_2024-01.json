@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generated_at": "2025-07-09T10:31:37.011Z",
+    "generated_at": "2025-07-09T14:22:29.339Z",
     "analysis_period": {
       "start_month": "2024-01",
       "end_month": "2025-07"
@@ -12636,13 +12636,13 @@
       "branch": "横浜",
       "join_date": "2024-11-28T00:15:56.000Z",
       "first_activity_date": "2024-12-02T15:00:00.000Z",
-      "last_activity_date": "2025-07-07T15:00:00.000Z",
+      "last_activity_date": "2025-07-08T15:00:00.000Z",
       "months_since_join": 8,
       "months_since_first_activity": 7,
       "active_months": 8,
-      "total_activity_days": 55,
+      "total_activity_days": 56,
       "monthly_activity_rate": "61.54",
-      "avg_monthly_activity_days": "6.88",
+      "avg_monthly_activity_days": "7.00",
       "total_calls": null,
       "total_hours": null,
       "total_appointments": null,
@@ -12930,7 +12930,7 @@
         },
         "2025-07": {
           "month": "2025-07",
-          "activity_days": 2,
+          "activity_days": 3,
           "total_calls": null,
           "total_hours": null,
           "total_appointments": null,
@@ -12941,6 +12941,10 @@
             },
             {
               "date": "2025-07-07T15:00:00.000Z",
+              "product": "sansan"
+            },
+            {
+              "date": "2025-07-08T15:00:00.000Z",
               "product": "sansan"
             }
           ]

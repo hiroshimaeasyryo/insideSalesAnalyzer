@@ -1697,9 +1697,183 @@ elif authentication_status:
                         # 現在選択されている指標を表示
                         st.info(f"📊 現在の分析指標: **{analysis_metric}**")
                         
-                        # TAAANデータのクロス分析は現在のデータ構造では対応不可
+                        # 支部×商材クロス分析データを使用して分析を実行
                         if analysis_metric in ["TAAAN商談数", "承認数", "確定売上"]:
-                            st.info(f"💡 **{analysis_metric}の支部×商材クロス分析**は現在のデータ構造では対応していません。")
+                            try:
+                                # 月次サマリーから支部×商材クロス分析データを取得
+                                if summary_data and 'branch_product_cross_analysis' in summary_data:
+                                    cross_data = summary_data['branch_product_cross_analysis']
+                                    
+                                    # 指標に応じたデータを選択
+                                    metric_mapping = {
+                                        "TAAAN商談数": "taaan_deals",
+                                        "承認数": "approved_deals",
+                                        "確定売上": "total_revenue"
+                                    }
+                                    
+                                    metric_key = metric_mapping[analysis_metric]
+                                    metric_data = cross_data.get(metric_key, {})
+                                    
+                                    if metric_data:
+                                        # DataFrameに変換
+                                        records = []
+                                        for branch, products in metric_data.items():
+                                            for product, value in products.items():
+                                                records.append({
+                                                    'branch': branch,
+                                                    'product': product,
+                                                    'value': value
+                                                })
+                                        
+                                        if records:
+                                            df_cross = pd.DataFrame(records)
+                                            
+                                            # ピボットテーブルを作成
+                                            cross_analysis = df_cross.pivot_table(
+                                                values='value',
+                                                index='branch',
+                                                columns='product',
+                                                aggfunc='sum',
+                                                fill_value=0
+                                            )
+                                            
+                                            # 合計行と列を追加
+                                            cross_analysis['合計'] = cross_analysis.sum(axis=1)
+                                            cross_analysis.loc['合計'] = cross_analysis.sum()
+                                            
+                                            # 1. ヒートマップの数値をカンマ区切りで表示
+                                            z = cross_analysis.iloc[:-1, :-1].values  # 数値
+                                            z_text = cross_analysis.iloc[:-1, :-1].copy()
+                                            for col in z_text.columns:
+                                                z_text[col] = z_text[col].apply(lambda v: f"{int(v):,}" if analysis_metric != "確定売上" else f"¥{int(v):,}")
+                                            text = z_text.values  # カンマ区切り文字列
+                                            
+                                            import plotly.graph_objects as go
+                                            fig_cross = go.Figure(
+                                                data=go.Heatmap(
+                                                    z=z,
+                                                    x=cross_analysis.columns[:-1],
+                                                    y=cross_analysis.index[:-1],
+                                                    text=text,
+                                                    texttemplate="%{text}",
+                                                    colorscale="Blues",
+                                                    colorbar=dict(title=analysis_metric)
+                                                )
+                                            )
+                                            fig_cross.update_layout(
+                                                title=f"{analysis_metric}の支部×商材クロス分析",
+                                                height=500,
+                                                xaxis_title="商材",
+                                                yaxis_title="支部"
+                                            )
+                                            st.plotly_chart(fig_cross, use_container_width=True)
+                                            
+                                            # ホバー時の情報を日本語に設定
+                                            fig_cross.update_traces(
+                                                hovertemplate="<b>支部</b>: %{y}<br><b>商材</b>: %{x}<br><b>" + analysis_metric + "</b>: %{z:,.0f}<extra></extra>"
+                                            )
+                                            st.plotly_chart(fig_cross, use_container_width=True)
+                                            
+                                            # クロス分析テーブルを表示
+                                            st.subheader("支部×商材クロス分析テーブル")
+                                            
+                                            # 数値フォーマットを改善（カンマ区切り）
+                                            def format_cross_table_value(value):
+                                                if pd.isna(value):
+                                                    return ""
+                                                elif isinstance(value, (int, float)):
+                                                    if analysis_metric == "確定売上":
+                                                        return f"¥{value:,.0f}"
+                                                    else:
+                                                        return f"{value:,.0f}"
+                                                return str(value)
+                                            
+                                            # フォーマットされたテーブルを表示
+                                            formatted_cross_analysis = cross_analysis.copy()
+                                            for col in formatted_cross_analysis.columns:
+                                                formatted_cross_analysis[col] = formatted_cross_analysis[col].apply(format_cross_table_value)
+                                            
+                                            st.dataframe(
+                                                formatted_cross_analysis,
+                                                use_container_width=True
+                                            )
+                                            
+                                            # 統計情報（カードスタイル）
+                                            st.subheader("📊 統計情報")
+                                            
+                                            # 2. 統計情報カードのCSSを修正
+                                            card_style = """
+                                            <style>
+                                            .metric-card {
+                                                background-color: #f0f2f6;
+                                                padding: 1rem;
+                                                border-radius: 0.5rem;
+                                                border-left: 4px solid #1f77b4;
+                                                margin: 0.5rem 0;
+                                                min-height: 110px;
+                                                display: flex;
+                                                flex-direction: column;
+                                                align-items: center;
+                                                justify-content: center;
+                                            }
+                                            .metric-title {
+                                                font-size: 0.9rem;
+                                                color: #666;
+                                                margin-bottom: 0.5rem;
+                                            }
+                                            .metric-value {
+                                                font-size: 1.5rem;
+                                                font-weight: bold;
+                                                color: #1f77b4;
+                                            }
+                                            </style>
+                                            """
+                                            st.markdown(card_style, unsafe_allow_html=True)
+                                            
+                                            col1, col2, col3 = st.columns(3)
+                                            
+                                            with col1:
+                                                total_value = cross_analysis.loc['合計', '合計']
+                                                total_display = f"{total_value:,}" if analysis_metric != "確定売上" else f"¥{total_value:,}"
+                                                st.markdown(f"""
+                                                <div class="metric-card">
+                                                    <div class="metric-title">総{analysis_metric}</div>
+                                                    <div class="metric-value">{total_display}</div>
+                                                </div>
+                                                """, unsafe_allow_html=True)
+                                            
+                                            with col2:
+                                                max_branch = cross_analysis.iloc[:-1, :-1].sum(axis=1).idxmax()
+                                                max_branch_value = cross_analysis.loc[max_branch, '合計']
+                                                branch_display = f"{max_branch_value:,}" if analysis_metric != "確定売上" else f"¥{max_branch_value:,}"
+                                                st.markdown(f"""
+                                                <div class="metric-card">
+                                                    <div class="metric-title">最高{analysis_metric}支部</div>
+                                                    <div class="metric-value">{max_branch}<br><small>{branch_display}</small></div>
+                                                </div>
+                                                """, unsafe_allow_html=True)
+                                            
+                                            with col3:
+                                                max_product = cross_analysis.iloc[:-1, :-1].sum().idxmax()
+                                                max_product_value = cross_analysis.loc['合計', max_product]
+                                                product_display = f"{max_product_value:,}" if analysis_metric != "確定売上" else f"¥{max_product_value:,}"
+                                                st.markdown(f"""
+                                                <div class="metric-card">
+                                                    <div class="metric-title">最高{analysis_metric}商材</div>
+                                                    <div class="metric-value">{max_product}<br><small>{product_display}</small></div>
+                                                </div>
+                                                """, unsafe_allow_html=True)
+                                            
+                                        else:
+                                            st.warning("支部×商材のデータが見つかりません。")
+                                    else:
+                                        st.warning(f"{analysis_metric}の支部×商材クロス分析データが見つかりません。")
+                                else:
+                                    st.warning("月次サマリーデータに支部×商材クロス分析データが含まれていません。")
+                                    
+                            except Exception as e:
+                                st.error(f"支部×商材クロス分析の実行中にエラーが発生しました: {str(e)}")
+                                st.info("💡 データ構造の確認が必要です。")
                     
                     with subtab3:
                         # 商材別3ヶ月比較
@@ -1823,6 +1997,11 @@ elif authentication_status:
                                     xaxis_title="月",
                                     yaxis_title=taaan_comparison_metric
                                 )
+                                
+                                # ホバー時の情報を日本語に設定
+                                fig_taaan_trend.update_traces(
+                                    hovertemplate="<b>月</b>: %{x}<br><b>商材</b>: %{fullData.name}<br><b>" + taaan_comparison_metric + "</b>: %{y:,.0f}<extra></extra>"
+                                )
                                 st.plotly_chart(fig_taaan_trend, use_container_width=True)
                                 
                                 # 月次比較テーブル
@@ -1844,93 +2023,28 @@ elif authentication_status:
                                         pivot_taaan_comparison[prev_month].replace(0, float('nan')) * 100
                                     ).round(1)
                                 
-                                st.dataframe(pivot_taaan_comparison, use_container_width=True)
+                                # 数値フォーマットを改善（カンマ区切り）
+                                def format_number(value):
+                                    if pd.isna(value):
+                                        return ""
+                                    elif isinstance(value, (int, float)):
+                                        if taaan_comparison_metric == "確定売上":
+                                            return f"¥{value:,.0f}"
+                                        else:
+                                            return f"{value:,.0f}"
+                                    return str(value)
+                                
+                                # フォーマットされたテーブルを表示
+                                formatted_pivot = pivot_taaan_comparison.copy()
+                                for col in formatted_pivot.columns:
+                                    if col != '増減率(%)':
+                                        formatted_pivot[col] = formatted_pivot[col].apply(format_number)
+                                    else:
+                                        formatted_pivot[col] = formatted_pivot[col].apply(lambda x: f"{x:.1f}%" if pd.notna(x) else "")
+                                
+                                st.dataframe(formatted_pivot, use_container_width=True)
                             else:
                                 st.info("比較したい商材を選択してください。")
-                                # TAAANデータの3ヶ月比較
-                                st.markdown("### 💼 TAAANデータ（TAAAN商談数、承認数、確定売上）の3ヶ月推移")
-                                
-                                # 全ての月のTAAANデータを結合
-                                all_taaan_data = pd.concat(monthly_taaan_data.values(), ignore_index=True)
-                                
-                                # 指標選択ボタン
-                                st.markdown("#### 比較指標")
-                                taaan_metric_options = ["TAAAN商談数", "承認数", "確定売上"]
-                                taaan_metric_cols = st.columns(len(taaan_metric_options))
-                                
-                                # セッション状態で選択された指標を管理
-                                if 'taaan_selected_metric' not in st.session_state:
-                                    st.session_state.taaan_selected_metric = "TAAAN商談数"
-                                
-                                for i, metric in enumerate(taaan_metric_options):
-                                    with taaan_metric_cols[i]:
-                                        if st.button(
-                                            metric,
-                                            key=f"taaan_metric_{metric}",
-                                            use_container_width=True,
-                                            type="primary" if st.session_state.taaan_selected_metric == metric else "secondary"
-                                        ):
-                                            st.session_state.taaan_selected_metric = metric
-                                
-                                taaan_comparison_metric = st.session_state.taaan_selected_metric
-                                
-                                # 商材選択
-                                available_taaan_products = sorted(all_taaan_data['product'].unique())
-                                selected_taaan_products = st.multiselect(
-                                    "比較したい商材を選択（複数選択可）",
-                                    available_taaan_products,
-                                    default=available_taaan_products[:5] if len(available_taaan_products) >= 5 else available_taaan_products,
-                                    key="taaan_products"
-                                )
-                                
-                                if selected_taaan_products:
-                                    # 選択された商材のデータをフィルタ
-                                    filtered_taaan_data = all_taaan_data[all_taaan_data['product'].isin(selected_taaan_products)]
-                                    
-                                    taaan_metric_col_mapping = {
-                                        "TAAAN商談数": "taaan_deals",
-                                        "承認数": "approved_deals",
-                                        "確定売上": "total_revenue"
-                                    }
-                                    
-                                    # 月次推移グラフ
-                                    fig_taaan_trend = px.line(
-                                        filtered_taaan_data,
-                                        x='month',
-                                        y=taaan_metric_col_mapping[taaan_comparison_metric],
-                                        color='product',
-                                        title=f"TAAANデータ: 商材別{taaan_comparison_metric}の3ヶ月推移",
-                                        markers=True
-                                    )
-                                    fig_taaan_trend.update_layout(
-                                        height=400,
-                                        xaxis_title="月",
-                                        yaxis_title=taaan_comparison_metric
-                                    )
-                                    st.plotly_chart(fig_taaan_trend, use_container_width=True)
-                                    
-                                    # 月次比較テーブル
-                                    st.subheader("月次比較テーブル")
-                                    pivot_taaan_comparison = filtered_taaan_data.pivot_table(
-                                        values=taaan_metric_col_mapping[taaan_comparison_metric],
-                                        index='product',
-                                        columns='month',
-                                        aggfunc='sum',
-                                        fill_value=0
-                                    )
-                                    
-                                    # 増減率の計算
-                                    if len(pivot_taaan_comparison.columns) >= 2:
-                                        latest_month = pivot_taaan_comparison.columns[-1]
-                                        prev_month = pivot_taaan_comparison.columns[-2]
-                                        pivot_taaan_comparison['増減率(%)'] = (
-                                            (pivot_taaan_comparison[latest_month] - pivot_taaan_comparison[prev_month]) / 
-                                            pivot_taaan_comparison[prev_month].replace(0, float('nan')) * 100
-                                        ).round(1)
-                                    
-                                    st.dataframe(pivot_taaan_comparison, use_container_width=True)
-                                else:
-                                    st.info("比較したい商材を選択してください。")
                 
                 with tab5:
                     st.subheader("詳細データ")
