@@ -9,8 +9,8 @@ service_account_*.json
 # Streamlit設定（本番環境のみ）
 .streamlit/secrets.toml
 
-# 機微データ（本番環境ではGoogle Driveから読み込み）
-dataset/
+# 機微データ（GitHub Actionsで同期されるためコミット対象）
+# dataset/ - GitHub Actions同期により除外しない
 !dataset/.gitkeep
 
 # Python
@@ -50,7 +50,7 @@ htmlcov/
 pip-selfcheck.json
 
 # data
-dataset/
+# dataset/ - GitHub Actions同期により除外しない
 
 # Clasp
 .clasp.json

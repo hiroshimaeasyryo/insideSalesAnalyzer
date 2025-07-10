@@ -98,6 +98,18 @@ elif authentication_status:
                 else:
                     st.info("📁 ローカルファイル使用中")
                     st.caption(f"パス: dataset/")
+                
+                # キャッシュ情報表示
+                cache_info = data_source_status.get('cache', {})
+                st.subheader("⚡ キャッシュ状況")
+                st.metric("キャッシュファイル数", cache_info.get('cache_size', 0))
+                
+                # キャッシュクリアボタン
+                if st.button("🗑️ キャッシュクリア", help="メモリキャッシュをクリアして最新データを強制取得"):
+                    loader.clear_cache()
+                    st.cache_data.clear()
+                    st.success("キャッシュをクリアしました")
+                    st.rerun()
             
             # 月選択
             months = loader.get_available_months()
@@ -150,9 +162,9 @@ elif authentication_status:
         return None
     
     # データ読み込み関数（新しいデータローダーを使用）
-    @st.cache_data
+    @st.cache_data(ttl=1800)  # 30分間キャッシュ
     def load_data(month):
-        """指定月のデータを読み込み"""
+        """指定月のデータを読み込み（TTL付きキャッシュ）"""
         try:
             loader = get_data_loader()
             basic_data, detail_data, summary_data = loader.load_analysis_data(month)
@@ -168,9 +180,9 @@ elif authentication_status:
             st.write(f"エラーの詳細: {type(e).__name__}")
             return None, None, None
 
-    @st.cache_data
+    @st.cache_data(ttl=1800)  # 30分間キャッシュ
     def load_retention_data(month):
-        """指定された月の定着率分析データを読み込み"""
+        """指定された月の定着率分析データを読み込み（TTL付きキャッシュ）"""
         try:
             loader = get_data_loader()
             data = loader.load_retention_data(month)
@@ -178,6 +190,8 @@ elif authentication_status:
         except Exception as e:
             st.error(f"定着率分析データ読み込みエラー: {str(e)}")
             return {}
+    
+
     
     # --- グラフ共通のlegend設定関数 ---
     def update_legend(fig):
