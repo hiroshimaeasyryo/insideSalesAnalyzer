@@ -13,8 +13,8 @@ from config import get_config
 
 # ページ設定
 st.set_page_config(
-    page_title="架電ダッシュボード",
-    page_icon="📊",
+    page_title="インサイドセールス_ダッシュボード",
+    page_icon="📞",
     layout="wide",
     initial_sidebar_state="expanded"
 )
