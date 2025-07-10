@@ -1799,9 +1799,11 @@ function generateMonthlySummary(analysisData, detailedData, retentionData, repor
   Object.keys(monthData.products).forEach(function(product) {
     var productData = monthData.products[product];
     summary.product_performance[product] = {
+      // 日報データ（架電関連）
       total_calls: productData.total_calls,
       total_hours: productData.total_hours,
       total_appointments: productData.total_appointments,
+      // TAAANデータ（商談関連）
       total_deals: productData.total_deals,
       total_approved: productData.total_approved,
       total_revenue: productData.total_revenue,

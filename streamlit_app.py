@@ -1861,11 +1861,14 @@ elif authentication_status:
                                 if summary_data and 'product_performance' in summary_data:
                                     taaan_product_data = []
                                     for product, data in summary_data['product_performance'].items():
+                                        # TAAANデータのみを使用（日報データは除外）
+                                        # total_deals, total_approved, total_revenueはTAAANデータ
+                                        # total_calls, total_hours, total_appointmentsは日報データ
                                         taaan_product_data.append({
                                             'product': product,
-                                            'taaan_deals': data.get('total_deals', 0),
-                                            'approved_deals': data.get('approved_deals', 0),
-                                            'total_revenue': data.get('total_revenue', 0),
+                                            'taaan_deals': data.get('total_deals', 0),  # TAAAN商談数
+                                            'approved_deals': data.get('total_approved', 0),  # TAAAN承認数
+                                            'total_revenue': data.get('total_revenue', 0),  # TAAAN確定売上
                                             'month': month
                                         })
                                     if taaan_product_data:
@@ -1885,6 +1888,7 @@ elif authentication_status:
                             st.warning("過去3ヶ月のTAAANデータが見つかりません。")
                         else:
                             st.markdown("### 💼 TAAANデータ（TAAAN商談数、承認数、確定売上）の3ヶ月推移")
+                            st.info("📊 **データソース**: この分析ではTAAANシステムからの商談データ（total_deals、total_approved、total_revenue）のみを使用しています。日報データ（total_calls、total_hours、total_appointments）は含まれていません。")
                             
                             # 全ての月のTAAANデータを結合
                             all_taaan_data = pd.concat(monthly_taaan_data.values(), ignore_index=True)
@@ -1910,12 +1914,30 @@ elif authentication_status:
                             
                             taaan_comparison_metric = st.session_state.taaan_selected_metric
                             
-                            # 商材選択
+                            # 商材選択 - 3ヶ月間で1件以上データがある商材のみデフォルト選択
                             available_taaan_products = sorted(all_taaan_data['product'].unique())
+                            
+                            # 3ヶ月間で1件以上データがある商材を動的に抽出
+                            try:
+                                # 各商材の3ヶ月間合計を計算
+                                product_totals = all_taaan_data.groupby('product')[['taaan_deals', 'approved_deals', 'total_revenue']].sum()
+                                # いずれかの指標で1以上の値がある商材を抽出
+                                active_products = product_totals[(product_totals > 0).any(axis=1)].index.tolist()
+                                # 商材名でソート
+                                active_products = sorted(active_products)
+                                
+                                # デバッグ情報を表示
+                                st.info(f"💡 **自動選択**: 3ヶ月間でデータがある商材（{len(active_products)}件）をデフォルト選択しています。全{len(available_taaan_products)}件から選択可能です。")
+                                
+                            except Exception as e:
+                                # エラーが発生した場合は全商材をデフォルト選択
+                                active_products = available_taaan_products
+                                st.warning(f"⚠️ 商材の動的選択に失敗しました。全商材を表示します。エラー: {str(e)}")
+                            
                             selected_taaan_products = st.multiselect(
                                 "比較したい商材を選択（複数選択可）",
                                 available_taaan_products,
-                                default=available_taaan_products[:5] if len(available_taaan_products) >= 5 else available_taaan_products,
+                                default=active_products,
                                 key="taaan_products"
                             )
                             
@@ -1941,7 +1963,17 @@ elif authentication_status:
                                 fig_taaan_trend.update_layout(
                                     height=400,
                                     xaxis_title="月",
-                                    yaxis_title=taaan_comparison_metric
+                                    yaxis_title=taaan_comparison_metric,
+                                    # Y軸の数字表記をカンマ区切りに設定
+                                    yaxis=dict(
+                                        tickformat=',',
+                                        separatethousands=True
+                                    ),
+                                    # X軸を月次ベースに設定
+                                    xaxis=dict(
+                                        type='category',
+                                        categoryorder='category ascending'
+                                    )
                                 )
                                 
                                 # ホバー時の情報を日本語に設定
