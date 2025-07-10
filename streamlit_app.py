@@ -133,8 +133,88 @@ elif authentication_status:
                             st.success("✅ GOOGLE_SERVICE_ACCOUNT JSON解析成功")
                             st.write(f"- プロジェクトID: `{sa_data.get('project_id', 'N/A')}`")
                             st.write(f"- クライアントメール: `{sa_data.get('client_email', 'N/A')}`")
+                            
+                            # private_keyの詳細検証
+                            st.subheader("2-1. Private Key詳細検証")
+                            private_key = sa_data.get('private_key', '')
+                            if private_key:
+                                col1, col2 = st.columns(2)
+                                with col1:
+                                    st.write(f"**private_key長さ**: {len(private_key)}")
+                                    st.write(f"**エスケープされた\\n数**: {private_key.count('\\n')}")
+                                    st.write(f"**実際の改行数**: {private_key.count(chr(10))}")
+                                
+                                with col2:
+                                    # PEM形式の確認
+                                    has_begin = "-----BEGIN PRIVATE KEY-----" in private_key
+                                    has_end = "-----END PRIVATE KEY-----" in private_key
+                                    st.write(f"**BEGIN PRIVATE KEY**: {'✅' if has_begin else '❌'}")
+                                    st.write(f"**END PRIVATE KEY**: {'✅' if has_end else '❌'}")
+                                
+                                # 問題の診断
+                                if private_key.count('\\n') > 0:
+                                    st.error("❌ **問題発見**: private_keyにエスケープされた\\n文字が含まれています")
+                                    st.warning("⚠️ これが「Unable to load PEM file」エラーの原因です")
+                                    
+                                    # 修正提案
+                                    st.info("""
+                                    **修正方法:**
+                                    1. Streamlit Cloud設定画面を開く
+                                    2. google_drive.service_accountの値を編集
+                                    3. private_keyフィールド内の全ての \\n を実際の改行に置換
+                                    4. または下記の「修正済みJSON表示」ボタンで正しい形式を確認
+                                    """)
+                                    
+                                    if st.button("🔧 修正済みJSON表示", help="正しい形式のJSONを表示します"):
+                                        fixed_key = private_key.replace('\\n', '\n')
+                                        sa_data_fixed = sa_data.copy()
+                                        sa_data_fixed['private_key'] = fixed_key
+                                        
+                                        st.success(f"✅ 修正後: エスケープ\\n数 {private_key.count('\\n')} → 0")
+                                        st.success(f"✅ 修正後: 実際の改行数 {private_key.count(chr(10))} → {fixed_key.count(chr(10))}")
+                                        
+                                        st.text("📋 修正後のJSON（コピーしてStreamlit Secretsに貼り付け）:")
+                                        st.code(json.dumps(sa_data_fixed, indent=2), language="json")
+                                        
+                                        # 修正版での接続テスト
+                                        st.text("🧪 修正版での接続テスト:")
+                                        try:
+                                            # 一時的に修正版で接続テスト
+                                            from google.oauth2 import service_account
+                                            import tempfile
+                                            import os
+                                            
+                                            with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+                                                json.dump(sa_data_fixed, f)
+                                                temp_file = f.name
+                                            
+                                            try:
+                                                credentials = service_account.Credentials.from_service_account_file(temp_file)
+                                                st.success("✅ 修正版JSON: 認証情報の作成成功")
+                                            except Exception as test_e:
+                                                st.error(f"❌ 修正版でもエラー: {str(test_e)}")
+                                            finally:
+                                                os.unlink(temp_file)
+                                                
+                                        except Exception as e:
+                                            st.error(f"❌ 修正版テストエラー: {str(e)}")
+                                
+                                elif private_key.count(chr(10)) > 0:
+                                    st.success("✅ private_keyの改行文字は正常です")
+                                else:
+                                    st.warning("⚠️ private_keyに改行文字が見つかりません")
+                                
+                                # private_keyの先頭と末尾を表示
+                                st.text("🔍 private_key内容（先頭100文字）:")
+                                st.code(private_key[:100] + "..." if len(private_key) > 100 else private_key)
+                            else:
+                                st.error("❌ private_keyが見つかりません")
+                        
                         except Exception as e:
                             st.error(f"❌ JSON解析エラー: {str(e)}")
+                            # JSONの先頭部分を表示してデバッグ
+                            st.text("🔍 環境変数の先頭100文字:")
+                            st.code(service_account_env[:100] + "..." if len(service_account_env) > 100 else service_account_env)
                     else:
                         st.warning("⚠️ GOOGLE_SERVICE_ACCOUNT環境変数が未設定")
                     

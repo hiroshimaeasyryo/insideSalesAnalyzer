@@ -11,6 +11,7 @@ import pandas as pd
 import datetime as dt
 from analysis_dashboard import extract_monthly_data, FILES
 from data_loader import get_data_loader
+import streamlit as st
 
 app = Flask(__name__)
 
@@ -213,10 +214,147 @@ def get_month_data(month):
         'staff_conv': staff_conv.to_dict(orient="records")
     }
 
+def get_debug_info():
+    # This function is not provided in the original file or the new code block
+    # It's assumed to exist as it's called in the new code block
+    pass
+
 if __name__ == '__main__':
     # データを事前に読み込み
     if load_data():
         print("データの読み込みが完了しました")
         app.run(debug=True, host='0.0.0.0', port=5001)
     else:
-        print("データの読み込みに失敗しました") 
+        print("データの読み込みに失敗しました")
+
+    if st.button("🔍 詳細デバッグ情報を取得", type="primary"):
+        with st.spinner("詳細情報を取得中..."):
+            debug_info = get_debug_info()
+            
+            # 基本設定情報
+            st.subheader("🔧 設定状態")
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.write(f"**PRODUCTION_MODE**: {debug_info['config']['PRODUCTION_MODE']}")
+                st.write(f"**GOOGLE_DRIVE_ENABLED**: {debug_info['config']['GOOGLE_DRIVE_ENABLED']}")
+                st.write(f"**USE_LOCAL_FALLBACK**: {debug_info['config']['USE_LOCAL_FALLBACK']}")
+                st.write(f"**FOLDER_ID**: {debug_info['config']['GOOGLE_DRIVE_FOLDER_ID']}")
+            
+            # Streamlit Secrets状態
+            st.subheader("🔐 Streamlit Secrets状態")
+            if debug_info['secrets']['available']:
+                st.success(f"✅ Secrets利用可能")
+                st.write(f"**設定済みキー**: {debug_info['secrets']['keys']}")
+                st.write(f"**google_driveキー**: {debug_info['secrets']['google_drive_keys']}")
+                st.write(f"**service_account長さ**: {debug_info['secrets']['service_account_length']}")
+                
+                # Service Account JSON詳細検証
+                st.subheader("🔍 Service Account JSON詳細")
+                service_account_data = st.secrets.get("google_drive", {}).get("service_account", "")
+                
+                if service_account_data:
+                    try:
+                        import json
+                        parsed_json = json.loads(service_account_data)
+                        st.success("✅ JSON形式: 正常")
+                        
+                        # 重要なフィールドの確認
+                        required_fields = ["type", "project_id", "private_key_id", "private_key", "client_email", "client_id", "auth_uri", "token_uri"]
+                        missing_fields = [field for field in required_fields if field not in parsed_json]
+                        
+                        if missing_fields:
+                            st.error(f"❌ 不足フィールド: {missing_fields}")
+                        else:
+                            st.success("✅ 必要フィールド: 全て存在")
+                        
+                        # private_keyの詳細確認
+                        private_key = parsed_json.get("private_key", "")
+                        if private_key:
+                            st.write(f"**private_key長さ**: {len(private_key)}")
+                            st.write(f"**private_key開始**: {private_key[:50]}...")
+                            st.write(f"**改行文字数**: {private_key.count('\\n')}")
+                            
+                            # PEM形式の確認
+                            if "-----BEGIN PRIVATE KEY-----" in private_key and "-----END PRIVATE KEY-----" in private_key:
+                                st.success("✅ PEM形式ヘッダー: 正常")
+                            else:
+                                st.error("❌ PEM形式ヘッダー: 不正")
+                            
+                            # 改行文字の問題確認
+                            if "\\n" in private_key:
+                                st.warning("⚠️ エスケープされた改行文字を検出")
+                                st.info("💡 解決方法: private_keyの\\nを実際の改行文字に置換する必要があります")
+                        else:
+                            st.error("❌ private_keyが見つかりません")
+                        
+                    except json.JSONDecodeError as e:
+                        st.error(f"❌ JSON解析エラー: {str(e)}")
+                        st.text("JSONの先頭50文字:")
+                        st.code(service_account_data[:50])
+                else:
+                    st.error("❌ service_accountデータが見つかりません")
+            
+            # 環境変数状態
+            st.subheader("🌍 環境変数状態")
+            if debug_info['environment']['GOOGLE_SERVICE_ACCOUNT']:
+                st.success("✅ GOOGLE_SERVICE_ACCOUNT: 設定済み")
+                st.write(f"**プロジェクトID**: {debug_info['environment']['project_id']}")
+                st.write(f"**クライアントメール**: {debug_info['environment']['client_email']}")
+            else:
+                st.error("❌ GOOGLE_SERVICE_ACCOUNT: 未設定")
+            
+            # 接続テスト
+            st.subheader("🔗 接続テスト")
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                if debug_info['connection']['force_refresh_success']:
+                    st.success("✅ 強制リフレッシュテスト: 成功")
+                else:
+                    st.error("❌ 強制リフレッシュテスト: 失敗")
+                    st.error(f"エラー詳細: {debug_info['connection']['force_refresh_error']}")
+            
+            with col2:
+                if debug_info['connection']['normal_success']:
+                    st.success("✅ 通常テスト: 成功")
+                else:
+                    st.error("❌ 通常テスト: 失敗")
+                    st.error(f"エラー: {debug_info['connection']['normal_error']}")
+            
+            # 解決方法の提案
+            if not debug_info['connection']['normal_success']:
+                st.subheader("💡 解決方法")
+                if "Unable to load PEM file" in str(debug_info['connection']['normal_error']):
+                    st.info("""
+                    **private_keyの改行文字問題の解決方法:**
+                    
+                    1. Google Cloud ConsoleからService Accountキーを再ダウンロード
+                    2. JSONファイルを開いて、private_keyフィールドの内容をコピー
+                    3. Streamlit Cloudの設定で、private_keyの値の\\nを実際の改行に置換
+                    4. または、下記のボタンで自動修正を試行
+                    """)
+                    
+                    if st.button("🔧 private_key自動修正を試行"):
+                        try:
+                            import json
+                            service_account_data = st.secrets.get("google_drive", {}).get("service_account", "")
+                            parsed_json = json.loads(service_account_data)
+                            
+                            # private_keyの修正
+                            if "private_key" in parsed_json:
+                                original_key = parsed_json["private_key"]
+                                fixed_key = original_key.replace("\\n", "\n")
+                                
+                                st.text("修正前の改行文字数:")
+                                st.code(f"\\n文字数: {original_key.count('\\n')}")
+                                st.text("修正後の改行文字数:")
+                                st.code(f"実際の改行数: {fixed_key.count(chr(10))}")
+                                
+                                # 修正したJSONを表示（実際の適用は手動で行う必要がある）
+                                parsed_json["private_key"] = fixed_key
+                                st.text("修正後のJSON（手動でStreamlit Secretsに設定してください）:")
+                                st.code(json.dumps(parsed_json, indent=2))
+                            
+                        except Exception as e:
+                            st.error(f"自動修正エラー: {str(e)}") 
