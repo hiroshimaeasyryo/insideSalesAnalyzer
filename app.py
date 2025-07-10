@@ -10,6 +10,7 @@ import json
 import pandas as pd
 import datetime as dt
 from analysis_dashboard import extract_monthly_data, FILES
+from data_loader import get_data_loader
 
 app = Flask(__name__)
 
@@ -21,20 +22,35 @@ def load_data():
     """データを読み込んでグローバル変数に保存"""
     global global_data, base_data
     
-    dfs = {}
-    for k, p in FILES.items():
-        try:
-            with p.open(encoding="utf-8") as f:
-                raw_data = json.load(f)
-            dfs[k] = extract_monthly_data(raw_data)
-        except Exception as e:
-            print(f"警告: {k} ファイルの読み込みに失敗: {e}")
-            dfs[k] = pd.DataFrame()
-
-    # 空のDataFrameを除外
-    dfs = {k: v for k, v in dfs.items() if not v.empty}
-    
-    if not dfs:
+    try:
+        loader = get_data_loader()
+        available_months = loader.get_available_months()
+        
+        if not available_months:
+            print("警告: 利用可能なデータが見つかりません")
+            return False
+        
+        # 最新月のデータを使用
+        target_month = available_months[0]
+        basic_data, detail_data, summary_data = loader.load_analysis_data(target_month)
+        
+        dfs = {}
+        if basic_data:
+            dfs['basic'] = extract_monthly_data(basic_data)
+        if detail_data:
+            dfs['detail'] = extract_monthly_data(detail_data)
+        if summary_data:
+            dfs['monthly'] = extract_monthly_data(summary_data)
+        
+        # 空のDataFrameを除外
+        dfs = {k: v for k, v in dfs.items() if not v.empty}
+        
+        if not dfs:
+            print("警告: 有効なデータが見つかりません")
+            return False
+            
+    except Exception as e:
+        print(f"データ読み込みエラー: {e}")
         return False
     
     base_data = pd.concat(dfs.values(), ignore_index=True)

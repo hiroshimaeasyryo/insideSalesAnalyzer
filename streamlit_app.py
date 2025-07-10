@@ -7,6 +7,10 @@ import plotly.graph_objects as go
 from datetime import datetime, timedelta
 import os
 
+# 新しいデータローダーをインポート
+from data_loader import get_data_loader
+from config import get_config
+
 # ページ設定
 st.set_page_config(
     page_title="架電ダッシュボード",
@@ -93,6 +97,34 @@ elif authentication_status:
         
         st.divider()
         
+        # データソース状態表示
+        st.subheader("🗂️ データソース")
+        try:
+            loader = get_data_loader()
+            status = loader.get_data_source_status()
+            
+            if status['active_source'] == 'google_drive':
+                st.success("🌐 Google Driveから読み込み中")
+                if status['google_drive']['folder_id']:
+                    st.caption(f"フォルダID: {status['google_drive']['folder_id'][:8]}...")
+            else:
+                st.info("📁 ローカルファイルから読み込み中")
+                st.caption(f"パス: {status['local']['path']}")
+            
+            # Google Drive設定状態
+            if status['google_drive']['enabled']:
+                if status['google_drive']['available']:
+                    st.caption("✅ Google Drive: 利用可能")
+                else:
+                    st.caption("⚠️ Google Drive: 接続エラー")
+            else:
+                st.caption("ℹ️ Google Drive: 無効")
+                
+        except Exception as e:
+            st.warning(f"データソース状態の取得に失敗: {e}")
+        
+        st.divider()
+        
         # ヘルプ
         st.subheader("ℹ️ ヘルプ")
         if analysis_type == "📈 月次分析":
@@ -109,69 +141,30 @@ elif authentication_status:
     # メインコンテンツ
     st.title("📊 架電ダッシュボード")
     
-    # データディレクトリの取得関数
+    # データディレクトリの取得関数（互換性のため保持）
     def get_data_dir():
-        """データディレクトリのパスを取得"""
-        current_dir = os.getcwd()
-        data_dir = os.path.join(current_dir, 'dataset')
-        if not os.path.exists(data_dir):
-            # 代替パスを試す
-            alt_data_dir = 'dataset'
-            if os.path.exists(alt_data_dir):
-                data_dir = alt_data_dir
-            else:
-                return None
-        return data_dir
+        """データディレクトリのパスを取得（互換性のため保持）"""
+        config = get_config()
+        if config.LOCAL_DATA_DIR.exists():
+            return str(config.LOCAL_DATA_DIR)
+        return None
     
-    # データ読み込み関数
+    # データ読み込み関数（新しいデータローダーを使用）
     @st.cache_data
     def load_data(month):
         """指定月のデータを読み込み"""
         try:
-            # データディレクトリの存在確認
-            data_dir = get_data_dir()
-            if data_dir is None:
-                st.error("❌ データディレクトリが見つかりません")
+            loader = get_data_loader()
+            basic_data, detail_data, summary_data = loader.load_analysis_data(month)
+            
+            if basic_data is None or detail_data is None or summary_data is None:
+                st.error(f"❌ {month}のデータの一部が読み込めませんでした")
                 return None, None, None
-            
-            # ファイルパスの構築
-            basic_file = os.path.join(data_dir, f'基本分析_{month}.json')
-            detail_file = os.path.join(data_dir, f'詳細分析_{month}.json')
-            summary_file = os.path.join(data_dir, f'月次サマリー_{month}.json')
-            
-            # ファイルの存在確認
-            if not os.path.exists(basic_file):
-                st.error(f"❌ 基本分析ファイルが見つかりません: {basic_file}")
-                return None, None, None
-            if not os.path.exists(detail_file):
-                st.error(f"❌ 詳細分析ファイルが見つかりません: {detail_file}")
-                return None, None, None
-            if not os.path.exists(summary_file):
-                st.error(f"❌ 月次サマリーファイルが見つかりません: {summary_file}")
-                return None, None, None
-            
-            # 基本分析データ
-            with open(basic_file, 'r', encoding='utf-8') as f:
-                basic_data = json.load(f)
-            
-            # 詳細分析データ
-            with open(detail_file, 'r', encoding='utf-8') as f:
-                detail_data = json.load(f)
-            
-            # 月次サマリーデータ
-            with open(summary_file, 'r', encoding='utf-8') as f:
-                summary_data = json.load(f)
                 
             return basic_data, detail_data, summary_data
             
-        except FileNotFoundError as e:
-            st.error(f"❌ ファイルが見つかりません: {e}")
-            return None, None, None
-        except json.JSONDecodeError as e:
-            st.error(f"❌ JSONファイルの解析に失敗しました: {e}")
-            return None, None, None
         except Exception as e:
-            st.error(f"❌ 予期しないエラーが発生しました: {e}")
+            st.error(f"❌ データ読み込みエラー: {e}")
             st.write(f"エラーの詳細: {type(e).__name__}")
             return None, None, None
 
@@ -179,16 +172,9 @@ elif authentication_status:
     def load_retention_data(month):
         """指定された月の定着率分析データを読み込み"""
         try:
-            data_dir = get_data_dir()
-            if data_dir is None:
-                return {}
-            
-            retention_file = os.path.join(data_dir, f'定着率分析_{month}.json')
-            
-            if os.path.exists(retention_file):
-                with open(retention_file, 'r', encoding='utf-8') as f:
-                    return json.load(f)
-            return {}
+            loader = get_data_loader()
+            data = loader.load_retention_data(month)
+            return data if data is not None else {}
         except Exception as e:
             st.error(f"定着率分析データ読み込みエラー: {str(e)}")
             return {}

@@ -17,6 +17,7 @@ import json
 import pandas as pd
 from jinja2 import Environment, FileSystemLoader
 import datetime as dt
+from data_loader import get_data_loader
 
 # ---------- 設定 ----------
 ROOT = Path(__file__).resolve().parent
@@ -90,23 +91,39 @@ def safe_mean(s):
     return (s.sum() / s.count()) if s.count() else 0
 
 # ---------- データロード ----------
+# 新しいデータローダーを使用
+loader = get_data_loader()
+
+# 対象月（最新の月を自動取得または指定）
+available_months = loader.get_available_months()
+target_month = available_months[0] if available_months else "2025-06"
+
 dfs = {}
-for k, p in FILES.items():
-    try:
-        with p.open(encoding="utf-8") as f:
-            raw_data = json.load(f)
-        dfs[k] = extract_monthly_data(raw_data)
-    except Exception as e:
-        print(f"警告: {k} ファイルの読み込みに失敗: {e}")
-        dfs[k] = pd.DataFrame()
+basic_data, detail_data, summary_data = loader.load_analysis_data(target_month)
+
+# 各データを処理
+if basic_data:
+    dfs['basic'] = extract_monthly_data(basic_data)
+else:
+    print(f"警告: 基本分析データ({target_month})の読み込みに失敗")
+    dfs['basic'] = pd.DataFrame()
+
+if detail_data:
+    dfs['detail'] = extract_monthly_data(detail_data)
+else:
+    print(f"警告: 詳細分析データ({target_month})の読み込みに失敗")
+    dfs['detail'] = pd.DataFrame()
+
+if summary_data:
+    dfs['monthly'] = extract_monthly_data(summary_data)
+else:
+    print(f"警告: 月次サマリーデータ({target_month})の読み込みに失敗")
+    dfs['monthly'] = pd.DataFrame()
 
 # 定着率分析データのロード
-RETENTION_PATH = DATA_DIR / "定着率分析_2025-06.json"
-try:
-    with RETENTION_PATH.open(encoding="utf-8") as f:
-        retention_json = json.load(f)
-except Exception as e:
-    print(f"警告: 定着率分析ファイルの読み込みに失敗: {e}")
+retention_json = loader.load_retention_data(target_month)
+if not retention_json:
+    print(f"警告: 定着率分析データ({target_month})の読み込みに失敗")
     retention_json = {}
 
 # 空のDataFrameを除外
