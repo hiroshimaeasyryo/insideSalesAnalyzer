@@ -1,371 +1,438 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-analysis_dashboard.py
+分析ダッシュボード生成モジュール
 
-概要:
-  - /data 配下の 3 つの JSON を読み込み、必要な集計値を算出
-  - /templates/dashboard_template.html をレンダリングして
-    /output/dashboard.html に書き出す
-
-json 構造が多少変わっても最低限動くよう、列名マッピングは
-先頭 few rows を自動推定しつつ手動 override も可能。
+架電データの詳細分析とHTMLダッシュボードの生成を行います
 """
 
-from pathlib import Path
-import json
 import pandas as pd
-from jinja2 import Environment, FileSystemLoader
-import datetime as dt
+import plotly.graph_objects as go
+import plotly.express as px
+from plotly.subplots import make_subplots
+import json
+from datetime import datetime, timedelta
+from pathlib import Path
 from data_loader import get_data_loader
 
-# ---------- 設定 ----------
-ROOT = Path(__file__).resolve().parent
-DATA_DIR = ROOT / "dataset"
-TPL_DIR  = ROOT / "templates"
-OUT_DIR  = ROOT / "output"
-OUT_DIR.mkdir(exist_ok=True)
-
-# ファイルパス
-FILES = {
-    "basic": DATA_DIR / "基本分析_2025-06.json",
-    "monthly": DATA_DIR / "月次サマリー_2025-06.json",
-    "detail": DATA_DIR / "詳細分析_2025-06.json",
-}
-
-# ---------- ユーティリティ ----------
-def load_json(path: Path) -> pd.DataFrame:
-    """JSON → pandas.DataFrame（階層構造も自動 flatten）"""
-    with path.open(encoding="utf-8") as f:
-        raw = json.load(f)
-    return pd.json_normalize(raw)
-
-def extract_monthly_data(json_data):
-    """階層構造のJSONから月次データを抽出"""
-    monthly_records = []
+def load_and_prepare_data(target_month: str) -> dict:
+    """
+    指定月のデータを読み込み、分析用に準備する
     
-    if 'monthly_analysis' in json_data:
-        for month_key, month_data in json_data['monthly_analysis'].items():
-            # 月の基本情報
-            month = month_data.get('month', month_key)
-            
-            # 支店データの抽出
-            if 'branches' in month_data:
-                for branch_name, branch_data in month_data['branches'].items():
-                    record = {
-                        'date': month,
-                        'month': month,
-                        'branch': branch_data.get('branch_name', branch_name),
-                        'calls': branch_data.get('total_calls', 0),
-                        'call_hours': branch_data.get('total_hours', 0),
-                        'appointments': branch_data.get('total_appointments', 0),
-                        'deals': branch_data.get('total_deals', 0),
-                        'approved': branch_data.get('total_approved', 0),
-                        'rejected': branch_data.get('total_rejected', 0),
-                        'approval_rate': branch_data.get('approval_rate', 0)
-                    }
-                    monthly_records.append(record)
-            
-            # スタッフデータの抽出
-            if 'staff' in month_data:
-                for staff_name, staff_data in month_data['staff'].items():
-                    record = {
-                        'date': month,
-                        'month': month,
-                        'staff': staff_data.get('staff_name', staff_name),
-                        'branch': staff_data.get('branch', ''),
-                        'join_date': staff_data.get('join_date', ''),
-                        'calls': staff_data.get('total_calls', 0),
-                        'call_hours': staff_data.get('total_hours', 0),
-                        'appointments': staff_data.get('total_appointments', 0),
-                        'deals': staff_data.get('total_deals', 0),
-                        'approved': staff_data.get('total_approved', 0),
-                        'rejected': staff_data.get('total_rejected', 0),
-                        'approval_rate': staff_data.get('approval_rate', 0)
-                    }
-                    monthly_records.append(record)
+    Args:
+        target_month (str): 対象月（YYYY-MM形式）
+        
+    Returns:
+        dict: 処理済みデータ
+    """
+    loader = get_data_loader()
     
-    return pd.DataFrame(monthly_records)
+    try:
+        # 基本データの読み込み
+        basic_data, detail_data, summary_data = loader.load_analysis_data(target_month)
+        
+        result = {
+            'basic_data': None,
+            'detail_data': None,
+            'summary_data': None,
+            'retention_data': None,
+            'has_data': False
+        }
+        
+        if not basic_data:
+            pass
+        else:
+            result['basic_data'] = pd.DataFrame(basic_data)
+            result['has_data'] = True
+        
+        if not detail_data:
+            pass
+        else:
+            result['detail_data'] = detail_data
+            result['has_data'] = True
+        
+        if not summary_data:
+            pass
+        else:
+            result['summary_data'] = summary_data
+            result['has_data'] = True
+        
+        # 定着率データの読み込み
+        retention_data = loader.load_retention_data(target_month)
+        if not retention_data:
+            pass
+        else:
+            result['retention_data'] = retention_data
+            result['has_data'] = True
+        
+        if not result['has_data']:
+            return result
+        
+        # 基本データの前処理
+        if result['basic_data'] is not None:
+            df_basic = result['basic_data']
+            
+            # 日付カラムの処理
+            if 'date' in df_basic.columns:
+                df_basic['date'] = pd.to_datetime(df_basic['date'], errors='coerce')
+            
+            # 数値カラムの前処理
+            numeric_columns = ['call_count', 'reception_bk', 'no_one_in_charge', 'disconnect', 
+                             'charge_connected', 'charge_bk', 'get_appointment', 'call_hours']
+            
+            for col in numeric_columns:
+                if col in df_basic.columns:
+                    df_basic[col] = pd.to_numeric(df_basic[col], errors='coerce').fillna(0)
+            
+            # アポ率の計算
+            df_basic['appointment_rate'] = (
+                df_basic['get_appointment'] / df_basic['call_count'] * 100
+            ).fillna(0)
+            
+            result['basic_data'] = df_basic
+        
+        return result
+        
+    except Exception as e:
+        return {
+            'basic_data': None,
+            'detail_data': None,
+            'summary_data': None,
+            'retention_data': None,
+            'has_data': False,
+            'error': str(e)
+        }
 
-def safe_mean(s):
-    return (s.sum() / s.count()) if s.count() else 0
+def extract_monthly_conversion_data(detail_data):
+    """詳細データから月次コンバージョンデータを抽出"""
+    try:
+        if 'monthly_conversion' in detail_data:
+            return detail_data['monthly_conversion']
+        
+        # フォールバック：他の形式のデータ構造も試行
+        for key in detail_data.keys():
+            if 'conversion' in key.lower() or 'monthly' in key.lower():
+                return detail_data[key]
+        
+        return None
+        
+    except Exception as e:
+        return None
 
-# ---------- データロード ----------
-# 新しいデータローダーを使用
-loader = get_data_loader()
+def create_daily_trend_chart(df_basic):
+    """日別トレンドチャートを作成"""
+    if df_basic is None or df_basic.empty:
+        return None
+    
+    try:
+        # 日別集計
+        daily_stats = df_basic.groupby('date').agg({
+            'call_count': 'sum',
+            'get_appointment': 'sum',
+            'appointment_rate': 'mean'
+        }).reset_index()
+        
+        # チャート作成
+        fig = make_subplots(
+            rows=2, cols=1,
+            subplot_titles=('日別架電数・アポ数', '日別アポ率'),
+            vertical_spacing=0.1
+        )
+        
+        # 架電数
+        fig.add_trace(
+            go.Scatter(
+                x=daily_stats['date'],
+                y=daily_stats['call_count'],
+                name='架電数',
+                line=dict(color='blue')
+            ),
+            row=1, col=1
+        )
+        
+        # アポ数
+        fig.add_trace(
+            go.Scatter(
+                x=daily_stats['date'],
+                y=daily_stats['get_appointment'],
+                name='アポ数',
+                line=dict(color='green')
+            ),
+            row=1, col=1
+        )
+        
+        # アポ率
+        fig.add_trace(
+            go.Scatter(
+                x=daily_stats['date'],
+                y=daily_stats['appointment_rate'],
+                name='アポ率(%)',
+                line=dict(color='red')
+            ),
+            row=2, col=1
+        )
+        
+        fig.update_layout(
+            height=600,
+            title_text="日別パフォーマンス推移",
+            showlegend=True
+        )
+        
+        return fig
+        
+    except Exception as e:
+        if 'date' not in df_basic.columns:
+            pass
+        return None
 
-# 対象月（最新の月を自動取得または指定）
-available_months = loader.get_available_months()
-target_month = available_months[0] if available_months else "2025-06"
+def create_staff_performance_chart(df_basic):
+    """スタッフ別パフォーマンスチャートを作成"""
+    if df_basic is None or df_basic.empty:
+        return None
+    
+    try:
+        # スタッフ別集計
+        staff_stats = df_basic.groupby('staff_name').agg({
+            'call_count': 'sum',
+            'get_appointment': 'sum',
+            'call_hours': 'sum'
+        }).reset_index()
+        
+        # アポ率計算
+        staff_stats['appointment_rate'] = (
+            staff_stats['get_appointment'] / staff_stats['call_count'] * 100
+        ).fillna(0)
+        
+        # 上位20位まで表示
+        staff_stats = staff_stats.sort_values('call_count', ascending=False).head(20)
+        
+        # チャート作成
+        fig = make_subplots(
+            rows=1, cols=2,
+            subplot_titles=('架電数 vs アポ数', 'アポ率ランキング'),
+            specs=[[{"secondary_y": False}, {"secondary_y": False}]]
+        )
+        
+        # 架電数 vs アポ数（散布図）
+        fig.add_trace(
+            go.Scatter(
+                x=staff_stats['call_count'],
+                y=staff_stats['get_appointment'],
+                mode='markers+text',
+                text=staff_stats['staff_name'],
+                textposition='top center',
+                marker=dict(
+                    size=staff_stats['call_hours'] * 2,  # 架電時間でサイズ調整
+                    color=staff_stats['appointment_rate'],
+                    colorscale='Viridis',
+                    showscale=True,
+                    colorbar=dict(title="アポ率(%)")
+                ),
+                name='スタッフ'
+            ),
+            row=1, col=1
+        )
+        
+        # アポ率ランキング（棒グラフ）
+        top_performers = staff_stats.nlargest(10, 'appointment_rate')
+        fig.add_trace(
+            go.Bar(
+                x=top_performers['staff_name'],
+                y=top_performers['appointment_rate'],
+                name='アポ率',
+                marker_color='lightblue'
+            ),
+            row=1, col=2
+        )
+        
+        fig.update_layout(
+            height=500,
+            title_text="スタッフ別パフォーマンス分析",
+            showlegend=False
+        )
+        
+        fig.update_xaxes(title_text="架電数", row=1, col=1)
+        fig.update_yaxes(title_text="アポ数", row=1, col=1)
+        fig.update_xaxes(title_text="スタッフ", tickangle=45, row=1, col=2)
+        fig.update_yaxes(title_text="アポ率(%)", row=1, col=2)
+        
+        return fig
+        
+    except Exception as e:
+        return None
 
-dfs = {}
-basic_data, detail_data, summary_data = loader.load_analysis_data(target_month)
+def create_product_analysis_chart(df_basic):
+    """商材別分析チャートを作成"""
+    if df_basic is None or df_basic.empty:
+        return None
+    
+    try:
+        # 商材別集計
+        product_stats = df_basic.groupby('product').agg({
+            'call_count': 'sum',
+            'get_appointment': 'sum',
+            'call_hours': 'sum'
+        }).reset_index()
+        
+        # アポ率計算
+        product_stats['appointment_rate'] = (
+            product_stats['get_appointment'] / product_stats['call_count'] * 100
+        ).fillna(0)
+        
+        # チャート作成
+        fig = make_subplots(
+            rows=2, cols=2,
+            subplot_titles=('商材別架電数', '商材別アポ数', '商材別架電時間', '商材別アポ率'),
+            specs=[[{"type": "xy"}, {"type": "xy"}],
+                   [{"type": "xy"}, {"type": "xy"}]]
+        )
+        
+        # 商材別架電数
+        fig.add_trace(
+            go.Bar(x=product_stats['product'], y=product_stats['call_count'], name='架電数'),
+            row=1, col=1
+        )
+        
+        # 商材別アポ数
+        fig.add_trace(
+            go.Bar(x=product_stats['product'], y=product_stats['get_appointment'], name='アポ数'),
+            row=1, col=2
+        )
+        
+        # 商材別架電時間
+        fig.add_trace(
+            go.Bar(x=product_stats['product'], y=product_stats['call_hours'], name='架電時間'),
+            row=2, col=1
+        )
+        
+        # 商材別アポ率
+        fig.add_trace(
+            go.Bar(x=product_stats['product'], y=product_stats['appointment_rate'], name='アポ率'),
+            row=2, col=2
+        )
+        
+        fig.update_layout(
+            height=800,
+            title_text="商材別パフォーマンス分析",
+            showlegend=False
+        )
+        
+        return fig
+        
+    except Exception as e:
+        return None
 
-# 各データを処理
-if basic_data:
-    dfs['basic'] = extract_monthly_data(basic_data)
-else:
-    print(f"警告: 基本分析データ({target_month})の読み込みに失敗")
-    dfs['basic'] = pd.DataFrame()
+def generate_dashboard_html(target_month: str, output_path: str = None) -> str:
+    """
+    HTMLダッシュボードを生成
+    
+    Args:
+        target_month (str): 対象月（YYYY-MM形式）
+        output_path (str): 出力パス（Noneの場合はデフォルト）
+        
+    Returns:
+        str: 生成されたHTMLファイルのパス
+    """
+    # データ読み込み
+    data = load_and_prepare_data(target_month)
+    
+    if not data['has_data']:
+        raise ValueError(f"月 {target_month} のデータが見つかりません")
+    
+    # チャート作成
+    charts = {}
+    
+    if data['basic_data'] is not None:
+        charts['daily_trend'] = create_daily_trend_chart(data['basic_data'])
+        charts['staff_performance'] = create_staff_performance_chart(data['basic_data'])
+        charts['product_analysis'] = create_product_analysis_chart(data['basic_data'])
+    
+    # HTML生成
+    html_content = f"""
+    <!DOCTYPE html>
+    <html lang="ja">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>架電分析ダッシュボード - {target_month}</title>
+        <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+        <style>
+            body {{
+                font-family: 'Helvetica Neue', Arial, sans-serif;
+                margin: 0;
+                padding: 20px;
+                background-color: #f5f5f5;
+            }}
+            .header {{
+                text-align: center;
+                margin-bottom: 30px;
+                padding: 20px;
+                background-color: white;
+                border-radius: 10px;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            }}
+            .chart-container {{
+                background-color: white;
+                padding: 20px;
+                margin: 20px 0;
+                border-radius: 10px;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            }}
+            .chart {{
+                width: 100%;
+                height: 500px;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h1>📞 架電分析ダッシュボード</h1>
+            <h2>{target_month}</h2>
+            <p>生成日時: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
+        </div>
+    """
+    
+    # チャートをHTMLに追加
+    chart_id = 0
+    for chart_name, chart in charts.items():
+        if chart is not None:
+            chart_id += 1
+            html_content += f"""
+            <div class="chart-container">
+                <div id="chart{chart_id}" class="chart"></div>
+                <script>
+                    {chart.to_html(include_plotlyjs=False, div_id=f"chart{chart_id}")}
+                </script>
+            </div>
+            """
+    
+    html_content += """
+    </body>
+    </html>
+    """
+    
+    # ファイル保存
+    if output_path is None:
+        output_dir = Path('output')
+        output_dir.mkdir(exist_ok=True)
+        output_path = output_dir / 'dashboard.html'
+    
+    with open(output_path, 'w', encoding='utf-8') as f:
+        f.write(html_content)
+    
+    return str(output_path)
 
-if detail_data:
-    dfs['detail'] = extract_monthly_data(detail_data)
-else:
-    print(f"警告: 詳細分析データ({target_month})の読み込みに失敗")
-    dfs['detail'] = pd.DataFrame()
-
-if summary_data:
-    dfs['monthly'] = extract_monthly_data(summary_data)
-else:
-    print(f"警告: 月次サマリーデータ({target_month})の読み込みに失敗")
-    dfs['monthly'] = pd.DataFrame()
-
-# 定着率分析データのロード
-retention_json = loader.load_retention_data(target_month)
-if not retention_json:
-    print(f"警告: 定着率分析データ({target_month})の読み込みに失敗")
-    retention_json = {}
-
-# 空のDataFrameを除外
-dfs = {k: v for k, v in dfs.items() if not v.empty}
-
-if not dfs:
-    print("エラー: 読み込めるデータがありません")
-    exit(1)
-
-# ---------- monthly_conversionの抽出 ----------
-conversion = []
-try:
-    with FILES["basic"].open(encoding="utf-8") as f:
-        basic_json = json.load(f)
-    monthly_conv = basic_json.get("monthly_conversion", {})
-    for month, month_data in monthly_conv.items():
-        # 全体
-        total = month_data.get("total", {})
-        conversion.append({
-            "month": month,
-            "type": "total",
-            **total
-        })
-        # スタッフ別
-        for staff, sdata in month_data.get("by_staff", {}).items():
-            conversion.append({
-                "month": month,
-                "type": "staff",
-                "name": staff,
-                **sdata
-            })
-        # 支部別
-        for branch, bdata in month_data.get("by_branch", {}).items():
-            conversion.append({
-                "month": month,
-                "type": "branch",
-                "name": branch,
-                **bdata
-            })
-        # 商材別
-        for prod, pdata in month_data.get("by_product", {}).items():
-            conversion.append({
-                "month": month,
-                "type": "product",
-                "name": prod,
-                **pdata
-            })
-    conversion_df = pd.DataFrame(conversion)
-except Exception as e:
-    print(f"警告: monthly_conversion抽出失敗: {e}")
-    conversion_df = pd.DataFrame()
-
-# ---------- 定着率分析の抽出 ----------
-# 月次定着率推移
-retention_trend = []
-if "monthly_retention_rates" in retention_json:
-    for month, r in retention_json["monthly_retention_rates"].items():
-        retention_trend.append({
-            "month": month,
-            "active_staff": r.get("active_staff", 0),
-            "total_staff": r.get("total_staff", 0),
-            "retention_rate": float(r.get("retention_rate", 0))
-        })
-    retention_trend_df = pd.DataFrame(retention_trend)
-else:
-    retention_trend_df = pd.DataFrame()
-
-# スタッフ別定着率
-staff_retention = []
-if "staff_retention_analysis" in retention_json:
-    for staff, s in retention_json["staff_retention_analysis"].items():
-        staff_retention.append({
-            "staff_name": staff,
-            "branch": s.get("branch", ""),
-            "risk_level": s.get("risk_level", ""),
-            "risk_score": s.get("risk_score", 0),
-            "monthly_activity_rate": float(s.get("monthly_activity_rate", 0)),
-            "appointment_rate": float(s.get("appointment_rate", 0)),
-            "total_calls": s.get("total_calls", 0),
-            "total_appointments": s.get("total_appointments", 0)
-        })
-    staff_retention_df = pd.DataFrame(staff_retention)
-else:
-    staff_retention_df = pd.DataFrame()
-
-# 支部別定着率
-branch_retention = []
-if "branch_retention_analysis" in retention_json:
-    for branch, b in retention_json["branch_retention_analysis"].items():
-        branch_retention.append({
-            "branch": branch,
-            "total_staff": b.get("total_staff", 0),
-            "active_staff": b.get("active_staff", 0),
-            "avg_activity_rate": float(b.get("avg_activity_rate", 0)),
-            "avg_risk_score": float(b.get("avg_risk_score", 0)),
-            "high_risk_staff": b.get("high_risk_staff", 0),
-            "medium_risk_staff": b.get("medium_risk_staff", 0),
-            "low_risk_staff": b.get("low_risk_staff", 0)
-        })
-    branch_retention_df = pd.DataFrame(branch_retention)
-else:
-    branch_retention_df = pd.DataFrame()
-
-# リスクリスト
-risk_lists = {
-    "high": retention_json.get("risk_analysis", {}).get("high_risk_staff", []),
-    "medium": retention_json.get("risk_analysis", {}).get("medium_risk_staff", []),
-    "low": retention_json.get("risk_analysis", {}).get("low_risk_staff", [])
-}
-
-# ---------- マスタ結合（必要であれば） ----------
-base = pd.concat(dfs.values(), ignore_index=True)
-
-# ---------- 前処理 ----------
-# date列が存在するかチェック
-if 'date' not in base.columns:
-    print("エラー: date列が見つかりません")
-    print("利用可能な列:", list(base.columns))
-    exit(1)
-
-base['date'] = pd.to_datetime(base['date'], errors='coerce')
-base['month'] = base['date'].dt.to_period('M').astype(str)
-base['join_date'] = pd.to_datetime(base['join_date'], errors='coerce')
-
-# タイムゾーン情報を統一（タイムゾーン情報を削除）
-base['date'] = base['date'].dt.tz_localize(None)
-base['join_date'] = base['join_date'].dt.tz_localize(None)
-
-base['tenure_months'] = ((base['date'] - base['join_date']) / pd.Timedelta(days=30)).round()
-
-# tenure bucket
-def bucket(m):
-    if pd.isna(m):
-        return "Unknown"
-    if m < 3:
-        return "<3mo"
-    if m < 6:
-        return "3–6mo"
-    if m < 12:
-        return "6–12mo"
-    return ">=12mo"
-base['tenure_grp'] = base['tenure_months'].apply(bucket)
-
-# ---------- 集計 ----------
-# 1) 月次
-monthly = (
-    base.groupby('month')
-        .agg(calls=('calls','sum'),
-             appointments=('appointments','sum'),
-             hours=('call_hours','sum'))
-        .assign(eff=lambda x: x.calls / x.hours,
-                conv=lambda x: x.appointments / x.calls * 100)
-        .reset_index()
-)
-
-# 利用可能な月のリストを生成（直近6ヶ月）
-available_months = sorted(monthly['month'].unique(), reverse=True)[:6]
-latest_month = available_months[0] if available_months else None
-
-# 2) 支店 × 月
-branch_month = (
-    base.groupby(['month','branch'])
-        .agg(calls=('calls','sum'),
-             hours=('call_hours','sum'))
-        .assign(eff=lambda x: x.calls / x.hours)
-        .reset_index()
-)
-
-# 3) 選択された月のデータ（デフォルトは最新月）
-selected_month = latest_month
-latest_df = base[base['month'] == selected_month]
-
-branch_latest = (
-    latest_df.groupby('branch')
-        .agg(calls=('calls','sum'),
-             hours=('call_hours','sum'),
-             appointments=('appointments','sum'))
-        .assign(eff=lambda x: x.calls / x.hours,
-                conv=lambda x: x.appointments / x.calls * 100)
-        .sort_values('eff', ascending=False)
-        .reset_index()
-)
-
-staff_eff = (
-    latest_df.groupby('staff')
-        .agg(calls=('calls','sum'),
-             hours=('call_hours','sum'))
-        .assign(eff=lambda x: x.calls / x.hours)
-        .sort_values('eff', ascending=False)
-        .head(5)
-        .reset_index()
-)
-
-staff_conv = (
-    latest_df.groupby('staff')
-        .agg(calls=('calls','sum'),
-             appointments=('appointments','sum'))
-        .assign(conv=lambda x: x.appointments / x.calls * 100)
-        .sort_values('conv', ascending=False)
-        .head(5)
-        .reset_index()
-)
-
-tenure_perf = (
-    base.groupby('tenure_grp')
-        .agg(calls=('calls','sum'),
-             hours=('call_hours','sum'),
-             appointments=('appointments','sum'))
-        .assign(eff=lambda x: x.calls / x.hours,
-                conv=lambda x: x.appointments / x.calls * 100)
-        .reset_index()
-)
-
-# サマリー統計の計算
-summary = {
-    'total_calls': int(base['calls'].sum()),
-    'total_hours': int(base['call_hours'].sum()),
-    'total_appointments': int(base['appointments'].sum()),
-    'avg_efficiency': float(base['calls'].sum() / base['call_hours'].sum()) if base['call_hours'].sum() > 0 else 0
-}
-
-# ---------- テンプレートレンダリング ----------
-env = Environment(loader=FileSystemLoader(TPL_DIR), autoescape=True)
-tpl = env.get_template("dashboard_template.html")
-
-rendered = tpl.render(
-    generated_at=dt.datetime.now().strftime("%Y-%m-%d %H:%M"),
-    monthly=monthly.to_dict(orient="records"),
-    branch_trend=branch_month.to_dict(orient="records"),
-    branch_latest=branch_latest.to_dict(orient="records"),
-    staff_eff=staff_eff.to_dict(orient="records"),
-    staff_conv=staff_conv.to_dict(orient="records"),
-    tenure_perf=tenure_perf.to_dict(orient="records"),
-    summary=summary,
-    available_months=available_months,
-    selected_month=selected_month,
-    conversion=conversion_df.to_dict(orient="records"),
-    retention_trend=retention_trend_df.to_dict(orient="records"),
-    staff_retention=staff_retention_df.to_dict(orient="records"),
-    branch_retention=branch_retention_df.to_dict(orient="records"),
-    risk_lists=risk_lists
-)
-
-(OUT_DIR / "dashboard.html").write_text(rendered, encoding="utf-8")
-print("✔ ダッシュボードを output/dashboard.html に生成しました")
+if __name__ == '__main__':
+    # 最新月のダッシュボードを生成
+    try:
+        loader = get_data_loader()
+        months = loader.get_available_months()
+        
+        if months:
+            latest_month = months[0]
+            output_file = generate_dashboard_html(latest_month)
+        else:
+            raise ValueError("利用可能なデータが見つかりません")
+            
+    except Exception as e:
+        pass

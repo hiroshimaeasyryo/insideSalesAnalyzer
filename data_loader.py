@@ -34,7 +34,6 @@ class DataLoader:
                         service_account_file=self.config.GOOGLE_SERVICE_ACCOUNT_FILE
                     )
                 except Exception as e:
-                    print(f"Google Drive接続テスト失敗: {e}")
                     self._drive_available = False
         
         return self._drive_available
@@ -64,28 +63,23 @@ class DataLoader:
                 )
             
             # Google Driveからのみ読み込み（フォールバックなし）
-            print(f"🌐 [本番モード] Google Driveから読み込み中: {filename}")
             data = load_json_from_drive(
                 filename,
                 folder_id=self.config.GOOGLE_DRIVE_FOLDER_ID,
                 service_account_file=self.config.GOOGLE_SERVICE_ACCOUNT_FILE
             )
-            print(f"✅ [本番モード] Google Drive読み込み成功: {filename}")
             return data
         
         # 1. Google Driveから読み込みを試行
         if self.is_drive_available():
             try:
-                print(f"🌐 Google Driveから読み込み中: {filename}")
                 data = load_json_from_drive(
                     filename,
                     folder_id=self.config.GOOGLE_DRIVE_FOLDER_ID,
                     service_account_file=self.config.GOOGLE_SERVICE_ACCOUNT_FILE
                 )
-                print(f"✅ Google Drive読み込み成功: {filename}")
                 return data
             except Exception as e:
-                print(f"⚠️ Google Drive読み込み失敗: {filename} - {e}")
                 if not self.config.USE_LOCAL_FALLBACK:
                     raise
         
@@ -101,18 +95,14 @@ class DataLoader:
         
         try:
             if not local_path.exists():
-                print(f"❌ ローカルファイルが見つかりません: {local_path}")
                 return None
             
-            print(f"📁 ローカルファイルから読み込み中: {filename}")
             with open(local_path, 'r', encoding='utf-8') as f:
                 data = json.load(f)
             
-            print(f"✅ ローカル読み込み成功: {filename}")
             return data
             
         except Exception as e:
-            print(f"❌ ローカルファイル読み込みエラー ({filename}): {e}")
             return None
     
     def load_analysis_data(self, month: str) -> Tuple[Optional[Dict], Optional[Dict], Optional[Dict]]:
@@ -171,7 +161,7 @@ class DataLoader:
                         months.add(month)
                         
             except Exception as e:
-                print(f"Google Driveからの月リスト取得失敗: {e}")
+                pass
         
         # ローカルファイルから取得（フォールバック）
         if self.config.LOCAL_DATA_DIR.exists():

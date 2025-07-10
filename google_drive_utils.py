@@ -52,10 +52,8 @@ class GoogleDriveClient:
                 raise FileNotFoundError(f"サービスアカウントファイルが見つかりません: {self.service_account_file}")
             
             self.service = build('drive', 'v3', credentials=credentials)
-            print("✅ Google Drive API認証成功")
             
         except Exception as e:
-            print(f"❌ Google Drive API認証失敗: {e}")
             raise
     
     def list_files_in_folder(self, folder_id=None, file_extension='.json'):
@@ -88,12 +86,10 @@ class GoogleDriveClient:
             ).execute()
             
             files = results.get('files', [])
-            print(f"📁 フォルダ内のファイル数: {len(files)}")
             
             return files
             
         except Exception as e:
-            print(f"❌ ファイル一覧取得エラー: {e}")
             return []
     
     def download_file_content(self, file_id):
@@ -124,7 +120,6 @@ class GoogleDriveClient:
             return content
             
         except Exception as e:
-            print(f"❌ ファイルダウンロードエラー (ID: {file_id}): {e}")
             raise
     
     def load_json_file(self, filename):
@@ -150,15 +145,12 @@ class GoogleDriveClient:
             if not target_file:
                 raise FileNotFoundError(f"ファイルが見つかりません: {filename}")
             
-            print(f"📄 ファイル読み込み中: {filename}")
             content = self.download_file_content(target_file['id'])
             data = json.loads(content)
             
-            print(f"✅ JSON読み込み成功: {filename}")
             return data
             
         except Exception as e:
-            print(f"❌ JSON読み込みエラー ({filename}): {e}")
             raise
 
 # グローバルクライアントインスタンス
@@ -211,8 +203,6 @@ def test_connection(folder_id=None, service_account_file=None):
     try:
         client = get_drive_client(service_account_file, folder_id)
         files = client.list_files_in_folder()
-        print(f"✅ Google Drive接続テスト成功: {len(files)}個のファイルを検出")
         return True
     except Exception as e:
-        print(f"❌ Google Drive接続テスト失敗: {e}")
         return False 

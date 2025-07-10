@@ -69,72 +69,72 @@ elif authentication_status:
         
         # 分析タイプ選択
         st.subheader("📊 分析タイプ")
+        analysis_options = {
+            "📊 月次サマリー分析": "basic_analysis",
+            "📈 定着率分析": "retention_analysis",
+            "📋 単月詳細データ": "monthly_detail"
+        }
+        
         analysis_type = st.selectbox(
             "分析タイプを選択",
-            ["📈 月次分析", "📊 単月詳細", "🔍 システムデバッグ"],
-            index=0
+            list(analysis_options.keys())
         )
         
-        # 月選択（単月詳細の場合のみ表示）
-        if analysis_type == "📊 単月詳細":
-            st.subheader("📅 月選択")
-            # 直近6ヶ月のリストを作成
-            current_date = datetime.now()
-            months = []
-            for i in range(6):
-                date = current_date - timedelta(days=30*i)
-                month_str = date.strftime('%Y-%m')
-                months.append(month_str)
-            selected_month = st.selectbox(
-                "表示する月を選択",
-                months,
-                index=0
-            )
-        else:
-            # 月次分析の場合は最新月を自動選択
-            current_date = datetime.now()
-            selected_month = current_date.strftime('%Y-%m')
+        selected_analysis = analysis_options[analysis_type]
         
-        st.divider()
-        
-        # データソース状態表示
-        st.subheader("🗂️ データソース")
-        try:
+        # 共通のデータ読み込み部分
+        if selected_analysis in ['basic_analysis', 'monthly_summary', 'retention_analysis', 'monthly_detail']:
+            # データローダーを初期化
             loader = get_data_loader()
-            status = loader.get_data_source_status()
             
-            if status['active_source'] == 'google_drive':
-                st.success("🌐 Google Driveから読み込み中")
-                if status['google_drive']['folder_id']:
-                    st.caption(f"フォルダID: {status['google_drive']['folder_id'][:8]}...")
-            else:
-                st.info("📁 ローカルファイルから読み込み中")
-                st.caption(f"パス: {status['local']['path']}")
-            
-            # Google Drive設定状態
-            if status['google_drive']['enabled']:
-                if status['google_drive']['available']:
-                    st.caption("✅ Google Drive: 利用可能")
-                else:
-                    st.caption("⚠️ Google Drive: 接続エラー")
-            else:
-                st.caption("ℹ️ Google Drive: 無効")
+            # データソース状態を表示
+            data_source_status = loader.get_data_source_status()
+            with st.sidebar:
+                st.subheader("📊 データソース情報")
                 
-        except Exception as e:
-            st.warning(f"データソース状態の取得に失敗: {e}")
+                if data_source_status['google_drive']['available']:
+                    st.success("🌐 Google Drive接続中")
+                    st.caption(f"フォルダID: {data_source_status['google_drive']['folder_id'][:8]}...")
+                else:
+                    st.info("📁 ローカルファイル使用中")
+                    st.caption(f"パス: dataset/")
+            
+            # 月選択
+            months = loader.get_available_months()
+            if not months:
+                st.error("❌ 利用可能なデータが見つかりません")
+                st.stop()
+            
+            selected_month = st.selectbox(
+                "対象月を選択",
+                months,
+                format_func=lambda x: f"{x} ({months.index(x) + 1}/{len(months)})"
+            )
+            
+            # データ読み込み
+            if selected_analysis in ['basic_analysis', 'monthly_summary', 'monthly_detail']:
+                basic_data, detail_data, summary_data = loader.load_analysis_data(selected_month)
+            else:  # retention_analysis
+                retention_data = loader.load_retention_data(selected_month)
+                basic_data, detail_data, summary_data = None, None, None
         
         st.divider()
         
         # ヘルプ
         st.subheader("ℹ️ ヘルプ")
-        if analysis_type == "📈 月次分析":
+        if selected_analysis == "basic_analysis":
             st.markdown("""
-            - **月次分析**: 全期間の月次推移データ
+            - **月次サマリー分析**: 全期間の月次推移データ
+            - **PDF出力**: ブラウザの印刷機能を使用
+            """)
+        elif selected_analysis == "retention_analysis":
+            st.markdown("""
+            - **定着率分析**: 全期間の定着率推移データ
             - **PDF出力**: ブラウザの印刷機能を使用
             """)
         else:
             st.markdown("""
-            - **単月詳細**: 選択月の詳細分析
+            - **単月詳細データ**: 選択月の詳細分析
             - **PDF出力**: ブラウザの印刷機能を使用
             """)
 
@@ -229,8 +229,8 @@ elif authentication_status:
     }
 
     # 分析タイプに応じたコンテンツ表示
-    if analysis_type == "📈 月次分析":
-        st.header("📈 月次分析")
+    if selected_analysis == "basic_analysis":
+        st.header("📊 月次サマリー分析")
         st.caption("全期間の月次推移データを表示します")
         
         # 最新月のデータを読み込み（月次推移データとして使用）
@@ -422,8 +422,27 @@ elif authentication_status:
         else:
             st.error("❌ 月次分析データの読み込みに失敗しました")
     
-    elif analysis_type == "📊 単月詳細":
-        st.header("📊 単月詳細分析")
+    elif selected_analysis == "retention_analysis":
+        st.header("📈 定着率分析")
+        st.caption("全期間の定着率推移データを表示します")
+        
+        # 最新月のデータを読み込み（定着率データとして使用）
+        current_date = datetime.now()
+        latest_month = current_date.strftime('%Y-%m')
+        retention_data = load_retention_data(latest_month)
+        
+        if retention_data:
+            # 定着率推移グラフ
+            st.subheader("📊 定着率推移")
+            fig = go.Figure()
+            fig.add_trace(go.Scatter(x=retention_data['month'], y=retention_data['retention_rate'], mode='lines+markers', name='定着率(%)'))
+            fig.update_layout(yaxis=dict(title='定着率(%)', range=[0,100]), height=300)
+            st.plotly_chart(fig, use_container_width=True)
+        else:
+            st.warning("⚠️ 定着率データが見つかりませんでした")
+    
+    elif selected_analysis == "monthly_detail":
+        st.header("📋 単月詳細データ")
         st.caption(f"選択月: {selected_month}")
         
         # 選択月のデータを読み込み
@@ -2146,10 +2165,7 @@ elif authentication_status:
         else:
             st.error("❌ 単月詳細データの読み込みに失敗しました")
 
-    elif analysis_type == "🔍 システムデバッグ":
-        # デバッグページを表示
-        from debug_page import debug_page
-        debug_page()
+
 
 # フッター
 st.divider()
