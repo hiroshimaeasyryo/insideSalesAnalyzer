@@ -71,7 +71,7 @@ elif authentication_status:
         st.subheader("📊 分析タイプ")
         analysis_type = st.selectbox(
             "分析タイプを選択",
-            ["📈 月次分析", "📊 単月詳細"],
+            ["📈 月次分析", "📊 単月詳細", "🔍 システムデバッグ"],
             index=0
         )
         
@@ -422,7 +422,7 @@ elif authentication_status:
         else:
             st.error("❌ 月次分析データの読み込みに失敗しました")
     
-    else:  # 単月詳細
+    elif analysis_type == "📊 単月詳細":
         st.header("📊 単月詳細分析")
         st.caption(f"選択月: {selected_month}")
         
@@ -2145,6 +2145,11 @@ elif authentication_status:
                     )
         else:
             st.error("❌ 単月詳細データの読み込みに失敗しました")
+
+    elif analysis_type == "🔍 システムデバッグ":
+        # デバッグページを表示
+        from debug_page import debug_page
+        debug_page()
 
 # フッター
 st.divider()

@@ -6,6 +6,9 @@ service_account_*.json
 .env
 .env.local
 
+# Streamlit設定（本番環境のみ）
+.streamlit/secrets.toml
+
 # 機微データ（本番環境ではGoogle Driveから読み込み）
 dataset/
 !dataset/.gitkeep
