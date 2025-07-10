@@ -72,7 +72,8 @@ elif authentication_status:
         analysis_options = {
             "📊 月次サマリー分析": "basic_analysis",
             "📈 定着率分析": "retention_analysis",
-            "📋 単月詳細データ": "monthly_detail"
+            "📋 単月詳細データ": "monthly_detail",
+            "🔧 システムデバッグ": "system_debug"
         }
         
         analysis_type = st.selectbox(
@@ -81,6 +82,186 @@ elif authentication_status:
         )
         
         selected_analysis = analysis_options[analysis_type]
+        
+        # システムデバッグページ
+        if selected_analysis == "system_debug":
+            st.title("🔧 システムデバッグ")
+            st.markdown("本番環境での設定とGoogle Drive接続をテストします")
+            
+            # データローダーを初期化
+            loader = get_data_loader()
+            config = get_config()
+            
+            # 実行ボタン
+            if st.button("🔍 詳細デバッグ実行", type="primary"):
+                with st.spinner("デバッグ情報を収集中..."):
+                    
+                    # 1. 基本設定
+                    st.subheader("1. 基本設定")
+                    col1, col2 = st.columns(2)
+                    
+                    with col1:
+                        st.metric("PRODUCTION_MODE", config.PRODUCTION_MODE)
+                        st.metric("GOOGLE_DRIVE_ENABLED", config.GOOGLE_DRIVE_ENABLED)
+                        st.metric("USE_LOCAL_FALLBACK", config.USE_LOCAL_FALLBACK)
+                    
+                    with col2:
+                        st.write("**GOOGLE_DRIVE_FOLDER_ID:**")
+                        st.code(config.GOOGLE_DRIVE_FOLDER_ID or "未設定")
+                        st.write("**GOOGLE_SERVICE_ACCOUNT_FILE:**")
+                        st.code(config.GOOGLE_SERVICE_ACCOUNT_FILE or "未設定")
+                    
+                    # 2. 環境変数チェック
+                    st.subheader("2. 環境変数チェック")
+                    
+                    import os
+                    google_vars = [k for k in os.environ.keys() if 'GOOGLE' in k]
+                    st.write(f"**Google関連環境変数:** {len(google_vars)}個")
+                    if google_vars:
+                        for var in google_vars:
+                            if var == 'GOOGLE_SERVICE_ACCOUNT':
+                                value_len = len(os.environ.get(var, ''))
+                                st.write(f"- {var}: 設定済み ({value_len}文字)")
+                            else:
+                                st.write(f"- {var}: {os.environ.get(var, '未設定')}")
+                    
+                    service_account_env = os.getenv('GOOGLE_SERVICE_ACCOUNT')
+                    if service_account_env:
+                        try:
+                            import json
+                            sa_data = json.loads(service_account_env)
+                            st.success("✅ GOOGLE_SERVICE_ACCOUNT JSON解析成功")
+                            st.write(f"- プロジェクトID: `{sa_data.get('project_id', 'N/A')}`")
+                            st.write(f"- クライアントメール: `{sa_data.get('client_email', 'N/A')}`")
+                        except Exception as e:
+                            st.error(f"❌ JSON解析エラー: {str(e)}")
+                    else:
+                        st.warning("⚠️ GOOGLE_SERVICE_ACCOUNT環境変数が未設定")
+                    
+                    # 3. Google Drive接続テスト
+                    st.subheader("3. Google Drive接続テスト")
+                    
+                    # 強制リフレッシュテスト
+                    with st.spinner("強制リフレッシュテスト実行中..."):
+                        success, message = loader.test_drive_connection_fresh()
+                        if success:
+                            st.success(f"✅ 強制リフレッシュテスト成功: {message}")
+                        else:
+                            st.error("❌ 強制リフレッシュテスト失敗")
+                            st.code(message)
+                    
+                    # 通常テスト
+                    with st.spinner("通常接続テスト実行中..."):
+                        try:
+                            if loader.is_drive_available():
+                                st.success("✅ 通常接続テスト成功")
+                                
+                                # ファイル一覧取得テスト
+                                try:
+                                    from google_drive_utils import get_drive_client
+                                    client = get_drive_client(
+                                        service_account_file=config.GOOGLE_SERVICE_ACCOUNT_FILE,
+                                        folder_id=config.GOOGLE_DRIVE_FOLDER_ID
+                                    )
+                                    files = client.list_files_in_folder()
+                                    st.info(f"📁 Google Driveファイル数: {len(files)}")
+                                    
+                                    if files:
+                                        st.write("**ファイル一覧（最初の10件）:**")
+                                        for i, file in enumerate(files[:10]):
+                                            st.write(f"- {file['name']} ({file.get('size', 'N/A')} bytes)")
+                                        
+                                        if len(files) > 10:
+                                            st.write(f"... 他{len(files) - 10}件")
+                                    
+                                except Exception as e:
+                                    st.error(f"❌ ファイル一覧取得エラー: {str(e)}")
+                            else:
+                                st.error("❌ 通常接続テスト失敗")
+                        except Exception as e:
+                            st.error(f"❌ 通常テストエラー: {str(e)}")
+                    
+                    # 4. 利用可能な月の確認
+                    st.subheader("4. 利用可能な月の確認")
+                    with st.spinner("利用可能な月を取得中..."):
+                        try:
+                            months = loader.get_available_months()
+                            if months:
+                                st.success(f"✅ 利用可能な月: {len(months)}個")
+                                st.write(f"**最新月:** {months[0]}")
+                                st.write(f"**全月:** {', '.join(months[:5])}{'...' if len(months) > 5 else ''}")
+                            else:
+                                st.warning("⚠️ 利用可能な月が見つかりません")
+                        except Exception as e:
+                            st.error(f"❌ 月取得エラー: {str(e)}")
+                    
+                    # 5. データソース状態
+                    st.subheader("5. データソース状態")
+                    try:
+                        status = loader.get_data_source_status()
+                        
+                        col1, col2 = st.columns(2)
+                        with col1:
+                            if status['google_drive']['available']:
+                                st.success("✅ Google Drive利用可能")
+                            else:
+                                st.error("❌ Google Drive利用不可")
+                        
+                        with col2:
+                            if status['local']['exists']:
+                                st.info("📁 ローカルファイル存在")
+                            else:
+                                st.warning("📁 ローカルファイル不存在")
+                        
+                        # キャッシュ情報
+                        cache_info = status.get('cache', {})
+                        st.metric("キャッシュファイル数", cache_info.get('cache_size', 0))
+                        
+                    except Exception as e:
+                        st.error(f"❌ 状態取得エラー: {str(e)}")
+                    
+                    # 6. テストファイル読み込み
+                    st.subheader("6. テストファイル読み込み")
+                    if months:
+                        test_month = months[0]
+                        with st.spinner(f"{test_month}のデータ読み込みテスト中..."):
+                            try:
+                                basic_data, detail_data, summary_data = loader.load_analysis_data(test_month)
+                                
+                                results = []
+                                if basic_data:
+                                    results.append(f"基本分析: ✅ ({len(basic_data)} records)")
+                                else:
+                                    results.append("基本分析: ❌")
+                                
+                                if detail_data:
+                                    results.append(f"詳細分析: ✅ ({len(detail_data)} records)")
+                                else:
+                                    results.append("詳細分析: ❌")
+                                
+                                if summary_data:
+                                    results.append(f"月次サマリー: ✅ ({len(summary_data)} records)")
+                                else:
+                                    results.append("月次サマリー: ❌")
+                                
+                                st.write("**読み込み結果:**")
+                                for result in results:
+                                    st.write(f"- {result}")
+                                
+                            except Exception as e:
+                                st.error(f"❌ データ読み込みエラー: {str(e)}")
+                    
+                    st.success("🎉 デバッグ完了！")
+            
+            # キャッシュクリアボタン
+            st.divider()
+            if st.button("🗑️ キャッシュクリア", help="メモリキャッシュをクリアして最新データを強制取得"):
+                loader.clear_cache()
+                st.cache_data.clear()
+                st.success("✅ キャッシュをクリアしました")
+                st.rerun()
+            
+            st.stop()  # システムデバッグページはここで終了
         
         # 共通のデータ読み込み部分
         if selected_analysis in ['basic_analysis', 'monthly_summary', 'retention_analysis', 'monthly_detail']:
@@ -154,7 +335,7 @@ elif authentication_status:
                             st.write(f"- 強制リフレッシュテスト: ✅ {message}")
                         else:
                             st.write(f"- 強制リフレッシュテスト: ❌ 失敗")
-                            st.write(f"- エラー詳細: {message[:100]}...")
+                            st.write(f"- エラー詳細: {message[:200]}...")
                         
                         # 通常テスト
                         try:
@@ -167,7 +348,19 @@ elif authentication_status:
                             st.write(f"- 通常テスト: ✅ 成功 ({len(files)}ファイル)")
                         except Exception as e:
                             st.write(f"- 通常テスト: ❌ 失敗")
-                            st.write(f"- エラー: {str(e)[:100]}...")
+                            st.write(f"- エラー: {str(e)[:200]}...")
+                        
+                        # 利用可能な月の確認
+                        st.write("**利用可能な月:**")
+                        try:
+                            months = loader.get_available_months()
+                            if months:
+                                st.write(f"- 月数: {len(months)}")
+                                st.write(f"- 最新月: {months[0] if months else 'なし'}")
+                            else:
+                                st.write("- 利用可能な月: なし")
+                        except Exception as e:
+                            st.write(f"- 月取得エラー: {str(e)[:100]}...")
                 
                 # キャッシュ情報表示
                 cache_info = data_source_status.get('cache', {})

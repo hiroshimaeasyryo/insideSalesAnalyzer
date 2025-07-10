@@ -1,9 +1,9 @@
 name: 🔄 Google Drive Data Sync
 
 on:
-  schedule:
-    # 毎時0分に実行（UTC）
-    - cron: '0 * * * *'
+  # schedule:
+  #   # 毎時0分に実行（UTC）
+  #   - cron: '0 * * * *'
   workflow_dispatch: # 手動実行も可能
 
 # GitHub Actionsの権限設定

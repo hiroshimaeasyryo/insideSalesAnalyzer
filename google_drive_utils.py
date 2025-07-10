@@ -226,8 +226,11 @@ def test_connection(folder_id=None, service_account_file=None):
         bool: 接続成功の場合True
     """
     try:
+        print("Google Drive接続テスト開始...")
         client = get_drive_client(service_account_file, folder_id)
         files = client.list_files_in_folder()
+        print(f"Google Drive接続テスト成功: {len(files)}ファイル発見")
         return True
     except Exception as e:
+        print(f"Google Drive接続テスト失敗: {type(e).__name__}: {str(e)}")
         return False 

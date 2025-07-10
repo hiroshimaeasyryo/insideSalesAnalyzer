@@ -3,6 +3,27 @@
 ## 🌟 概要
 架電データを可視化するインタラクティブなダッシュボードです。Google Drive連携により、クラウド上のJSONファイルを直接読み込み可能。認証機能付きで、月次トレンド、支店別・スタッフ別分析を提供します。
 
+## 🔧 最近の修正 (2025年1月)
+
+### 本番環境でのGoogle Drive接続問題の解決
+
+**問題**: 開発環境ではGoogle Driveから正常にデータを読み込むが、本番環境（Streamlit Cloud）ではローカルファイルを読みに行ってしまう
+
+**原因**: 
+- `is_drive_available()`メソッドのLRUキャッシュが一度失敗した結果をキャッシュし続ける
+- 本番環境でのGoogle Drive接続テストの詳細エラー情報が不足
+
+**解決策**:
+1. LRUキャッシュを削除し、毎回接続テストを実行
+2. より詳細なエラーログを追加
+3. 本番環境モードでのエラーハンドリングを改善
+
+### GitHub Actions定期キャッシュの停止
+
+**変更**: 毎時実行されていたGoogle Drive同期の定期実行を停止
+
+**理由**: 本番環境でGoogle Driveから直接読み込むため、ローカルキャッシュが不要になった
+
 ## 🗂️ 新機能: Google Drive連携
 
 ### データソースの選択
@@ -38,7 +59,7 @@ http://localhost:8501
 ```bash
 # 1. 環境変数を設定
 export GOOGLE_DRIVE_ENABLED=true
-export GOOGLE_DRIVE_FOLDER_ID=your-folder-id-here
+export GOOGLE_DRIVE_FOLDER_ID=your-folder-id
 export GOOGLE_SERVICE_ACCOUNT_FILE=service_account.json
 
 # 2. 接続テスト
@@ -246,3 +267,24 @@ python test_google_drive.py --help
 2. Google Drive設定が正しいか（`python test_google_drive.py`で確認）
 3. データファイルの形式が正しいか
 4. ブラウザのコンソールにエラーがないか 
+
+## 🐛 デバッグ
+
+Streamlitアプリ内でのシステムデバッグ:
+
+1. アプリにログイン
+2. サイドバーで「🔧 システムデバッグ」を選択
+3. 「🔍 詳細デバッグ実行」ボタンをクリック
+
+## 📁 ファイル構成
+
+```
+├── app.py                    # Flaskアプリケーション
+├── streamlit_app.py          # Streamlitアプリケーション（デバッグ機能内蔵）
+├── data_loader.py            # データ読み込みモジュール
+├── config.py                 # 設定管理
+├── google_drive_utils.py     # Google Drive連携
+├── analysis_dashboard.py     # 分析ロジック
+├── dataset/                  # ローカルデータ（開発用）
+└── .github/workflows/        # GitHub Actions（定期実行停止済み）
+``` 

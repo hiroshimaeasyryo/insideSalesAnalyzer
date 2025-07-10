@@ -27,9 +27,8 @@ class DataLoader:
         self._file_cache = {}  # メモリキャッシュ
         self._cache_lock = threading.Lock()
     
-    @lru_cache(maxsize=1)
     def is_drive_available(self) -> bool:
-        """Google Drive接続が利用可能かチェック（LRUキャッシュ付き）"""
+        """Google Drive接続が利用可能かチェック"""
         if not self.config.GOOGLE_DRIVE_ENABLED:
             return False
         else:
@@ -39,6 +38,7 @@ class DataLoader:
                     service_account_file=self.config.GOOGLE_SERVICE_ACCOUNT_FILE
                 )
             except Exception as e:
+                print(f"Google Drive接続テスト失敗: {e}")
                 return False
     
     def test_drive_connection_fresh(self) -> tuple:
@@ -57,7 +57,9 @@ class DataLoader:
             files = client.list_files_in_folder()
             return True, f"成功 ({len(files)}ファイル)"
         except Exception as e:
-            return False, str(e)
+            error_msg = f"接続失敗: {type(e).__name__}: {str(e)}"
+            print(f"Google Drive接続テスト詳細エラー: {error_msg}")
+            return False, error_msg
     
     def _get_cache_key(self, filename: str) -> str:
         """キャッシュキーを生成"""
@@ -86,27 +88,33 @@ class DataLoader:
         """単一ファイルの読み込み（並列処理用）"""
         # 本番環境モードの場合はGoogle Driveのみ使用
         if self.config.PRODUCTION_MODE:
+            print(f"本番環境モード: {filename} をGoogle Driveから読み込み中...")
+            
             if not self.config.GOOGLE_DRIVE_ENABLED or not self.config.GOOGLE_DRIVE_FOLDER_ID:
-                raise RuntimeError(
-                    "本番環境モードではGoogle Drive設定が必須です。"
-                    "GOOGLE_DRIVE_ENABLED=true および GOOGLE_DRIVE_FOLDER_ID を設定してください。"
-                )
+                error_msg = "本番環境モードではGoogle Drive設定が必須です。GOOGLE_DRIVE_ENABLED=true および GOOGLE_DRIVE_FOLDER_ID を設定してください。"
+                print(f"設定エラー: {error_msg}")
+                raise RuntimeError(error_msg)
             
             if not self.is_drive_available():
-                raise RuntimeError(
-                    "本番環境モードでGoogle Drive接続に失敗しました。"
-                    "サービスアカウント認証情報とネットワーク接続を確認してください。"
-                )
+                error_msg = "本番環境モードでGoogle Drive接続に失敗しました。サービスアカウント認証情報とネットワーク接続を確認してください。"
+                print(f"接続エラー: {error_msg}")
+                raise RuntimeError(error_msg)
             
             # Google Driveからのみ読み込み（フォールバックなし）
-            data = load_json_from_drive(
-                filename,
-                folder_id=self.config.GOOGLE_DRIVE_FOLDER_ID,
-                service_account_file=self.config.GOOGLE_SERVICE_ACCOUNT_FILE
-            )
-            return data
+            try:
+                data = load_json_from_drive(
+                    filename,
+                    folder_id=self.config.GOOGLE_DRIVE_FOLDER_ID,
+                    service_account_file=self.config.GOOGLE_SERVICE_ACCOUNT_FILE
+                )
+                print(f"Google Drive読み込み成功: {filename}")
+                return data
+            except Exception as e:
+                error_msg = f"Google Drive読み込み失敗: {filename} - {type(e).__name__}: {str(e)}"
+                print(error_msg)
+                raise RuntimeError(error_msg)
         
-        # 1. Google Driveから読み込みを試行
+        # 開発環境モード: Google Driveから読み込みを試行
         if self.is_drive_available():
             try:
                 data = load_json_from_drive(
@@ -119,7 +127,7 @@ class DataLoader:
                 if not self.config.USE_LOCAL_FALLBACK:
                     raise
         
-        # 2. ローカルファイルシステムから読み込み（開発環境のみ）
+        # ローカルファイルシステムから読み込み（開発環境のみ）
         if not self.config.USE_LOCAL_FALLBACK:
             raise RuntimeError(f"Google Drive読み込みに失敗し、ローカルフォールバックが無効化されています: {filename}")
         
@@ -227,9 +235,6 @@ class DataLoader:
         with self._cache_lock:
             self._file_cache.clear()
         
-        # LRUキャッシュもクリア
-        self.is_drive_available.cache_clear()
-        
         # Google Driveクライアントもリセット
         try:
             from google_drive_utils import reset_drive_client
@@ -245,8 +250,7 @@ class DataLoader:
         
         return {
             'cache_size': cache_size,
-            'cached_files': cache_keys,
-            'drive_check_cache': self.is_drive_available.cache_info()._asdict()
+            'cached_files': cache_keys
         }
     
     def get_available_months(self) -> list:
