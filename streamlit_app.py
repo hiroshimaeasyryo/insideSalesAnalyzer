@@ -207,6 +207,119 @@ elif authentication_status:
                                 # private_keyの先頭と末尾を表示
                                 st.text("🔍 private_key内容（先頭100文字）:")
                                 st.code(private_key[:100] + "..." if len(private_key) > 100 else private_key)
+                                
+                                # Base64内容の詳細分析
+                                st.subheader("2-2. Base64内容分析")
+                                
+                                # PEMヘッダーを除去してBase64部分を抽出
+                                lines = private_key.split('\n')
+                                base64_lines = [line for line in lines if line and not line.startswith('-----')]
+                                base64_content = ''.join(base64_lines)
+                                
+                                col1, col2, col3 = st.columns(3)
+                                with col1:
+                                    st.write(f"**Base64総行数**: {len(base64_lines)}")
+                                    st.write(f"**Base64文字数**: {len(base64_content)}")
+                                
+                                with col2:
+                                    # Base64文字の検証
+                                    import re
+                                    valid_base64_chars = re.match(r'^[A-Za-z0-9+/=]*$', base64_content)
+                                    st.write(f"**Base64文字セット**: {'✅' if valid_base64_chars else '❌'}")
+                                    
+                                    # パディング文字の確認
+                                    padding_count = base64_content.count('=')
+                                    st.write(f"**パディング文字数**: {padding_count}")
+                                
+                                with col3:
+                                    # 長さの検証（Base64は4の倍数であるべき）
+                                    is_multiple_of_4 = len(base64_content) % 4 == 0
+                                    st.write(f"**長さ4の倍数**: {'✅' if is_multiple_of_4 else '❌'}")
+                                    
+                                    # エラー位置の確認
+                                    error_pos = 1624
+                                    if len(base64_content) > error_pos:
+                                        error_char = base64_content[error_pos] if error_pos < len(base64_content) else 'N/A'
+                                        st.write(f"**エラー位置文字**: `{error_char}`")
+                                
+                                # 不正文字の検索
+                                invalid_chars = []
+                                for i, char in enumerate(base64_content):
+                                    if char not in 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=':
+                                        invalid_chars.append((i, char, ord(char)))
+                                
+                                if invalid_chars:
+                                    st.error(f"❌ **不正文字発見**: {len(invalid_chars)}個")
+                                    st.write("**不正文字詳細:**")
+                                    for pos, char, code in invalid_chars[:10]:  # 最初の10個まで表示
+                                        st.write(f"- 位置{pos}: `{char}` (文字コード: {code})")
+                                    if len(invalid_chars) > 10:
+                                        st.write(f"... 他{len(invalid_chars) - 10}個")
+                                    
+                                    # 修正提案
+                                    st.info("""
+                                    **不正文字の修正方法:**
+                                    1. Google Cloud ConsoleからService Accountキーを再ダウンロード
+                                    2. 新しいJSONファイルの内容をそのままコピー
+                                    3. Streamlit Cloud Secretsで完全に置き換え
+                                    """)
+                                else:
+                                    st.success("✅ Base64文字セットは正常です")
+                                
+                                # エラー周辺の文字を表示
+                                if len(base64_content) > 1624:
+                                    st.text("🔍 エラー位置周辺の文字:")
+                                    start = max(0, 1624 - 20)
+                                    end = min(len(base64_content), 1624 + 20)
+                                    context = base64_content[start:end]
+                                    # エラー位置をハイライト
+                                    if 1624 >= start and 1624 < end:
+                                        highlight_pos = 1624 - start
+                                        context_display = context[:highlight_pos] + f"[{context[highlight_pos]}]" + context[highlight_pos+1:]
+                                        st.code(context_display)
+                                    else:
+                                        st.code(context)
+                                
+                                # Base64デコードテスト
+                                if st.button("🧪 Base64デコードテスト"):
+                                    try:
+                                        import base64
+                                        decoded = base64.b64decode(base64_content)
+                                        st.success(f"✅ Base64デコード成功: {len(decoded)}バイト")
+                                    except Exception as decode_error:
+                                        st.error(f"❌ Base64デコードエラー: {str(decode_error)}")
+                                
+                                # 手動修正オプション
+                                if invalid_chars or not is_multiple_of_4:
+                                    if st.button("🔧 自動修正を試行"):
+                                        try:
+                                            # 不正文字を除去
+                                            cleaned_content = ''.join(char for char in base64_content if char in 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=')
+                                            
+                                            # パディングを調整
+                                            while len(cleaned_content) % 4 != 0:
+                                                cleaned_content += '='
+                                            
+                                            # 修正されたprivate_keyを作成
+                                            fixed_lines = ['-----BEGIN PRIVATE KEY-----']
+                                            for i in range(0, len(cleaned_content), 64):
+                                                fixed_lines.append(cleaned_content[i:i+64])
+                                            fixed_lines.append('-----END PRIVATE KEY-----')
+                                            fixed_private_key = '\n'.join(fixed_lines)
+                                            
+                                            st.success("✅ 自動修正完了")
+                                            st.text("修正されたprivate_key:")
+                                            st.code(fixed_private_key[:200] + "..." if len(fixed_private_key) > 200 else fixed_private_key)
+                                            
+                                            # 修正版のJSONを生成
+                                            sa_data_fixed = sa_data.copy()
+                                            sa_data_fixed['private_key'] = fixed_private_key
+                                            
+                                            st.text("📋 修正後の完全なJSON:")
+                                            st.code(json.dumps(sa_data_fixed, indent=2), language="json")
+                                            
+                                        except Exception as fix_error:
+                                            st.error(f"❌ 自動修正エラー: {str(fix_error)}")
                             else:
                                 st.error("❌ private_keyが見つかりません")
                         
