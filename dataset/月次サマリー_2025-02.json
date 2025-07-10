@@ -1,0 +1,500 @@
+{
+  "metadata": {
+    "report_period": "2025-02",
+    "generated_at": "2025-07-09T14:26:21.582Z",
+    "report_type": "monthly_summary"
+  },
+  "key_metrics": {
+    "total_calls": 15281,
+    "total_hours": 1606.5,
+    "total_appointments": 233,
+    "total_deals": 9,
+    "total_approved": 3,
+    "total_rejected": 6,
+    "approval_rate": "33.33"
+  },
+  "deal_status_breakdown": {
+    "approved": 3,
+    "rejected": 6,
+    "pending": 0,
+    "total": 9
+  },
+  "branch_performance": {
+    "横浜": {
+      "total_calls": 1208,
+      "total_hours": 99.5,
+      "total_appointments": 8,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "社員": {
+      "total_calls": 2410,
+      "total_hours": 231.5,
+      "total_appointments": 62,
+      "total_deals": 8,
+      "total_approved": 3,
+      "total_revenue": 145000,
+      "total_potential_revenue": 0,
+      "approval_rate": "37.50"
+    },
+    "大分": {
+      "total_calls": 500,
+      "total_hours": 44.5,
+      "total_appointments": 0,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "東京": {
+      "total_calls": 437,
+      "total_hours": 39.5,
+      "total_appointments": 2,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "福岡": {
+      "total_calls": 1245,
+      "total_hours": 153,
+      "total_appointments": 5,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "名古屋": {
+      "total_calls": 0,
+      "total_hours": 0,
+      "total_appointments": 0,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "未設定": {
+      "total_calls": 0,
+      "total_hours": 0,
+      "total_appointments": 0,
+      "total_deals": 1,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": "0.00"
+    }
+  },
+  "product_performance": {
+    "LegalForce": {
+      "total_calls": 1518,
+      "total_hours": 164,
+      "total_appointments": 22,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "Bill One": {
+      "total_calls": 6485,
+      "total_hours": 680,
+      "total_appointments": 73,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "sansan": {
+      "total_calls": 3194,
+      "total_hours": 291,
+      "total_appointments": 57,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "Bill One経費": {
+      "total_calls": 2094,
+      "total_hours": 258,
+      "total_appointments": 21,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "TOKIUM": {
+      "total_calls": 508,
+      "total_hours": 51.5,
+      "total_appointments": 18,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "Cynthialy": {
+      "total_calls": 584,
+      "total_hours": 51.5,
+      "total_appointments": 6,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "Legalscape": {
+      "total_calls": 292,
+      "total_hours": 36,
+      "total_appointments": 24,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "クラウド契約": {
+      "total_calls": 161,
+      "total_hours": 23,
+      "total_appointments": 7,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "KANPAIイベント": {
+      "total_calls": 165,
+      "total_hours": 13,
+      "total_appointments": 0,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "mog": {
+      "total_calls": 197,
+      "total_hours": 28,
+      "total_appointments": 2,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "manebi": {
+      "total_calls": 40,
+      "total_hours": 6,
+      "total_appointments": 1,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "flier": {
+      "total_calls": 42,
+      "total_hours": 4,
+      "total_appointments": 1,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "シューマツワーカー": {
+      "total_calls": 1,
+      "total_hours": 0.5,
+      "total_appointments": 1,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "マネーフォワード クラウド契約": {
+      "total_calls": 0,
+      "total_hours": 0,
+      "total_appointments": 0,
+      "total_deals": 7,
+      "total_approved": 2,
+      "total_revenue": 100000,
+      "total_potential_revenue": 0,
+      "approval_rate": "28.57"
+    },
+    "マネーフォワード クラウド連結会計": {
+      "total_calls": 0,
+      "total_hours": 0,
+      "total_appointments": 0,
+      "total_deals": 2,
+      "total_approved": 1,
+      "total_revenue": 45000,
+      "total_potential_revenue": 0,
+      "approval_rate": "50.00"
+    }
+  },
+  "staff_performance": {
+    "雨宮 大空": {
+      "staff_name": "雨宮 大空",
+      "branch": "社員",
+      "total_calls": 873,
+      "total_hours": 73,
+      "total_appointments": 22,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "小池 磨那斗": {
+      "staff_name": "小池 磨那斗",
+      "branch": "社員",
+      "total_calls": 724,
+      "total_hours": 74,
+      "total_appointments": 23,
+      "total_deals": 1,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": "0.00"
+    },
+    "佐藤 健": {
+      "staff_name": "佐藤 健",
+      "branch": null,
+      "total_calls": 615,
+      "total_hours": 57.5,
+      "total_appointments": 5,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "日高 希星": {
+      "staff_name": "日高 希星",
+      "branch": null,
+      "total_calls": 587,
+      "total_hours": 43.5,
+      "total_appointments": 1,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "中村 優太": {
+      "staff_name": "中村 優太",
+      "branch": "横浜",
+      "total_calls": 585,
+      "total_hours": 47.5,
+      "total_appointments": 5,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "小倉 一真": {
+      "staff_name": "小倉 一真",
+      "branch": null,
+      "total_calls": 563,
+      "total_hours": 57.5,
+      "total_appointments": 1,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "鈴木 翔也": {
+      "staff_name": "鈴木 翔也",
+      "branch": null,
+      "total_calls": 549,
+      "total_hours": 58.5,
+      "total_appointments": 12,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "河村 雄太": {
+      "staff_name": "河村 雄太",
+      "branch": null,
+      "total_calls": 548,
+      "total_hours": 42,
+      "total_appointments": 0,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "和田 愛永": {
+      "staff_name": "和田 愛永",
+      "branch": null,
+      "total_calls": 541,
+      "total_hours": 51,
+      "total_appointments": 1,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "駒田 大輔": {
+      "staff_name": "駒田 大輔",
+      "branch": null,
+      "total_calls": 530,
+      "total_hours": 68,
+      "total_appointments": 13,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    }
+  },
+  "retention_metrics": {
+    "total_staff": 111,
+    "active_staff": 23,
+    "high_risk_staff": 96,
+    "medium_risk_staff": 15,
+    "low_risk_staff": 0,
+    "retention_rate": "47.42"
+  },
+  "alerts": [
+    {
+      "type": "critical",
+      "message": "承認率が危険レベルを下回っています",
+      "value": "33.33%",
+      "threshold": "50%"
+    },
+    {
+      "type": "critical",
+      "message": "高リスク学生が危険レベルを超えています",
+      "value": "96名",
+      "threshold": "15名"
+    }
+  ],
+  "branch_product_cross_analysis": {
+    "taaan_deals": {
+      "社員": {
+        "LegalForce": 0,
+        "Bill One": 0,
+        "sansan": 0,
+        "Bill One経費": 0,
+        "TOKIUM": 0,
+        "Cynthialy": 0,
+        "Legalscape": 0,
+        "クラウド契約": 0,
+        "KANPAIイベント": 0,
+        "mog": 0,
+        "manebi": 0,
+        "flier": 0,
+        "シューマツワーカー": 0,
+        "マネーフォワード クラウド契約": 1,
+        "マネーフォワード クラウド連結会計": 0
+      },
+      "未設定": {
+        "LegalForce": 0,
+        "Bill One": 0,
+        "sansan": 0,
+        "Bill One経費": 0,
+        "TOKIUM": 0,
+        "Cynthialy": 0,
+        "Legalscape": 0,
+        "クラウド契約": 0,
+        "KANPAIイベント": 0,
+        "mog": 0,
+        "manebi": 0,
+        "flier": 0,
+        "シューマツワーカー": 0,
+        "マネーフォワード クラウド契約": 6,
+        "マネーフォワード クラウド連結会計": 2
+      }
+    },
+    "approved_deals": {
+      "社員": {
+        "LegalForce": 0,
+        "Bill One": 0,
+        "sansan": 0,
+        "Bill One経費": 0,
+        "TOKIUM": 0,
+        "Cynthialy": 0,
+        "Legalscape": 0,
+        "クラウド契約": 0,
+        "KANPAIイベント": 0,
+        "mog": 0,
+        "manebi": 0,
+        "flier": 0,
+        "シューマツワーカー": 0,
+        "マネーフォワード クラウド契約": 0,
+        "マネーフォワード クラウド連結会計": 0
+      },
+      "未設定": {
+        "LegalForce": 0,
+        "Bill One": 0,
+        "sansan": 0,
+        "Bill One経費": 0,
+        "TOKIUM": 0,
+        "Cynthialy": 0,
+        "Legalscape": 0,
+        "クラウド契約": 0,
+        "KANPAIイベント": 0,
+        "mog": 0,
+        "manebi": 0,
+        "flier": 0,
+        "シューマツワーカー": 0,
+        "マネーフォワード クラウド契約": 2,
+        "マネーフォワード クラウド連結会計": 1
+      }
+    },
+    "total_revenue": {
+      "社員": {
+        "LegalForce": 0,
+        "Bill One": 0,
+        "sansan": 0,
+        "Bill One経費": 0,
+        "TOKIUM": 0,
+        "Cynthialy": 0,
+        "Legalscape": 0,
+        "クラウド契約": 0,
+        "KANPAIイベント": 0,
+        "mog": 0,
+        "manebi": 0,
+        "flier": 0,
+        "シューマツワーカー": 0,
+        "マネーフォワード クラウド契約": 0,
+        "マネーフォワード クラウド連結会計": 0
+      },
+      "未設定": {
+        "LegalForce": 0,
+        "Bill One": 0,
+        "sansan": 0,
+        "Bill One経費": 0,
+        "TOKIUM": 0,
+        "Cynthialy": 0,
+        "Legalscape": 0,
+        "クラウド契約": 0,
+        "KANPAIイベント": 0,
+        "mog": 0,
+        "manebi": 0,
+        "flier": 0,
+        "シューマツワーカー": 0,
+        "マネーフォワード クラウド契約": 112778,
+        "マネーフォワード クラウド連結会計": 32222
+      }
+    }
+  }
+}

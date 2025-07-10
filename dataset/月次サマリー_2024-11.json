@@ -1,0 +1,358 @@
+{
+  "metadata": {
+    "report_period": "2024-11",
+    "generated_at": "2025-07-09T14:24:48.540Z",
+    "report_type": "monthly_summary"
+  },
+  "key_metrics": {
+    "total_calls": 13017,
+    "total_hours": 1494,
+    "total_appointments": 239,
+    "total_deals": 0,
+    "total_approved": 0,
+    "total_rejected": 0
+  },
+  "deal_status_breakdown": {
+    "approved": 0,
+    "rejected": 0,
+    "pending": 0,
+    "total": 0
+  },
+  "branch_performance": {
+    "社員": {
+      "total_calls": 2192,
+      "total_hours": 251.5,
+      "total_appointments": 62,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "横浜": {
+      "total_calls": 231,
+      "total_hours": 28,
+      "total_appointments": 6,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "福岡": {
+      "total_calls": 1261,
+      "total_hours": 162.5,
+      "total_appointments": 12,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "東京": {
+      "total_calls": 319,
+      "total_hours": 32.5,
+      "total_appointments": 3,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "大分": {
+      "total_calls": 1010,
+      "total_hours": 108,
+      "total_appointments": 3,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    }
+  },
+  "product_performance": {
+    "Bill One経費": {
+      "total_calls": 3608,
+      "total_hours": 435.5,
+      "total_appointments": 34,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "Bill One": {
+      "total_calls": 4126,
+      "total_hours": 453,
+      "total_appointments": 33,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "LegalForce": {
+      "total_calls": 2065,
+      "total_hours": 219.5,
+      "total_appointments": 24,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "sansan": {
+      "total_calls": 887,
+      "total_hours": 105,
+      "total_appointments": 11,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "クラウド契約": {
+      "total_calls": 102,
+      "total_hours": 13,
+      "total_appointments": 7,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "セミナー案件": {
+      "total_calls": 1662,
+      "total_hours": 193.5,
+      "total_appointments": 92,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "終了（現場研修のみ）": {
+      "total_calls": 0,
+      "total_hours": 0,
+      "total_appointments": 0,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "シューマツワーカー": {
+      "total_calls": 155,
+      "total_hours": 20,
+      "total_appointments": 2,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "TOKIUM": {
+      "total_calls": 147,
+      "total_hours": 16.5,
+      "total_appointments": 9,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "invox受取請求書": {
+      "total_calls": 139,
+      "total_hours": 23.5,
+      "total_appointments": 11,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "RiskAnalyze": {
+      "total_calls": 17,
+      "total_hours": 2.5,
+      "total_appointments": 2,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "invox発行請求書": {
+      "total_calls": 16,
+      "total_hours": 1,
+      "total_appointments": 2,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "flier": {
+      "total_calls": 3,
+      "total_hours": 0.5,
+      "total_appointments": 1,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "Legalscape": {
+      "total_calls": 90,
+      "total_hours": 10.5,
+      "total_appointments": 11,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    }
+  },
+  "staff_performance": {
+    "堺 千菜美": {
+      "staff_name": "堺 千菜美",
+      "branch": "社員",
+      "total_calls": 858,
+      "total_hours": 102.5,
+      "total_appointments": 32,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "阿南 弘毅": {
+      "staff_name": "阿南 弘毅",
+      "branch": null,
+      "total_calls": 580,
+      "total_hours": 55,
+      "total_appointments": 2,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "久我 吏穂": {
+      "staff_name": "久我 吏穂",
+      "branch": "社員",
+      "total_calls": 574,
+      "total_hours": 54,
+      "total_appointments": 6,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "和田 愛永": {
+      "staff_name": "和田 愛永",
+      "branch": null,
+      "total_calls": 546,
+      "total_hours": 52,
+      "total_appointments": 9,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "駒田 大輔": {
+      "staff_name": "駒田 大輔",
+      "branch": null,
+      "total_calls": 496,
+      "total_hours": 62,
+      "total_appointments": 10,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "佐藤 健": {
+      "staff_name": "佐藤 健",
+      "branch": null,
+      "total_calls": 437,
+      "total_hours": 41,
+      "total_appointments": 5,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "生野 佑真": {
+      "staff_name": "生野 佑真",
+      "branch": null,
+      "total_calls": 426,
+      "total_hours": 42.5,
+      "total_appointments": 11,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "髙橋 知裕": {
+      "staff_name": "髙橋 知裕",
+      "branch": "大分",
+      "total_calls": 412,
+      "total_hours": 37,
+      "total_appointments": 0,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "俣江 悠聖": {
+      "staff_name": "俣江 悠聖",
+      "branch": "大分",
+      "total_calls": 402,
+      "total_hours": 32,
+      "total_appointments": 3,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    },
+    "雨宮 大空": {
+      "staff_name": "雨宮 大空",
+      "branch": "社員",
+      "total_calls": 395,
+      "total_hours": 60.5,
+      "total_appointments": 7,
+      "total_deals": 0,
+      "total_approved": 0,
+      "total_revenue": 0,
+      "total_potential_revenue": 0,
+      "approval_rate": 0
+    }
+  },
+  "retention_metrics": {
+    "total_staff": 111,
+    "active_staff": 23,
+    "high_risk_staff": 96,
+    "medium_risk_staff": 15,
+    "low_risk_staff": 0,
+    "retention_rate": "50.00"
+  },
+  "alerts": [
+    {
+      "type": "critical",
+      "message": "高リスク学生が危険レベルを超えています",
+      "value": "96名",
+      "threshold": "15名"
+    }
+  ],
+  "branch_product_cross_analysis": {
+    "taaan_deals": {},
+    "approved_deals": {},
+    "total_revenue": {}
+  }
+}
