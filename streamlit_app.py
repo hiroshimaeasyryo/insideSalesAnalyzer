@@ -280,46 +280,137 @@ elif authentication_status:
                                     else:
                                         st.code(context)
                                 
-                                # Base64デコードテスト
-                                if st.button("🧪 Base64デコードテスト"):
-                                    try:
-                                        import base64
-                                        decoded = base64.b64decode(base64_content)
-                                        st.success(f"✅ Base64デコード成功: {len(decoded)}バイト")
-                                    except Exception as decode_error:
-                                        st.error(f"❌ Base64デコードエラー: {str(decode_error)}")
+                                # Base64の自動修正と検証
+                                st.subheader("2-3. Base64自動修正")
                                 
-                                # 手動修正オプション
-                                if invalid_chars or not is_multiple_of_4:
-                                    if st.button("🔧 自動修正を試行"):
+                                # 修正が必要かチェック
+                                needs_fix = invalid_chars or not is_multiple_of_4
+                                
+                                if needs_fix:
+                                    st.warning("⚠️ Base64の修正が必要です")
+                                    
+                                    # 修正のタイプを特定
+                                    fix_needed = []
+                                    if invalid_chars:
+                                        fix_needed.append("不正文字の除去")
+                                    if not is_multiple_of_4:
+                                        fix_needed.append("パディング調整")
+                                    
+                                    st.info(f"**修正内容**: {', '.join(fix_needed)}")
+                                    
+                                    # 自動修正を実行
+                                    if st.button("🔧 Base64を自動修正", key="auto_fix_base64"):
+                                        with st.spinner("Base64を修正中..."):
+                                            try:
+                                                # 不正文字を除去
+                                                cleaned_content = ''.join(char for char in base64_content if char in 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=')
+                                                
+                                                # パディングを調整
+                                                while len(cleaned_content) % 4 != 0:
+                                                    cleaned_content += '='
+                                                
+                                                # 修正されたprivate_keyを作成
+                                                fixed_lines = ['-----BEGIN PRIVATE KEY-----']
+                                                for i in range(0, len(cleaned_content), 64):
+                                                    fixed_lines.append(cleaned_content[i:i+64])
+                                                fixed_lines.append('-----END PRIVATE KEY-----')
+                                                fixed_private_key = '\n'.join(fixed_lines)
+                                                
+                                                st.success("✅ Base64修正完了")
+                                                
+                                                # 修正結果を表示
+                                                col1, col2 = st.columns(2)
+                                                with col1:
+                                                    st.text("**修正前:**")
+                                                    st.text(f"文字数: {len(base64_content)}")
+                                                    st.text(f"4の倍数: {len(base64_content) % 4 == 0}")
+                                                    st.text(f"不正文字: {len(invalid_chars)}")
+                                                
+                                                with col2:
+                                                    st.text("**修正後:**")
+                                                    st.text(f"文字数: {len(cleaned_content)}")
+                                                    st.text(f"4の倍数: {len(cleaned_content) % 4 == 0}")
+                                                    st.text(f"不正文字: 0")
+                                                
+                                                # Base64デコードテスト
+                                                st.text("🧪 Base64デコードテスト:")
+                                                try:
+                                                    import base64
+                                                    decoded = base64.b64decode(cleaned_content)
+                                                    st.success(f"✅ Base64デコード成功: {len(decoded)}バイト")
+                                                except Exception as decode_error:
+                                                    st.error(f"❌ Base64デコードエラー: {str(decode_error)}")
+                                                
+                                                # 修正版のJSONを生成
+                                                sa_data_fixed = sa_data.copy()
+                                                sa_data_fixed['private_key'] = fixed_private_key
+                                                
+                                                st.text("📋 修正後の完全なJSON:")
+                                                st.code(json.dumps(sa_data_fixed, indent=2), language="json")
+                                                
+                                                # 修正版での認証テスト
+                                                st.text("🧪 修正版での認証テスト:")
+                                                try:
+                                                    from google.oauth2 import service_account
+                                                    import tempfile
+                                                    import os
+                                                    
+                                                    with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+                                                        json.dump(sa_data_fixed, f)
+                                                        temp_file = f.name
+                                                    
+                                                    try:
+                                                        credentials = service_account.Credentials.from_service_account_file(temp_file)
+                                                        st.success("✅ 修正版JSON: 認証情報の作成成功")
+                                                        
+                                                        # Google Drive接続テスト
+                                                        try:
+                                                            from googleapiclient.discovery import build
+                                                            drive_service = build('drive', 'v3', credentials=credentials)
+                                                            
+                                                            # フォルダーの存在確認
+                                                            folder_query = f"'{config.GOOGLE_DRIVE_FOLDER_ID}' in parents"
+                                                            results = drive_service.files().list(q=folder_query, pageSize=1).execute()
+                                                            
+                                                            st.success("✅ 修正版JSON: Google Drive接続成功")
+                                                            
+                                                            # 使用方法の説明を表示
+                                                            st.info("""
+                                                            **✅ 修正完了！次の手順で設定を更新してください:**
+                                                            
+                                                            1. 上記の修正後のJSONをコピー
+                                                            2. Streamlit Cloud の設定画面を開く
+                                                            3. Secrets の `GOOGLE_SERVICE_ACCOUNT` を完全に置き換え
+                                                            4. アプリを再起動
+                                                            
+                                                            **重要**: 元のJSONを完全に削除してから新しいJSONを貼り付けてください。
+                                                            """)
+                                                            
+                                                        except Exception as drive_error:
+                                                            st.warning(f"⚠️ Google Drive接続エラー: {str(drive_error)}")
+                                                            st.info("認証情報は正常ですが、Google Drive接続でエラーが発生しました。権限設定を確認してください。")
+                                                            
+                                                    except Exception as test_e:
+                                                        st.error(f"❌ 修正版でもエラー: {str(test_e)}")
+                                                    finally:
+                                                        os.unlink(temp_file)
+                                                        
+                                                except Exception as e:
+                                                    st.error(f"❌ 修正版テストエラー: {str(e)}")
+                                                
+                                            except Exception as fix_error:
+                                                st.error(f"❌ 自動修正エラー: {str(fix_error)}")
+                                else:
+                                    st.success("✅ Base64形式は正常です")
+                                    
+                                    # 正常でもデコードテストを提供
+                                    if st.button("🧪 Base64デコードテスト", key="test_base64"):
                                         try:
-                                            # 不正文字を除去
-                                            cleaned_content = ''.join(char for char in base64_content if char in 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=')
-                                            
-                                            # パディングを調整
-                                            while len(cleaned_content) % 4 != 0:
-                                                cleaned_content += '='
-                                            
-                                            # 修正されたprivate_keyを作成
-                                            fixed_lines = ['-----BEGIN PRIVATE KEY-----']
-                                            for i in range(0, len(cleaned_content), 64):
-                                                fixed_lines.append(cleaned_content[i:i+64])
-                                            fixed_lines.append('-----END PRIVATE KEY-----')
-                                            fixed_private_key = '\n'.join(fixed_lines)
-                                            
-                                            st.success("✅ 自動修正完了")
-                                            st.text("修正されたprivate_key:")
-                                            st.code(fixed_private_key[:200] + "..." if len(fixed_private_key) > 200 else fixed_private_key)
-                                            
-                                            # 修正版のJSONを生成
-                                            sa_data_fixed = sa_data.copy()
-                                            sa_data_fixed['private_key'] = fixed_private_key
-                                            
-                                            st.text("📋 修正後の完全なJSON:")
-                                            st.code(json.dumps(sa_data_fixed, indent=2), language="json")
-                                            
-                                        except Exception as fix_error:
-                                            st.error(f"❌ 自動修正エラー: {str(fix_error)}")
+                                            import base64
+                                            decoded = base64.b64decode(base64_content)
+                                            st.success(f"✅ Base64デコード成功: {len(decoded)}バイト")
+                                        except Exception as decode_error:
+                                            st.error(f"❌ Base64デコードエラー: {str(decode_error)}")
                             else:
                                 st.error("❌ private_keyが見つかりません")
                         
