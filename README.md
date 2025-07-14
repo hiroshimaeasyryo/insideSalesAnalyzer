@@ -1,40 +1,36 @@
 # 📊 インサイドセールス分析ダッシュボード
 
 ## 🌟 概要
-架電データを可視化するインタラクティブなダッシュボードです。Google Drive連携により、クラウド上のJSONファイルを直接読み込み可能。認証機能付きで、月次トレンド、支店別・スタッフ別分析を提供します。
+架電データを可視化するインタラクティブなダッシュボードです。Zipファイルアップロード機能により、ユーザーが独自のJSONデータをアップロードして分析可能。認証機能付きで、月次トレンド、支店別・スタッフ別分析を提供します。
 
 ## 🔧 最近の修正 (2025年1月)
 
-### 本番環境でのGoogle Drive接続問題の解決
+### Google Drive依存の削除とZipファイルアップロード機能の追加
 
-**問題**: 開発環境ではGoogle Driveから正常にデータを読み込むが、本番環境（Streamlit Cloud）ではローカルファイルを読みに行ってしまう
+**変更内容**:
+- Google Drive連携機能を削除
+- Zipファイルアップロード機能を追加
+- ユーザーが独自のデータを持ち込める形式に変更
+- ローカルデータやパブリックリポジトリへの依存を削除
 
-**原因**: 
-- `is_drive_available()`メソッドのLRUキャッシュが一度失敗した結果をキャッシュし続ける
-- 本番環境でのGoogle Drive接続テストの詳細エラー情報が不足
+**メリット**:
+- データのプライバシー保護
+- 外部サービスへの依存なし
+- ユーザーがデータを完全にコントロール
+- セットアップの簡素化
 
-**解決策**:
-1. LRUキャッシュを削除し、毎回接続テストを実行
-2. より詳細なエラーログを追加
-3. 本番環境モードでのエラーハンドリングを改善
+## 🗂️ 新機能: Zipファイルアップロード
 
-### GitHub Actions定期キャッシュの停止
+### データソースの変更
+- **📁 Zipファイルアップロード**: ユーザーがJSONファイルをZip形式でアップロード
+- **🔒 プライバシー保護**: データはサーバーに保存されず、セッション中のみ保持
+- **📊 柔軟な分析**: 複数月のデータを一度にアップロード可能
 
-**変更**: 毎時実行されていたGoogle Drive同期の定期実行を停止
-
-**理由**: 本番環境でGoogle Driveから直接読み込むため、ローカルキャッシュが不要になった
-
-## 🗂️ 新機能: Google Drive連携
-
-### データソースの選択
-- **🌐 Google Drive**: クラウド上のJSONファイルを読み込み
-- **📁 ローカルファイル**: 従来通りのローカルファイルシステム  
-- **🔄 自動フォールバック**: Google Drive接続失敗時にローカルファイルを使用
-
-### メリット
-- **共有簡単**: チームメンバーとのデータ共有が容易
-- **自動同期**: Google Apps Scriptで生成したファイルを自動読み込み
-- **バックアップ**: クラウド上での安全なデータ保管
+### 対応ファイル形式
+- `基本分析_YYYY-MM.json`
+- `詳細分析_YYYY-MM.json`
+- `月次サマリー_YYYY-MM.json`
+- `定着率分析_YYYY-MM.json`
 
 ## 🚀 ローカル実行
 
@@ -43,47 +39,27 @@
 pip install -r requirements.txt
 ```
 
-### 2. アプリの起動
+### 2. Streamlitアプリの起動
 ```bash
 streamlit run streamlit_app.py
 ```
 
-### 3. ブラウザでアクセス
-```
-http://localhost:8501
-```
-
-## 🌐 Google Drive連携設定
-
-### クイックスタート
+### 3. Flaskアプリの起動（オプション）
 ```bash
-# 1. 環境変数を設定
-export GOOGLE_DRIVE_ENABLED=true
-export GOOGLE_DRIVE_FOLDER_ID=your-folder-id
-export GOOGLE_SERVICE_ACCOUNT_FILE=service_account.json
-
-# 2. 接続テスト
-python test_google_drive.py
-
-# 3. アプリ起動
-streamlit run streamlit_app.py
+python app.py
 ```
 
-### 詳細セットアップ
-詳細な設定手順は [`GOOGLE_DRIVE_SETUP.md`](GOOGLE_DRIVE_SETUP.md) を参照してください。
-
-- Google Cloud Console設定
-- サービスアカウント作成
-- Google Driveフォルダ準備
-- 認証設定
+### 4. ブラウザでアクセス
+- Streamlit: `http://localhost:8501`
+- Flask: `http://localhost:5001`
 
 ## 📈 機能
 
 ### メイン機能
 - **認証システム**: ユーザー名・パスワード認証
-- **月選択**: 直近6ヶ月のデータを選択可能
+- **Zipファイルアップロード**: ドラッグ&ドロップ対応
+- **月選択**: アップロードされたデータから月を選択
 - **リアルタイム更新**: 月変更で自動データ更新
-- **🗂️ データソース表示**: サイドバーでGoogle Drive/ローカルの状態を確認
 
 ### 分析機能
 1. **📈 月次トレンド**
@@ -101,14 +77,14 @@ streamlit run streamlit_app.py
 
 4. **📋 詳細データ**
    - フィルター機能（支店・スタッフ）
-   - CSVダウンロード機能
+   - JSONデータの直接表示
 
 ## 🌐 Streamlit Cloud デプロイ
 
 ### 1. GitHubにプッシュ
 ```bash
 git add .
-git commit -m "Add Streamlit dashboard"
+git commit -m "Add Zip file upload dashboard"
 git push origin main
 ```
 
@@ -120,58 +96,41 @@ git push origin main
 5. デプロイ実行
 
 ## 📊 データサイズ制限
-- **現在のデータサイズ**: 約4.2MB
+- **最大ファイルサイズ**: 200MB
 - **Streamlit無料プラン制限**: 200MB/ファイル
 - **✅ 制限内で十分余裕**
 
-## 🔐 セキュリティ・本番環境
+## 🔐 セキュリティ・プライバシー
 
 ### 🛡️ データ保護
-- **機微データの除外**: `dataset/`フォルダはリポジトリに含まれません
-- **読み取り専用権限**: Google Drive接続は読み取り専用
-- **環境別制御**: 本番環境と開発環境での異なるセキュリティレベル
+- **一時保存**: データはセッション中のみ保持
+- **サーバー保存なし**: アップロードされたデータは永続保存されません
+- **プライバシー重視**: ユーザーがデータを完全にコントロール
 
 ### 🔑 認証・アクセス制御
-- サービスアカウントベースの認証
-- 認証情報の環境変数管理
-- Google Cloud Console での権限管理
-
-### 🚀 本番環境向け機能
-- **PRODUCTION_MODE**: 本番環境での強化されたセキュリティ
-- **フォールバック制御**: ローカルファイル代替機能の有効/無効
-- **環境別設定**: プラットフォーム固有の設定サポート
-
-### 🔧 本番環境設定
-詳細な本番環境設定は [`PRODUCTION_SETUP.md`](PRODUCTION_SETUP.md) を参照：
-
-#### 基本設定
-```bash
-# 本番環境の推奨設定
-export PRODUCTION_MODE=true
-export USE_LOCAL_FALLBACK=false
-export GOOGLE_DRIVE_ENABLED=true
-export GOOGLE_DRIVE_FOLDER_ID=your-folder-id
-export GOOGLE_SERVICE_ACCOUNT='{"type": "service_account", ...}'
-```
-
-#### プラットフォーム対応
-- ✅ Streamlit Cloud (Secrets管理)
-- ✅ Heroku (環境変数)
-- ✅ Vercel (環境変数)
-- ✅ AWS/GCP/Azure (環境変数)
-
-#### 設定確認
-```bash
-# 本番環境での設定確認
-python debug_env.py
-```
+- ユーザー名・パスワード認証
+- セッション管理
+- アップロードファイルの検証
 
 ## 🔧 カスタマイズ
 
-### データパスの変更
-データファイルのパスを変更する場合：
+### 対応ファイル形式の変更
+新しいファイル形式を追加する場合：
 ```python
-with open(f'data/基本分析_{month}.json', 'r', encoding='utf-8') as f:
+# data_loader.py の SUPPORTED_FILE_PATTERNS を編集
+self.SUPPORTED_FILE_PATTERNS = [
+    '基本分析_YYYY-MM.json',
+    '詳細分析_YYYY-MM.json',
+    '月次サマリー_YYYY-MM.json',
+    '定着率分析_YYYY-MM.json',
+    '新しい分析_YYYY-MM.json'  # 追加
+]
+```
+
+### ファイルサイズ制限の変更
+```python
+# config.py の MAX_FILE_SIZE を編集
+self.MAX_FILE_SIZE = 500 * 1024 * 1024  # 500MB
 ```
 
 ## 📱 PDF出力
@@ -182,109 +141,74 @@ with open(f'data/基本分析_{month}.json', 'r', encoding='utf-8') as f:
 
 ## 🛠️ トラブルシューティング
 
-### 🚀 本番環境関連
+### 📁 ファイルアップロード関連
 
-#### 本番環境でGoogle Drive読み込みが失敗する
-**症状**: ローカルでは動作するが、本番環境でフォールバックが発生
+#### Zipファイルがアップロードできない
+**症状**: アップロードボタンを押しても反応がない
 
 **原因**:
-- 環境変数の設定不備
-- サービスアカウント認証情報の問題  
-- ネットワーク/ファイアウォールの制限
+- ファイルサイズが制限を超えている
+- ファイル形式が不正
+- ブラウザのJavaScriptが無効
 
 **解決策**:
-```bash
-# 設定確認
-python debug_env.py
+- ファイルサイズを200MB以下に制限
+- .zip形式のファイルを確認
+- ブラウザのJavaScriptを有効化
 
-# 本番環境モードでテスト
-PRODUCTION_MODE=true USE_LOCAL_FALLBACK=false python debug_env.py
-```
+#### JSONファイルが見つからない
+**症状**: アップロード後「JSONファイルが見つかりませんでした」エラー
 
-詳細は [`PRODUCTION_SETUP.md`](PRODUCTION_SETUP.md) を参照
+**原因**:
+- Zipファイル内にJSONファイルが含まれていない
+- ファイル名が対応形式と異なる
 
-#### 機微データがリポジトリに含まれる
 **解決策**:
+- Zipファイル内にJSONファイルが含まれているか確認
+- ファイル名が以下の形式になっているか確認：
+  - `基本分析_YYYY-MM.json`
+  - `詳細分析_YYYY-MM.json`
+  - `月次サマリー_YYYY-MM.json`
+  - `定着率分析_YYYY-MM.json`
+
+### 🔐 認証関連
+
+#### ログインできない
+**症状**: ユーザー名・パスワードを入力してもログインできない
+
+**解決策**:
+- ユーザー名: `admin` / パスワード: `admin123`
+- ユーザー名: `user` / パスワード: `user123`
+
+## 📝 使用方法
+
+### 1. データの準備
+分析したいJSONファイルを以下の形式で準備：
+- `基本分析_2024-09.json`
+- `詳細分析_2024-09.json`
+- `月次サマリー_2024-09.json`
+- `定着率分析_2024-09.json`
+
+### 2. Zipファイルの作成
+準備したJSONファイルをZip形式で圧縮
+
+### 3. アプリケーションの起動
 ```bash
-# データファイルを除外
-git rm -r --cached dataset/*.json
-git add .gitignore
-git commit -m "Remove sensitive data from repository"
+streamlit run streamlit_app.py
 ```
 
-### 🌐 Google Drive関連
+### 4. データのアップロード
+- 左サイドバーの「データアップロード」セクションでZipファイルをアップロード
+- ドラッグ&ドロップまたはクリックでファイル選択
 
-#### 🌐 接続エラー
-```bash
-# 接続テストでエラー確認
-python test_google_drive.py
-```
-- サービスアカウントJSONファイルのパス確認
-- フォルダIDが正しいか確認
-- フォルダがサービスアカウントと共有されているか確認
+### 5. 分析の実行
+- アップロード後、分析タイプを選択
+- 月を選択して分析を開始
 
-#### 📁 ファイルが見つからない
-- Google DriveフォルダにJSONファイルがアップロードされているか確認
-- ファイル名の形式: `基本分析_YYYY-MM.json`
-- フォールバック設定を確認: `USE_LOCAL_FALLBACK=true`
+## 🤝 貢献
 
-### その他
+プルリクエストやイシューの報告を歓迎します。
 
-#### データが見つからないエラー
-- データファイルが`dataset/`フォルダに存在するか確認（ローカル使用時）
-- ファイル名の形式: `基本分析_YYYY-MM.json`
+## 📄 ライセンス
 
-#### 認証エラー
-- ユーザー名・パスワードが正しいか確認
-- ブラウザのキャッシュをクリア
-
-#### ポート競合
-```bash
-streamlit run streamlit_app.py --server.port 8502
-```
-
-## 🧪 Google Drive接続テスト
-
-Google Drive連携が正しく設定されているかテストできます：
-
-```bash
-# 詳細なテスト実行
-python test_google_drive.py
-
-# ヘルプ表示
-python test_google_drive.py --help
-```
-
-このテストでは以下を確認します：
-- Google Drive API認証
-- フォルダアクセス権限
-- JSONファイルの読み込み
-- データローダーの動作
-
-## 📞 サポート
-問題が発生した場合は、以下を確認してください：
-1. 依存関係が正しくインストールされているか
-2. Google Drive設定が正しいか（`python test_google_drive.py`で確認）
-3. データファイルの形式が正しいか
-4. ブラウザのコンソールにエラーがないか 
-
-## 🐛 デバッグ
-
-Streamlitアプリ内でのシステムデバッグ:
-
-1. アプリにログイン
-2. サイドバーで「🔧 システムデバッグ」を選択
-3. 「🔍 詳細デバッグ実行」ボタンをクリック
-
-## 📁 ファイル構成
-
-```
-├── app.py                    # Flaskアプリケーション
-├── streamlit_app.py          # Streamlitアプリケーション（デバッグ機能内蔵）
-├── data_loader.py            # データ読み込みモジュール
-├── config.py                 # 設定管理
-├── google_drive_utils.py     # Google Drive連携
-├── analysis_dashboard.py     # 分析ロジック
-├── dataset/                  # ローカルデータ（開発用）
-└── .github/workflows/        # GitHub Actions（定期実行停止済み）
-``` 
+このプロジェクトはMITライセンスの下で公開されています。 

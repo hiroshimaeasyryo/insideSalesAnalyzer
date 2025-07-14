@@ -4,36 +4,86 @@
 Flaskアプリケーション for インタラクティブダッシュボード
 """
 
-from flask import Flask, render_template, jsonify, request
+from flask import Flask, render_template, jsonify, request, session
 from pathlib import Path
 import json
 import pandas as pd
 import datetime as dt
 from analysis_dashboard import extract_monthly_data, FILES
-from data_loader import get_data_loader
-import streamlit as st
+import zipfile
+import tempfile
+import os
+import io
 
 app = Flask(__name__)
+app.secret_key = 'your-secret-key-here'  # セッション管理用
 
 # グローバル変数としてデータを保持
 global_data = None
 base_data = None
 
-def load_data():
-    """データを読み込んでグローバル変数に保存"""
+def extract_zip_data(uploaded_file):
+    """ZipファイルからJSONデータを抽出"""
+    try:
+        with zipfile.ZipFile(uploaded_file, 'r') as zip_ref:
+            # 一時ディレクトリを作成
+            with tempfile.TemporaryDirectory() as temp_dir:
+                # Zipファイルを展開
+                zip_ref.extractall(temp_dir)
+                
+                # JSONファイルを検索
+                json_files = {}
+                for root, dirs, files in os.walk(temp_dir):
+                    for file in files:
+                        if file.endswith('.json'):
+                            file_path = os.path.join(root, file)
+                            try:
+                                with open(file_path, 'r', encoding='utf-8') as f:
+                                    data = json.load(f)
+                                    json_files[file] = data
+                            except Exception as e:
+                                print(f"JSONファイル読み込みエラー {file}: {e}")
+                
+                return json_files
+    except Exception as e:
+        print(f"Zipファイル処理エラー: {e}")
+        return {}
+
+def get_available_months_from_data(json_data):
+    """JSONデータから利用可能な月を抽出"""
+    months = set()
+    for filename, data in json_data.items():
+        # ファイル名から月を抽出（例: 基本分析_2024-09.json）
+        if '_' in filename and '.json' in filename:
+            parts = filename.split('_')
+            if len(parts) >= 2:
+                month_part = parts[-1].replace('.json', '')
+                if len(month_part) == 7 and month_part[4] == '-':  # YYYY-MM形式
+                    months.add(month_part)
+    return sorted(list(months), reverse=True)
+
+def load_analysis_data_from_json(json_data, month):
+    """指定月の分析データをJSONデータから読み込み"""
+    basic_data = None
+    detail_data = None
+    summary_data = None
+    
+    for filename, data in json_data.items():
+        if f'基本分析_{month}.json' in filename:
+            basic_data = data
+        elif f'詳細分析_{month}.json' in filename:
+            detail_data = data
+        elif f'月次サマリー_{month}.json' in filename:
+            summary_data = data
+    
+    return basic_data, detail_data, summary_data
+
+def load_data_from_json(json_data, target_month):
+    """JSONデータからデータを読み込んでグローバル変数に保存"""
     global global_data, base_data
     
     try:
-        loader = get_data_loader()
-        available_months = loader.get_available_months()
-        
-        if not available_months:
-            print("警告: 利用可能なデータが見つかりません")
-            return False
-        
-        # 最新月のデータを使用
-        target_month = available_months[0]
-        basic_data, detail_data, summary_data = loader.load_analysis_data(target_month)
+        basic_data, detail_data, summary_data = load_analysis_data_from_json(json_data, target_month)
         
         dfs = {}
         if basic_data:
@@ -132,9 +182,59 @@ def load_data():
 @app.route('/')
 def dashboard():
     """メインダッシュボードページ"""
+    return render_template('upload_template.html')
+
+@app.route('/upload', methods=['POST'])
+def upload_file():
+    """Zipファイルアップロード処理"""
+    if 'file' not in request.files:
+        return jsonify({'error': 'ファイルが選択されていません'}), 400
+    
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': 'ファイルが選択されていません'}), 400
+    
+    if not file.filename.endswith('.zip'):
+        return jsonify({'error': 'Zipファイルをアップロードしてください'}), 400
+    
+    try:
+        # Zipファイルを処理
+        json_data = extract_zip_data(file)
+        
+        if not json_data:
+            return jsonify({'error': 'JSONファイルが見つかりませんでした'}), 400
+        
+        # 利用可能な月を取得
+        available_months = get_available_months_from_data(json_data)
+        
+        if not available_months:
+            return jsonify({'error': '有効な月データが見つかりませんでした'}), 400
+        
+        # セッションにデータを保存
+        session['json_data'] = json_data
+        session['available_months'] = available_months
+        session['uploaded_file_name'] = file.filename
+        
+        # 最新月のデータを読み込み
+        target_month = available_months[0]
+        if load_data_from_json(json_data, target_month):
+            return jsonify({
+                'success': True,
+                'message': f'{len(json_data)}個のJSONファイルを読み込みました',
+                'available_months': available_months,
+                'selected_month': target_month
+            })
+        else:
+            return jsonify({'error': 'データの読み込みに失敗しました'}), 500
+            
+    except Exception as e:
+        return jsonify({'error': f'ファイル処理エラー: {str(e)}'}), 500
+
+@app.route('/dashboard')
+def main_dashboard():
+    """メインダッシュボードページ（データ読み込み後）"""
     if global_data is None:
-        if not load_data():
-            return "データの読み込みに失敗しました", 500
+        return render_template('upload_template.html')
     
     selected_month = global_data['available_months'][0] if global_data['available_months'] else None
     
@@ -157,8 +257,7 @@ def dashboard():
 def api_month_data(month):
     """指定された月のデータを返すAPIエンドポイント"""
     if global_data is None:
-        if not load_data():
-            return jsonify({'error': 'データの読み込みに失敗しました'}), 500
+        return jsonify({'error': 'データが読み込まれていません'}), 500
     
     month_data = get_month_data(month)
     return jsonify(month_data)
@@ -214,147 +313,5 @@ def get_month_data(month):
         'staff_conv': staff_conv.to_dict(orient="records")
     }
 
-def get_debug_info():
-    # This function is not provided in the original file or the new code block
-    # It's assumed to exist as it's called in the new code block
-    pass
-
 if __name__ == '__main__':
-    # データを事前に読み込み
-    if load_data():
-        print("データの読み込みが完了しました")
-        app.run(debug=True, host='0.0.0.0', port=5001)
-    else:
-        print("データの読み込みに失敗しました")
-
-    if st.button("🔍 詳細デバッグ情報を取得", type="primary"):
-        with st.spinner("詳細情報を取得中..."):
-            debug_info = get_debug_info()
-            
-            # 基本設定情報
-            st.subheader("🔧 設定状態")
-            col1, col2 = st.columns(2)
-            
-            with col1:
-                st.write(f"**PRODUCTION_MODE**: {debug_info['config']['PRODUCTION_MODE']}")
-                st.write(f"**GOOGLE_DRIVE_ENABLED**: {debug_info['config']['GOOGLE_DRIVE_ENABLED']}")
-                st.write(f"**USE_LOCAL_FALLBACK**: {debug_info['config']['USE_LOCAL_FALLBACK']}")
-                st.write(f"**FOLDER_ID**: {debug_info['config']['GOOGLE_DRIVE_FOLDER_ID']}")
-            
-            # Streamlit Secrets状態
-            st.subheader("🔐 Streamlit Secrets状態")
-            if debug_info['secrets']['available']:
-                st.success(f"✅ Secrets利用可能")
-                st.write(f"**設定済みキー**: {debug_info['secrets']['keys']}")
-                st.write(f"**google_driveキー**: {debug_info['secrets']['google_drive_keys']}")
-                st.write(f"**service_account長さ**: {debug_info['secrets']['service_account_length']}")
-                
-                # Service Account JSON詳細検証
-                st.subheader("🔍 Service Account JSON詳細")
-                service_account_data = st.secrets.get("google_drive", {}).get("service_account", "")
-                
-                if service_account_data:
-                    try:
-                        import json
-                        parsed_json = json.loads(service_account_data)
-                        st.success("✅ JSON形式: 正常")
-                        
-                        # 重要なフィールドの確認
-                        required_fields = ["type", "project_id", "private_key_id", "private_key", "client_email", "client_id", "auth_uri", "token_uri"]
-                        missing_fields = [field for field in required_fields if field not in parsed_json]
-                        
-                        if missing_fields:
-                            st.error(f"❌ 不足フィールド: {missing_fields}")
-                        else:
-                            st.success("✅ 必要フィールド: 全て存在")
-                        
-                        # private_keyの詳細確認
-                        private_key = parsed_json.get("private_key", "")
-                        if private_key:
-                            st.write(f"**private_key長さ**: {len(private_key)}")
-                            st.write(f"**private_key開始**: {private_key[:50]}...")
-                            st.write(f"**改行文字数**: {private_key.count('\\n')}")
-                            
-                            # PEM形式の確認
-                            if "-----BEGIN PRIVATE KEY-----" in private_key and "-----END PRIVATE KEY-----" in private_key:
-                                st.success("✅ PEM形式ヘッダー: 正常")
-                            else:
-                                st.error("❌ PEM形式ヘッダー: 不正")
-                            
-                            # 改行文字の問題確認
-                            if "\\n" in private_key:
-                                st.warning("⚠️ エスケープされた改行文字を検出")
-                                st.info("💡 解決方法: private_keyの\\nを実際の改行文字に置換する必要があります")
-                        else:
-                            st.error("❌ private_keyが見つかりません")
-                        
-                    except json.JSONDecodeError as e:
-                        st.error(f"❌ JSON解析エラー: {str(e)}")
-                        st.text("JSONの先頭50文字:")
-                        st.code(service_account_data[:50])
-                else:
-                    st.error("❌ service_accountデータが見つかりません")
-            
-            # 環境変数状態
-            st.subheader("🌍 環境変数状態")
-            if debug_info['environment']['GOOGLE_SERVICE_ACCOUNT']:
-                st.success("✅ GOOGLE_SERVICE_ACCOUNT: 設定済み")
-                st.write(f"**プロジェクトID**: {debug_info['environment']['project_id']}")
-                st.write(f"**クライアントメール**: {debug_info['environment']['client_email']}")
-            else:
-                st.error("❌ GOOGLE_SERVICE_ACCOUNT: 未設定")
-            
-            # 接続テスト
-            st.subheader("🔗 接続テスト")
-            
-            col1, col2 = st.columns(2)
-            with col1:
-                if debug_info['connection']['force_refresh_success']:
-                    st.success("✅ 強制リフレッシュテスト: 成功")
-                else:
-                    st.error("❌ 強制リフレッシュテスト: 失敗")
-                    st.error(f"エラー詳細: {debug_info['connection']['force_refresh_error']}")
-            
-            with col2:
-                if debug_info['connection']['normal_success']:
-                    st.success("✅ 通常テスト: 成功")
-                else:
-                    st.error("❌ 通常テスト: 失敗")
-                    st.error(f"エラー: {debug_info['connection']['normal_error']}")
-            
-            # 解決方法の提案
-            if not debug_info['connection']['normal_success']:
-                st.subheader("💡 解決方法")
-                if "Unable to load PEM file" in str(debug_info['connection']['normal_error']):
-                    st.info("""
-                    **private_keyの改行文字問題の解決方法:**
-                    
-                    1. Google Cloud ConsoleからService Accountキーを再ダウンロード
-                    2. JSONファイルを開いて、private_keyフィールドの内容をコピー
-                    3. Streamlit Cloudの設定で、private_keyの値の\\nを実際の改行に置換
-                    4. または、下記のボタンで自動修正を試行
-                    """)
-                    
-                    if st.button("🔧 private_key自動修正を試行"):
-                        try:
-                            import json
-                            service_account_data = st.secrets.get("google_drive", {}).get("service_account", "")
-                            parsed_json = json.loads(service_account_data)
-                            
-                            # private_keyの修正
-                            if "private_key" in parsed_json:
-                                original_key = parsed_json["private_key"]
-                                fixed_key = original_key.replace("\\n", "\n")
-                                
-                                st.text("修正前の改行文字数:")
-                                st.code(f"\\n文字数: {original_key.count('\\n')}")
-                                st.text("修正後の改行文字数:")
-                                st.code(f"実際の改行数: {fixed_key.count(chr(10))}")
-                                
-                                # 修正したJSONを表示（実際の適用は手動で行う必要がある）
-                                parsed_json["private_key"] = fixed_key
-                                st.text("修正後のJSON（手動でStreamlit Secretsに設定してください）:")
-                                st.code(json.dumps(parsed_json, indent=2))
-                            
-                        except Exception as e:
-                            st.error(f"自動修正エラー: {str(e)}") 
+    app.run(debug=True, host='0.0.0.0', port=5001) 

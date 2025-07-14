@@ -3,14 +3,12 @@
 """
 設定管理モジュール
 
-環境変数とStreamlit Secretsからの設定読み込みを管理します
+Zipファイルアップロード機能に特化した設定管理
 """
 
 import os
-import json
 from pathlib import Path
 from typing import Optional
-import streamlit as st
 from dotenv import load_dotenv
 
 # .envファイルの読み込み
@@ -20,50 +18,32 @@ class Config:
     """設定クラス"""
     
     def __init__(self):
-        # Streamlit Secrets からの設定読み込みを試行
-        self._load_from_streamlit_secrets()
+        # アプリケーション設定
+        self.APP_NAME = "インサイドセールス分析ダッシュボード"
+        self.APP_VERSION = "2.0.0"
         
-        # Google Drive設定
-        self.GOOGLE_DRIVE_ENABLED = self._get_bool('GOOGLE_DRIVE_ENABLED', True)
-        self.GOOGLE_DRIVE_FOLDER_ID = self._get_env('GOOGLE_DRIVE_FOLDER_ID')
-        self.GOOGLE_SERVICE_ACCOUNT_FILE = self._get_env('GOOGLE_SERVICE_ACCOUNT_FILE', 'service_account.json')
+        # ファイルアップロード設定
+        self.MAX_FILE_SIZE = 200 * 1024 * 1024  # 200MB
+        self.ALLOWED_EXTENSIONS = {'.zip'}
         
-        # 本番環境設定
-        self.PRODUCTION_MODE = self._get_bool('PRODUCTION_MODE', False)
-        self.USE_LOCAL_FALLBACK = self._get_bool('USE_LOCAL_FALLBACK', True)
+        # セッション設定
+        self.SESSION_TIMEOUT = 3600  # 1時間
         
-        # ローカルデータディレクトリ
-        self.LOCAL_DATA_DIR = Path(self._get_env('LOCAL_DATA_DIR', 'dataset'))
+        # データ処理設定
+        self.TEMP_DIR = Path(self._get_env('TEMP_DIR', '/tmp'))
+        self.CACHE_ENABLED = self._get_bool('CACHE_ENABLED', True)
+        self.CACHE_TTL = int(self._get_env('CACHE_TTL', '1800'))  # 30分
         
-        # 環境変数からサービスアカウント情報を取得
-        if 'GOOGLE_SERVICE_ACCOUNT' in os.environ:
-            self.GOOGLE_SERVICE_ACCOUNT_FILE = None  # 環境変数を優先
-    
-    def _load_from_streamlit_secrets(self):
-        """Streamlit Secrets から設定を読み込み"""
-        try:
-            if hasattr(st, 'secrets'):
-                # 直接設定されたトップレベルのsecretsを処理
-                for key in ['PRODUCTION_MODE', 'GOOGLE_DRIVE_ENABLED', 'USE_LOCAL_FALLBACK', 'GOOGLE_DRIVE_FOLDER_ID']:
-                    if key in st.secrets:
-                        os.environ[key] = str(st.secrets[key])
-                
-                # google_driveセクションを処理
-                if 'google_drive' in st.secrets:
-                    secrets = st.secrets['google_drive']
-                    
-                    # 環境変数として設定
-                    for key, value in secrets.items():
-                        if key == 'service_account' and isinstance(value, str):
-                            # JSON文字列を環境変数に設定
-                            os.environ['GOOGLE_SERVICE_ACCOUNT'] = value
-                        else:
-                            os.environ[key.upper()] = str(value)
-                
-        except Exception as e:
-            # エラーログを出力（デバッグ用）
-            print(f"Streamlit Secrets読み込みエラー: {e}")
-            pass
+        # セキュリティ設定
+        self.SECRET_KEY = self._get_env('SECRET_KEY', 'your-secret-key-here')
+        
+        # 対応ファイル形式
+        self.SUPPORTED_FILE_PATTERNS = [
+            '基本分析_YYYY-MM.json',
+            '詳細分析_YYYY-MM.json',
+            '月次サマリー_YYYY-MM.json',
+            '定着率分析_YYYY-MM.json'
+        ]
     
     def _get_env(self, key: str, default: Optional[str] = None) -> Optional[str]:
         """環境変数を取得"""
@@ -78,6 +58,19 @@ class Config:
             return False
         else:
             return default
+    
+    def validate_file_upload(self, filename: str, file_size: int) -> tuple[bool, str]:
+        """ファイルアップロードの検証"""
+        # ファイルサイズチェック
+        if file_size > self.MAX_FILE_SIZE:
+            return False, f"ファイルサイズが大きすぎます（最大{self.MAX_FILE_SIZE // (1024*1024)}MB）"
+        
+        # ファイル拡張子チェック
+        file_ext = Path(filename).suffix.lower()
+        if file_ext not in self.ALLOWED_EXTENSIONS:
+            return False, f"対応していないファイル形式です（対応形式: {', '.join(self.ALLOWED_EXTENSIONS)}）"
+        
+        return True, "ファイルは正常です"
 
 # グローバル設定インスタンス
 _config = None
@@ -91,31 +84,13 @@ def get_config() -> Config:
     
     return _config
 
-def get_data_source_info(config):
-    """データソース情報を取得"""
-    if config.GOOGLE_DRIVE_ENABLED and config.GOOGLE_DRIVE_FOLDER_ID:
-        return {
-            'type': 'google_drive',
-            'folder_id': config.GOOGLE_DRIVE_FOLDER_ID,
-            'fallback_enabled': config.USE_LOCAL_FALLBACK
-        }
-    else:
-        return {
-            'type': 'local',
-            'data_dir': str(config.LOCAL_DATA_DIR),
-            'exists': config.LOCAL_DATA_DIR.exists()
-        }
-
-def validate_google_drive_config(config):
-    """Google Drive設定の検証"""
-    if not config.GOOGLE_DRIVE_ENABLED:
-        return False, "Google Drive機能が無効化されています"
-    
-    if not config.GOOGLE_DRIVE_FOLDER_ID:
-        return False, "Google DriveフォルダIDが設定されていません"
-    
-    # サービスアカウントファイルまたは環境変数の確認
-    if not os.path.exists(config.GOOGLE_SERVICE_ACCOUNT_FILE) and 'GOOGLE_SERVICE_ACCOUNT' not in os.environ:
-        return False, "サービスアカウント認証情報が見つかりません"
-    
-    return True, "設定は正常です" 
+def get_app_info():
+    """アプリケーション情報を取得"""
+    config = get_config()
+    return {
+        'name': config.APP_NAME,
+        'version': config.APP_VERSION,
+        'max_file_size': config.MAX_FILE_SIZE,
+        'supported_extensions': list(config.ALLOWED_EXTENSIONS),
+        'supported_patterns': config.SUPPORTED_FILE_PATTERNS
+    } 
