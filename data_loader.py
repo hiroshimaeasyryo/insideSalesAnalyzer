@@ -3,198 +3,103 @@
 """
 データローダーモジュール
 
-Google DriveまたはローカルファイルシステムからJSONデータを読み込みます
+ZipファイルアップロードからJSONデータを読み込みます
 """
 
 import json
 import os
 from pathlib import Path
 from typing import Optional, Dict, Any, Tuple, List
-import streamlit as st
-import concurrent.futures
-import threading
+import zipfile
+import tempfile
 from functools import lru_cache
 
 from config import get_config
-from google_drive_utils import load_json_from_drive, test_connection
 
-class DataLoader:
-    """統合データローダークラス"""
+class ZipDataLoader:
+    """Zipファイルデータローダークラス"""
     
     def __init__(self):
         self.config = get_config()
-        self._drive_available = None
-        self._file_cache = {}  # メモリキャッシュ
-        self._cache_lock = threading.Lock()
+        self._json_data = {}
+        self._available_months = []
+        self._uploaded_file_name = None
     
-    def is_drive_available(self) -> bool:
-        """Google Drive接続が利用可能かチェック"""
-        if not self.config.GOOGLE_DRIVE_ENABLED:
+    def load_from_zip(self, zip_file) -> bool:
+        """
+        ZipファイルからJSONデータを読み込み
+        
+        Args:
+            zip_file: アップロードされたZipファイル
+            
+        Returns:
+            bool: 読み込み成功時True
+        """
+        try:
+            with zipfile.ZipFile(zip_file, 'r') as zip_ref:
+                # 一時ディレクトリを作成
+                with tempfile.TemporaryDirectory() as temp_dir:
+                    # Zipファイルを展開
+                    zip_ref.extractall(temp_dir)
+                    
+                    # JSONファイルを検索
+                    json_files = {}
+                    for root, dirs, files in os.walk(temp_dir):
+                        for file in files:
+                            if file.endswith('.json'):
+                                file_path = os.path.join(root, file)
+                                try:
+                                    with open(file_path, 'r', encoding='utf-8') as f:
+                                        data = json.load(f)
+                                        json_files[file] = data
+                                except Exception as e:
+                                    print(f"JSONファイル読み込みエラー {file}: {e}")
+                    
+                    if not json_files:
+                        print("警告: JSONファイルが見つかりませんでした")
+                        return False
+                    
+                    self._json_data = json_files
+                    self._available_months = self._extract_available_months(json_files)
+                    self._uploaded_file_name = getattr(zip_file, 'filename', 'unknown.zip')
+                    
+                    print(f"✅ {len(json_files)}個のJSONファイルを読み込みました")
+                    print(f"利用可能な月: {', '.join(self._available_months)}")
+                    
+                    return True
+                    
+        except Exception as e:
+            print(f"Zipファイル処理エラー: {e}")
             return False
-        else:
-            try:
-                return test_connection(
-                    folder_id=self.config.GOOGLE_DRIVE_FOLDER_ID,
-                    service_account_file=self.config.GOOGLE_SERVICE_ACCOUNT_FILE
-                )
-            except Exception as e:
-                print(f"Google Drive接続テスト失敗: {e}")
-                return False
     
-    def test_drive_connection_fresh(self) -> tuple:
-        """Google Drive接続を強制的に再テスト（キャッシュなし）"""
-        if not self.config.GOOGLE_DRIVE_ENABLED or not self.config.GOOGLE_DRIVE_FOLDER_ID:
-            return False, "Google Drive設定が無効"
-        
-        try:
-            from google_drive_utils import get_drive_client
-            # 強制リフレッシュで新しいクライアントを作成
-            client = get_drive_client(
-                service_account_file=self.config.GOOGLE_SERVICE_ACCOUNT_FILE,
-                folder_id=self.config.GOOGLE_DRIVE_FOLDER_ID,
-                force_refresh=True
-            )
-            files = client.list_files_in_folder()
-            return True, f"成功 ({len(files)}ファイル)"
-        except Exception as e:
-            error_msg = f"接続失敗: {type(e).__name__}: {str(e)}"
-            print(f"Google Drive接続テスト詳細エラー: {error_msg}")
-            return False, error_msg
+    def _extract_available_months(self, json_data: Dict[str, Any]) -> List[str]:
+        """JSONデータから利用可能な月を抽出"""
+        months = set()
+        for filename in json_data.keys():
+            # ファイル名から月を抽出（例: 基本分析_2024-09.json）
+            if '_' in filename and '.json' in filename:
+                parts = filename.split('_')
+                if len(parts) >= 2:
+                    month_part = parts[-1].replace('.json', '')
+                    if len(month_part) == 7 and month_part[4] == '-':  # YYYY-MM形式
+                        months.add(month_part)
+        return sorted(list(months), reverse=True)
     
-    def _get_cache_key(self, filename: str) -> str:
-        """キャッシュキーを生成"""
-        return f"{filename}_{self.config.GOOGLE_DRIVE_FOLDER_ID}"
+    def get_available_months(self) -> List[str]:
+        """利用可能な月のリストを取得"""
+        return self._available_months
     
-    def _load_file_with_cache(self, filename: str) -> Optional[Dict[Any, Any]]:
-        """キャッシュ付きファイル読み込み"""
-        cache_key = self._get_cache_key(filename)
-        
-        # キャッシュから確認
-        with self._cache_lock:
-            if cache_key in self._file_cache:
-                return self._file_cache[cache_key]
-        
-        # ファイルを読み込み
-        data = self._load_single_file(filename)
-        
-        # キャッシュに保存
-        if data is not None:
-            with self._cache_lock:
-                self._file_cache[cache_key] = data
-        
-        return data
+    def get_uploaded_file_name(self) -> Optional[str]:
+        """アップロードされたファイル名を取得"""
+        return self._uploaded_file_name
     
-    def _load_single_file(self, filename: str) -> Optional[Dict[Any, Any]]:
-        """単一ファイルの読み込み（並列処理用）"""
-        # 本番環境モードの場合はGoogle Driveのみ使用
-        if self.config.PRODUCTION_MODE:
-            print(f"本番環境モード: {filename} をGoogle Driveから読み込み中...")
-            
-            if not self.config.GOOGLE_DRIVE_ENABLED or not self.config.GOOGLE_DRIVE_FOLDER_ID:
-                error_msg = "本番環境モードではGoogle Drive設定が必須です。GOOGLE_DRIVE_ENABLED=true および GOOGLE_DRIVE_FOLDER_ID を設定してください。"
-                print(f"設定エラー: {error_msg}")
-                raise RuntimeError(error_msg)
-            
-            if not self.is_drive_available():
-                error_msg = "本番環境モードでGoogle Drive接続に失敗しました。サービスアカウント認証情報とネットワーク接続を確認してください。"
-                print(f"接続エラー: {error_msg}")
-                raise RuntimeError(error_msg)
-            
-            # Google Driveからのみ読み込み（フォールバックなし）
-            try:
-                data = load_json_from_drive(
-                    filename,
-                    folder_id=self.config.GOOGLE_DRIVE_FOLDER_ID,
-                    service_account_file=self.config.GOOGLE_SERVICE_ACCOUNT_FILE
-                )
-                print(f"Google Drive読み込み成功: {filename}")
-                return data
-            except Exception as e:
-                error_msg = f"Google Drive読み込み失敗: {filename} - {type(e).__name__}: {str(e)}"
-                print(error_msg)
-                raise RuntimeError(error_msg)
-        
-        # 開発環境モード: Google Driveから読み込みを試行
-        if self.is_drive_available():
-            try:
-                data = load_json_from_drive(
-                    filename,
-                    folder_id=self.config.GOOGLE_DRIVE_FOLDER_ID,
-                    service_account_file=self.config.GOOGLE_SERVICE_ACCOUNT_FILE
-                )
-                return data
-            except Exception as e:
-                if not self.config.USE_LOCAL_FALLBACK:
-                    raise
-        
-        # ローカルファイルシステムから読み込み（開発環境のみ）
-        if not self.config.USE_LOCAL_FALLBACK:
-            raise RuntimeError(f"Google Drive読み込みに失敗し、ローカルフォールバックが無効化されています: {filename}")
-        
-        return self._load_local_file(filename)
-
-    def load_json_file(self, filename: str) -> Optional[Dict[Any, Any]]:
-        """
-        JSONファイルを読み込み（キャッシュ付き）
-        
-        Args:
-            filename (str): ファイル名
-            
-        Returns:
-            Optional[Dict]: JSONデータ（読み込み失敗時はNone）
-        """
-        return self._load_file_with_cache(filename)
-    
-    def load_multiple_files_parallel(self, filenames: List[str], max_workers: int = 3) -> Dict[str, Optional[Dict]]:
-        """
-        複数ファイルを並列で読み込み
-        
-        Args:
-            filenames (List[str]): ファイル名のリスト
-            max_workers (int): 最大並列数
-            
-        Returns:
-            Dict[str, Optional[Dict]]: ファイル名をキーとする結果辞書
-        """
-        results = {}
-        
-        with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
-            # 並列実行を開始
-            future_to_filename = {
-                executor.submit(self._load_file_with_cache, filename): filename 
-                for filename in filenames
-            }
-            
-            # 結果を収集
-            for future in concurrent.futures.as_completed(future_to_filename):
-                filename = future_to_filename[future]
-                try:
-                    data = future.result()
-                    results[filename] = data
-                except Exception as e:
-                    results[filename] = None
-        
-        return results
-    
-    def _load_local_file(self, filename: str) -> Optional[Dict[Any, Any]]:
-        """ローカルファイルシステムからJSONファイルを読み込み"""
-        local_path = self.config.LOCAL_DATA_DIR / filename
-        
-        try:
-            if not local_path.exists():
-                return None
-            
-            with open(local_path, 'r', encoding='utf-8') as f:
-                data = json.load(f)
-            
-            return data
-            
-        except Exception as e:
-            return None
+    def get_json_data(self) -> Dict[str, Any]:
+        """読み込まれたJSONデータを取得"""
+        return self._json_data
     
     def load_analysis_data(self, month: str) -> Tuple[Optional[Dict], Optional[Dict], Optional[Dict]]:
         """
-        指定月の分析データをすべて読み込み（並列処理版）
+        指定月の分析データを読み込み
         
         Args:
             month (str): 月（YYYY-MM形式）
@@ -203,20 +108,19 @@ class DataLoader:
             Tuple[Optional[Dict], Optional[Dict], Optional[Dict]]: 
                 (基本分析データ, 詳細分析データ, 月次サマリーデータ)
         """
-        filenames = [
-            f'基本分析_{month}.json',
-            f'詳細分析_{month}.json',
-            f'月次サマリー_{month}.json'
-        ]
+        basic_data = None
+        detail_data = None
+        summary_data = None
         
-        # 並列読み込み
-        results = self.load_multiple_files_parallel(filenames)
+        for filename, data in self._json_data.items():
+            if f'基本分析_{month}.json' in filename:
+                basic_data = data
+            elif f'詳細分析_{month}.json' in filename:
+                detail_data = data
+            elif f'月次サマリー_{month}.json' in filename:
+                summary_data = data
         
-        return (
-            results.get(filenames[0]),
-            results.get(filenames[1]), 
-            results.get(filenames[2])
-        )
+        return basic_data, detail_data, summary_data
     
     def load_retention_data(self, month: str) -> Optional[Dict]:
         """
@@ -228,125 +132,44 @@ class DataLoader:
         Returns:
             Optional[Dict]: 定着率分析データ
         """
-        return self.load_json_file(f'定着率分析_{month}.json')
+        for filename, data in self._json_data.items():
+            if f'定着率分析_{month}.json' in filename:
+                return data
+        return None
     
-    def clear_cache(self):
-        """キャッシュをクリア"""
-        with self._cache_lock:
-            self._file_cache.clear()
-        
-        # Google Driveクライアントもリセット
-        try:
-            from google_drive_utils import reset_drive_client
-            reset_drive_client()
-        except ImportError:
-            pass
-    
-    def get_cache_info(self) -> Dict[str, Any]:
-        """キャッシュ情報を取得"""
-        with self._cache_lock:
-            cache_size = len(self._file_cache)
-            cache_keys = list(self._file_cache.keys())
-        
+    def get_data_summary(self) -> Dict[str, Any]:
+        """データサマリー情報を取得"""
         return {
-            'cache_size': cache_size,
-            'cached_files': cache_keys
+            'total_files': len(self._json_data),
+            'available_months': self._available_months,
+            'uploaded_file_name': self._uploaded_file_name,
+            'file_types': list(set([filename.split('_')[0] for filename in self._json_data.keys() if '_' in filename]))
         }
     
-    def get_available_months(self) -> list:
-        """
-        利用可能な月のリストを取得
-        
-        Returns:
-            list: 利用可能な月のリスト（YYYY-MM形式）
-        """
-        months = set()
-        
-        # Google Driveから取得
-        if self.is_drive_available():
-            try:
-                from google_drive_utils import get_drive_client
-                client = get_drive_client(
-                    service_account_file=self.config.GOOGLE_SERVICE_ACCOUNT_FILE,
-                    folder_id=self.config.GOOGLE_DRIVE_FOLDER_ID
-                )
-                files = client.list_files_in_folder()
-                
-                for file in files:
-                    filename = file['name']
-                    # 基本分析ファイルから月を抽出
-                    if filename.startswith('基本分析_') and filename.endswith('.json'):
-                        month = filename.replace('基本分析_', '').replace('.json', '')
-                        months.add(month)
-                        
-            except Exception as e:
-                pass
-        
-        # ローカルファイルから取得（フォールバック）
-        if self.config.LOCAL_DATA_DIR.exists():
-            for file_path in self.config.LOCAL_DATA_DIR.glob('基本分析_*.json'):
-                filename = file_path.name
-                month = filename.replace('基本分析_', '').replace('.json', '')
-                months.add(month)
-        
-        return sorted(list(months), reverse=True)
-    
-    def get_data_source_status(self) -> Dict[str, Any]:
-        """データソースの状態を取得"""
-        cache_info = self.get_cache_info()
-        
-        status = {
-            'google_drive': {
-                'enabled': self.config.GOOGLE_DRIVE_ENABLED,
-                'available': self.is_drive_available(),
-                'folder_id': self.config.GOOGLE_DRIVE_FOLDER_ID
-            },
-            'local': {
-                'path': str(self.config.LOCAL_DATA_DIR),
-                'exists': self.config.LOCAL_DATA_DIR.exists(),
-                'fallback_enabled': self.config.USE_LOCAL_FALLBACK
-            },
-            'cache': cache_info,
-            'active_source': 'google_drive' if self.is_drive_available() else 'local'
-        }
-        
-        return status
+    def clear_data(self):
+        """データをクリア"""
+        self._json_data = {}
+        self._available_months = []
+        self._uploaded_file_name = None
 
-# グローバルローダーインスタンス
+# グローバルデータローダーインスタンス
 _data_loader = None
 
-def get_data_loader() -> DataLoader:
-    """データローダーのシングルトンインスタンスを取得"""
+def get_data_loader() -> ZipDataLoader:
+    """データローダーインスタンスを取得"""
     global _data_loader
     
     if _data_loader is None:
-        _data_loader = DataLoader()
+        _data_loader = ZipDataLoader()
     
     return _data_loader
 
-# 互換性のための関数
 def load_data(month: str):
-    """
-    指定月のデータを読み込み（互換性のための関数）
-    
-    Args:
-        month (str): 月（YYYY-MM形式）
-        
-    Returns:
-        Tuple: (基本分析データ, 詳細分析データ, 月次サマリーデータ)
-    """
+    """指定月のデータを読み込み（後方互換性のため）"""
     loader = get_data_loader()
     return loader.load_analysis_data(month)
 
 def load_retention_data(month: str):
-    """
-    指定月の定着率分析データを読み込み（互換性のための関数）
-    
-    Args:
-        month (str): 月（YYYY-MM形式）
-        
-    Returns:
-        Optional[Dict]: 定着率分析データ
-    """
+    """指定月の定着率データを読み込み（後方互換性のため）"""
     loader = get_data_loader()
     return loader.load_retention_data(month) 
