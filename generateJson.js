@@ -82,17 +82,41 @@ function getAllPeriodDirectory() {
   return null;
 }
 
-// ファイルを特定ディレクトリに保存するヘルパー関数
+// ファイルを特定ディレクトリに保存するヘルパー関数（重複削除機能付き）
 function saveFileToTargetDirectory(fileName, jsonData) {
   var targetFolder = getTargetDirectory();
   
   if (targetFolder) {
+    // 既存の同名ファイルを削除
+    try {
+      var existingFiles = targetFolder.getFilesByName(fileName);
+      while (existingFiles.hasNext()) {
+        var existingFile = existingFiles.next();
+        existingFile.setTrashed(true);
+        Logger.log('🗑️ 既存ファイル削除: ' + existingFile.getName());
+      }
+    } catch (error) {
+      Logger.log('⚠️ 既存ファイル削除エラー: ' + error.message);
+    }
+    
     var blob = Utilities.newBlob(jsonData, 'application/json', fileName);
     var file = targetFolder.createFile(blob);
     Logger.log('✅ ファイルを特定ディレクトリに保存: ' + file.getName() + ' - ' + file.getUrl());
     return file;
   } else {
     // 特定ディレクトリが設定されていない場合は従来通りマイドライブに保存
+    // マイドライブでも同名ファイルを削除
+    try {
+      var existingFiles = DriveApp.getFilesByName(fileName);
+      while (existingFiles.hasNext()) {
+        var existingFile = existingFiles.next();
+        existingFile.setTrashed(true);
+        Logger.log('🗑️ 既存ファイル削除（マイドライブ）: ' + existingFile.getName());
+      }
+    } catch (error) {
+      Logger.log('⚠️ 既存ファイル削除エラー（マイドライブ）: ' + error.message);
+    }
+    
     var blob = Utilities.newBlob(jsonData, 'application/json', fileName);
     var file = DriveApp.createFile(blob);
     Logger.log('✅ ファイルをマイドライブに保存: ' + file.getName() + ' - ' + file.getUrl());
@@ -100,22 +124,11 @@ function saveFileToTargetDirectory(fileName, jsonData) {
   }
 }
 
-// ファイルを全月データ用ディレクトリに保存するヘルパー関数
+// ファイルを全月データ用ディレクトリに保存するヘルパー関数（統一：インサイドセールス分析データフォルダを使用）
 function saveFileToAllPeriodDirectory(fileName, jsonData) {
-  var allPeriodFolder = getAllPeriodDirectory();
-  
-  if (allPeriodFolder) {
-    var blob = Utilities.newBlob(jsonData, 'application/json', fileName);
-    var file = allPeriodFolder.createFile(blob);
-    Logger.log('✅ ファイルを全月データディレクトリに保存: ' + file.getName() + ' - ' + file.getUrl());
-    return file;
-  } else {
-    // 全月データ用ディレクトリが設定されていない場合は従来通りマイドライブに保存
-    var blob = Utilities.newBlob(jsonData, 'application/json', fileName);
-    var file = DriveApp.createFile(blob);
-    Logger.log('✅ ファイルをマイドライブに保存: ' + file.getName() + ' - ' + file.getUrl());
-    return file;
-  }
+  // 全月データも「インサイドセールス分析データ」フォルダに統一
+  Logger.log('📁 全月データを「インサイドセールス分析データ」フォルダに統一保存: ' + fileName);
+  return saveFileToTargetDirectory(fileName, jsonData);
 }
 
 function fixOutlierDate(dateStr) {
@@ -171,6 +184,13 @@ function mergeSalesDataNested() {
       Logger.log('日時変換エラー: ' + dateValue + ' - ' + e.message);
       return null;
     }
+  }
+
+  // ヘルパー関数: 数値変換
+  function safeNumber(value) {
+    if (value === null || value === undefined || value === '') return 0;
+    var num = parseFloat(value);
+    return isNaN(num) ? 0 : num;
   }
 
   // 1) スプレッドシートを開く
@@ -1265,13 +1285,16 @@ function saveMonthlyReports(reportPeriod, analysisData, detailedData, retentionD
   }
 }
 
-// 月次定例報告を全月分生成する関数
+// 月次定例報告を全月分生成する関数（効率化版）
 function generateMonthlyReportForAllMonths() {
+  Logger.log('📊 全月分の月次レポート生成開始（効率化版）');
+  
   // 1) スプレッドシートから全ての月を抽出
   var ss = SpreadsheetApp.openById('1tZDpkzCCYTgeq1NqSFHr9HB-1J3VUMw3vncKCrhUOqU');
   var dailySheet = ss.getSheetByName('学生日報');
   var lastCol = dailySheet.getLastColumn();
   var dailyRaw = dailySheet.getRange(3,1, dailySheet.getLastRow()-2, lastCol).getValues();
+  
   // 日付列のインデックスを特定
   var groupRow = dailySheet.getRange(1,1,1,lastCol).getValues()[0];
   var columnRow = dailySheet.getRange(2,1,1,lastCol).getValues()[0];
@@ -1290,6 +1313,7 @@ function generateMonthlyReportForAllMonths() {
   }
   var dateColIdx = dailyHeaders.indexOf('今日の日付');
   if (dateColIdx === -1) throw new Error('日付列が見つかりません');
+  
   // 全ての月を抽出
   var monthsSet = {};
   dailyRaw.forEach(function(row) {
@@ -1301,11 +1325,83 @@ function generateMonthlyReportForAllMonths() {
     monthsSet[month] = true;
   });
   var months = Object.keys(monthsSet).sort();
-  // 2) 各月ごとにレポートを生成
+  
+  Logger.log('📅 対象月: ' + months.join(', '));
+  
+  // 2) 全月データを1回だけ生成（重複防止）
+  Logger.log('📊 全月データ生成開始...');
+  var analysisData = generateAnalysisJson();      // 基本分析（全月）
+  var retentionData = generateRetentionAnalysisJson();  // 定着率分析（全月）
+  mergeSalesDataNested();  // 統合データ（全月）
+  Logger.log('✅ 全月データ生成完了');
+  
+  // 3) 各月ごとに月次特化データのみを生成
+  Logger.log('📊 月次レポート生成開始...');
+  var monthlyResults = [];
+  
   months.forEach(function(month) {
-    regenerateMonthlyReport(month);
+    Logger.log('📅 月次レポート生成中: ' + month);
+    
+    // 既存の月次ファイルを削除
+    try {
+      var targetFolder = getTargetDirectory();
+      var folder = null;
+      
+      if (targetFolder) {
+        folder = targetFolder;
+      } else {
+        var folderName = getConfig('file_management.folder_name') || "月次営業分析レポート";
+        var folders = DriveApp.getFoldersByName(folderName);
+        if (folders.hasNext()) {
+          folder = folders.next();
+        } else {
+          folder = DriveApp.createFolder(folderName);
+        }
+      }
+      
+      if (folder) {
+        var files = folder.getFiles();
+        while (files.hasNext()) {
+          var file = files.next();
+          var fileName = file.getName();
+                     // 月次ファイルのみ削除（全月データファイルは保護）
+           if (fileName.includes(month) && 
+               !fileName.includes('sales_analysis_data.json') && 
+               !fileName.includes('staff_retention_analysis.json') && 
+               !fileName.includes('merged_sales_data.json')) {
+             file.setTrashed(true);
+             Logger.log('🗑️ 既存月次ファイル削除: ' + fileName);
+           }
+        }
+      }
+    } catch (error) {
+      Logger.log('⚠️ 既存ファイル削除エラー: ' + error.message);
+    }
+    
+    // 月次特化データのみ生成
+    var detailedData = generateDetailedAnalysisJson(month);  // 詳細分析（月次）
+    var monthlySummary = generateMonthlySummary(analysisData, detailedData, retentionData, month);  // 月次サマリー
+    
+    // 月次ファイルのみ保存（全月データは除外）
+    saveMonthlyReportsOptimized(month, analysisData, detailedData, retentionData, monthlySummary);
+    
+    monthlyResults.push({
+      month: month,
+      files_created: 4
+    });
   });
-  Logger.log('✅ 全月分の月次レポートを生成しました: ' + months.join(', '));
+  
+  Logger.log('✅ 全月分の月次レポート生成完了');
+  Logger.log('📊 処理結果:');
+  Logger.log('  - 全月データファイル: 3個（重複なし）');
+  Logger.log('  - 月次レポートファイル: ' + (months.length * 4) + '個（' + months.length + '月 × 4ファイル）');
+  Logger.log('  - 対象月: ' + months.join(', '));
+  
+  return {
+    months_processed: months.length,
+    total_files: 3 + (months.length * 4),
+    monthly_results: monthlyResults
+  };
 }
 
 function generateRetentionAnalysisJson() {
@@ -2002,15 +2098,27 @@ function generateBranchProductCrossAnalysis(analysisData, reportPeriod) {
 function regenerateMonthlyReport(targetPeriod) {
   Logger.log('🔄 月次レポート再生成開始: ' + targetPeriod);
   
-  // 既存ファイルの削除
+  // 既存ファイルの削除（特定ディレクトリ対応）
   try {
-    var folderName = "月次営業分析レポート";
-    var folders = DriveApp.getFoldersByName(folderName);
+    var targetFolder = getTargetDirectory();
+    var folder = null;
     
-    if (folders.hasNext()) {
-      var folder = folders.next();
+    // 特定ディレクトリが設定されている場合はそちらを使用
+    if (targetFolder) {
+      folder = targetFolder;
+      Logger.log('📁 特定ディレクトリから既存ファイルを削除: ' + folder.getName());
+    } else {
+      // 従来のフォルダからも削除
+      var folderName = getConfig('file_management.folder_name') || "月次営業分析レポート";
+      var folders = DriveApp.getFoldersByName(folderName);
+      if (folders.hasNext()) {
+        folder = folders.next();
+        Logger.log('📁 従来フォルダから既存ファイルを削除: ' + folder.getName());
+      }
+    }
+    
+    if (folder) {
       var files = folder.getFiles();
-      
       while (files.hasNext()) {
         var file = files.next();
         var fileName = file.getName();
@@ -2228,21 +2336,12 @@ function generateAllPeriodJsonToTargetDirectory() {
   Logger.log('✅ 全月分のJSONを特定ディレクトリに生成しました');
 }
 
-// 2. 全月データ用ディレクトリを設定して全月分のJSONを生成
+// 2. 全月データ用ディレクトリを設定して全月分のJSONを生成（統一：インサイドセールス分析データフォルダを使用）
 function generateAllPeriodJsonToAllPeriodDirectory() {
-  // 全月データ用ディレクトリを有効化
-  enableAllPeriodDirectory();
+  Logger.log('📁 注意：全月データはインサイドセールス分析データフォルダに統一されました');
   
-  // 基本分析（全月分）
-  generateAnalysisJson();
-  
-  // 定着率分析（全月分）
-  generateRetentionAnalysisJson();
-  
-  // 詳細分析（全月分）
-  generateAllPeriodDetailedAnalysisJson();
-  
-  Logger.log('✅ 全月分のJSONを全月データディレクトリに生成しました');
+  // インサイドセールス分析データフォルダを使用（統一）
+  return generateAllPeriodJsonToTargetDirectory();
 }
 
 // 3. フォルダIDを指定して特定ディレクトリを設定
@@ -2329,20 +2428,12 @@ function disableTargetDirectoryAndSaveToMyDrive() {
   Logger.log('✅ 全月分のJSONをマイドライブに生成しました');
 }
 
-// 8. 全月データ用ディレクトリを無効化してマイドライブに保存
+// 8. 全月データ用ディレクトリを無効化してマイドライブに保存（統一：特定ディレクトリを無効化）
 function disableAllPeriodDirectoryAndSaveToMyDrive() {
-  disableAllPeriodDirectory();
+  Logger.log('📁 注意：全月データ機能は廃止され、特定ディレクトリ機能に統一されました');
   
-  // 基本分析（全月分）
-  generateAnalysisJson();
-  
-  // 定着率分析（全月分）
-  generateRetentionAnalysisJson();
-  
-  // 詳細分析（全月分）
-  generateAllPeriodDetailedAnalysisJson();
-  
-  Logger.log('✅ 全月分のJSONをマイドライブに生成しました');
+  // 特定ディレクトリを無効化してマイドライブに保存（統一）
+  return disableTargetDirectoryAndSaveToMyDrive();
 }
 
 // 全期間サマリー（全月分をまとめた詳細分析JSON）を1つだけ出力する関数
@@ -2484,4 +2575,102 @@ function disableAllPeriodDirectory() {
 // 全月データ用ディレクトリを有効化する関数
 function enableAllPeriodDirectory() {
   return updateAllPeriodDirectory({ enabled: true });
+}
+
+// 月次レポート最適化保存関数（全月データファイルを除外）
+function saveMonthlyReportsOptimized(reportPeriod, analysisData, detailedData, retentionData, monthlySummary) {
+  try {
+    // 1) 特定ディレクトリまたは月次レポート用フォルダを取得
+    var folder = getTargetDirectory();
+    var folderName = getConfig('file_management.folder_name') || "月次営業分析レポート";
+    var fileNaming = getConfig('file_management.file_naming') || {};
+    
+    // 特定ディレクトリが設定されていない場合は従来の方法でフォルダを取得
+    if (!folder) {
+      var folders = DriveApp.getFoldersByName(folderName);
+      if (folders.hasNext()) {
+        folder = folders.next();
+      } else {
+        folder = DriveApp.createFolder(folderName);
+        Logger.log('📁 フォルダ作成: ' + folderName);
+      }
+    }
+    
+    // 2) 月次JSONファイルを保存（全月データファイルは生成済みなので除外）
+    var files = [];
+    
+    // 月次サマリー
+    if (monthlySummary) {
+      var summaryJson = JSON.stringify(monthlySummary, null, 2);
+      var summaryFileName = (fileNaming.summary || "月次サマリー_") + reportPeriod + '.json';
+      var summaryBlob = Utilities.newBlob(summaryJson, 'application/json', summaryFileName);
+      var summaryFile = folder.createFile(summaryBlob);
+      files.push(summaryFile.getName());
+      Logger.log('📄 月次サマリー保存: ' + summaryFile.getName());
+    }
+    
+    // 定着率分析（月次版）
+    if (retentionData) {
+      var retentionJson = JSON.stringify(retentionData, null, 2);
+      var retentionFileName = (fileNaming.retention || "定着率分析_") + reportPeriod + '.json';
+      var retentionBlob = Utilities.newBlob(retentionJson, 'application/json', retentionFileName);
+      var retentionFile = folder.createFile(retentionBlob);
+      files.push(retentionFile.getName());
+      Logger.log('📄 定着率分析保存: ' + retentionFile.getName());
+    }
+    
+    // 詳細分析（月次版）
+    if (detailedData) {
+      var detailedJson = JSON.stringify(detailedData, null, 2);
+      var detailedFileName = (fileNaming.detailed || "詳細分析_") + reportPeriod + '.json';
+      var detailedBlob = Utilities.newBlob(detailedJson, 'application/json', detailedFileName);
+      var detailedFile = folder.createFile(detailedBlob);
+      files.push(detailedFile.getName());
+      Logger.log('📄 詳細分析保存: ' + detailedFile.getName());
+    }
+    
+    // 基本分析（月次版）
+    if (analysisData) {
+      var analysisJson = JSON.stringify(analysisData, null, 2);
+      var analysisFileName = (fileNaming.basic || "基本分析_") + reportPeriod + '.json';
+      var analysisBlob = Utilities.newBlob(analysisJson, 'application/json', analysisFileName);
+      var analysisFile = folder.createFile(analysisBlob);
+      files.push(analysisFile.getName());
+      Logger.log('📄 基本分析保存: ' + analysisFile.getName());
+    }
+    
+    // 3) 実行ログファイルを作成
+    var logData = {
+      execution_time: new Date().toISOString(),
+      report_period: reportPeriod,
+      files_created: files,
+      folder_url: folder.getUrl(),
+      config_version: getConfig('metadata.version') || '1.0',
+      optimization: "monthly_specific_files_only",
+      summary: {
+        total_staff: retentionData ? Object.keys(retentionData.staff_retention_analysis).length : 0,
+        total_calls: analysisData ? analysisData.summary_by_period.total_calls : 0,
+        total_deals: analysisData ? analysisData.summary_by_period.total_deals : 0,
+        approval_rate: analysisData ? analysisData.summary_by_period.overall_approval_rate : 0
+      }
+    };
+    
+    var logJson = JSON.stringify(logData, null, 2);
+    var logFileName = (fileNaming.log || "実行ログ_") + reportPeriod + '.json';
+    var logBlob = Utilities.newBlob(logJson, 'application/json', logFileName);
+    var logFile = folder.createFile(logBlob);
+    files.push(logFile.getName());
+    
+    Logger.log('✅ 月次レポート保存完了（最適化版）: ' + reportPeriod);
+    Logger.log('📄 作成ファイル数: ' + files.length);
+    
+    return {
+      folder: folder,
+      files: files,
+      log: logFile
+    };
+  } catch (error) {
+    Logger.log('❌ ファイル保存エラー: ' + error.message);
+    throw error;
+  }
 }

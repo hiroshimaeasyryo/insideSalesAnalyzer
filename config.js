@@ -86,7 +86,7 @@ var CONFIG = {
     
     // 全月データ用のフォルダ設定
     all_period_directory: {
-      enabled: true,  // 全月データ用ディレクトリを使用するかどうか
+      enabled: false,  // 全月データ用ディレクトリを無効化（インサイドセールス分析データフォルダに統一）
       folder_id: "",  // 特定のフォルダID（空の場合はフォルダ名で検索）
       folder_name: "全月データ",  // 全月データ用のフォルダ名
       create_if_not_exists: true  // フォルダが存在しない場合に作成するかどうか
