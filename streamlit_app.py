@@ -11,26 +11,34 @@ import tempfile
 import io
 from pathlib import Path
 
-# 共通モジュールのインポート
-from common import (
-    get_branch_color, get_product_color, get_status_color,
-    format_number, format_percentage, format_month,
-    get_prev_months, convert_utc_to_jst, safe_divide
-)
-from config import (
-    PAGE_CONFIG, AUTH_CREDENTIALS, AUTH_CONFIG,
-    ANALYSIS_TYPES, ERROR_MESSAGES, SUCCESS_MESSAGES, WARNING_MESSAGES, INFO_MESSAGES
-)
-
 # ページ設定
-st.set_page_config(**PAGE_CONFIG)
+st.set_page_config(
+    page_title="インサイドセールス_ダッシュボード",
+    page_icon="📞",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
-# 認証オブジェクトを作成
+# 認証設定
+credentials = {
+    "usernames": {
+        "admin": {
+            "name": "管理者",
+            "password": "admin123"
+        },
+        "user": {
+            "name": "一般ユーザー",
+            "password": "user123"
+        }
+    }
+}
+
+# 認証オブジェクトを作成（新しいAPI）
 authenticator = stauth.Authenticate(
-    AUTH_CREDENTIALS,
-    AUTH_CONFIG["cookie_name"],
-    AUTH_CONFIG["key"],
-    cookie_expiry_days=AUTH_CONFIG["cookie_expiry_days"]
+    credentials,
+    "dashboard",
+    "auth_key",
+    cookie_expiry_days=30
 )
 
 # ログインフォームをmainエリアに表示
@@ -61,22 +69,24 @@ def extract_zip_data(uploaded_file):
                                     data = json.load(f)
                                     json_files[file] = data
                             except Exception as e:
-                                st.error(f"{ERROR_MESSAGES['processing_error']} {file}: {e}")
+                                st.error(f"JSONファイル読み込みエラー {file}: {e}")
                 
                 return json_files
     except Exception as e:
-        st.error(f"{ERROR_MESSAGES['processing_error']}: {e}")
+        st.error(f"Zipファイル処理エラー: {e}")
         return {}
 
 def get_available_months_from_data(json_data):
     """JSONデータから利用可能な月を抽出"""
-    from common import extract_month_from_filename
-    
     months = set()
     for filename, data in json_data.items():
-        month = extract_month_from_filename(filename)
-        if month:
-            months.add(month)
+        # ファイル名から月を抽出（例: 基本分析_2024-09.json）
+        if '_' in filename and '.json' in filename:
+            parts = filename.split('_')
+            if len(parts) >= 2:
+                month_part = parts[-1].replace('.json', '')
+                if len(month_part) == 7 and month_part[4] == '-':  # YYYY-MM形式
+                    months.add(month_part)
     return sorted(list(months), reverse=True)
 
 def load_analysis_data_from_json(json_data, month):
@@ -112,7 +122,13 @@ def extract_daily_activity_from_staff(staff_dict):
             # 日付をUTC→JST変換
             activity_date = activity.get("date")
             if activity_date:
-                activity_date = convert_utc_to_jst(activity_date) or activity_date
+                try:
+                    # UTC→JST変換
+                    date_jst = pd.to_datetime(activity_date, utc=True).tz_convert('Asia/Tokyo').date()
+                    activity_date = str(date_jst)
+                except:
+                    # 変換に失敗した場合はそのまま使用
+                    pass
             
             # メイン商材の処理
             main = activity.get("main_product", {})
@@ -159,7 +175,7 @@ def extract_daily_activity_from_staff(staff_dict):
     return pd.DataFrame(records)
 
 if authentication_status == False:
-    st.error(f'❌ {ERROR_MESSAGES["authentication_error"]}')
+    st.error('❌ ユーザー名/パスワードが間違っています')
 elif authentication_status == None:
     st.warning('⚠️ ユーザー名とパスワードを入力してください')
 elif authentication_status:
@@ -177,7 +193,7 @@ elif authentication_status:
         # データアップロードセクション
         st.subheader("📁 データアップロード")
         uploaded_file = st.file_uploader(
-            INFO_MESSAGES["upload_instruction"],
+            "JSONファイルを含むZipファイルをアップロード",
             type=['zip'],
             help="複数のJSONファイルをZip形式でアップロードしてください"
         )
@@ -192,10 +208,10 @@ elif authentication_status:
                     st.session_state['available_months'] = get_available_months_from_data(json_data)
                 
                 if json_data:
-                    st.success(f"✅ {SUCCESS_MESSAGES['data_loaded']} ({len(json_data)}個のJSONファイル)")
+                    st.success(f"✅ {len(json_data)}個のJSONファイルを読み込みました")
                     st.write(f"利用可能な月: {', '.join(st.session_state['available_months'])}")
                 else:
-                    st.error(f"❌ {ERROR_MESSAGES['file_not_found']}")
+                    st.error("❌ JSONファイルが見つかりませんでした")
         
         # データがアップロードされている場合のみ分析オプションを表示
         if 'json_data' in st.session_state and st.session_state['json_data']:
@@ -203,14 +219,18 @@ elif authentication_status:
             
             # 分析タイプ選択
             st.subheader("📊 分析タイプ")
+            analysis_options = {
+                "📊 月次サマリー分析": "basic_analysis",
+                "📈 定着率分析": "retention_analysis",
+                "📋 単月詳細データ": "monthly_detail"
+            }
             
             analysis_type = st.selectbox(
                 "分析タイプを選択",
-                list(ANALYSIS_TYPES.values())
+                list(analysis_options.keys())
             )
             
-            # 分析タイプのキーを取得
-            selected_analysis = [k for k, v in ANALYSIS_TYPES.items() if v == analysis_type][0]
+            selected_analysis = analysis_options[analysis_type]
             
             # 月選択
             if st.session_state.get('available_months'):
@@ -221,7 +241,7 @@ elif authentication_status:
                 )
                 st.session_state['selected_month'] = selected_month
         else:
-            st.info(f"📁 {INFO_MESSAGES['upload_instruction']}")
+            st.info("📁 データをアップロードして分析を開始してください")
             selected_analysis = None
             selected_month = None
 
@@ -231,7 +251,7 @@ elif authentication_status:
         selected_month = st.session_state.get('selected_month')
         
         if selected_analysis == "basic_analysis":
-            st.header(ANALYSIS_TYPES["basic_analysis"])
+            st.header("📊 月次サマリー分析")
             st.caption("全期間の月次推移データを表示します")
             
             if selected_month:
@@ -258,7 +278,7 @@ elif authentication_status:
                                 conv_list.append({"month": month, "type": "product", "name": prod, **pdata})
                         conversion_df = pd.DataFrame(conv_list)
                     except Exception as e:
-                        st.warning(f"{ERROR_MESSAGES['data_loading_error']}: {e}")
+                        st.warning(f"月次推移データの読み込みに失敗: {e}")
                     
                     # 定着率推移データの抽出
                     try:
@@ -274,7 +294,7 @@ elif authentication_status:
                                 })
                             retention_trend_df = pd.DataFrame(trend)
                     except Exception as e:
-                        st.warning(f"{ERROR_MESSAGES['data_loading_error']}: {e}")
+                        st.warning(f"定着率データの読み込みに失敗: {e}")
                     
                     # 1. アポ獲得→TAAAN→承認の月次推移グラフ・メトリクス
                     if not conversion_df.empty:
@@ -311,17 +331,17 @@ elif authentication_status:
                             col1, col2, col3, col4, col5, col6 = st.columns(6)
                             
                             col1.metric("日報上のアポ獲得", 
-                                       format_number(latest.get('self_reported_appointments', 0)))
+                                       int(latest.get('self_reported_appointments', 0)) if pd.notnull(latest.get('self_reported_appointments')) else 0)
                             col2.metric("TAAAN入力", 
-                                       format_number(latest.get('taaan_entries', 0)))
+                                       int(latest.get('taaan_entries', 0)) if pd.notnull(latest.get('taaan_entries')) else 0)
                             col3.metric("メーカーからの承認", 
-                                       format_number(latest.get('approved_deals', 0)))
+                                       int(latest.get('approved_deals', 0)) if pd.notnull(latest.get('approved_deals')) else 0)
                             col4.metric("アポ→TAAAN率", 
-                                       format_percentage(latest.get('taaan_rate', 0)))
+                                       f"{latest.get('taaan_rate', 0)*100:.1f}%" if pd.notnull(latest.get('taaan_rate')) else 'N/A')
                             col5.metric("TAAAN→承認率", 
-                                       format_percentage(latest.get('approval_rate', 0)))
+                                       f"{latest.get('approval_rate', 0)*100:.1f}%" if pd.notnull(latest.get('approval_rate')) else 'N/A')
                             col6.metric("アポ→承認率", 
-                                       format_percentage(latest.get('true_approval_rate', 0)))
+                                       f"{latest.get('true_approval_rate', 0)*100:.1f}%" if pd.notnull(latest.get('true_approval_rate')) else 'N/A')
                         
                         # 最新月の商談ステータス詳細
                         st.subheader("📊 最新月の商談ステータス詳細")
@@ -338,35 +358,35 @@ elif authentication_status:
                                     approved_rate = (approved / total_deals * 100) if total_deals > 0 else 0
                                     st.metric(
                                         "承認", 
-                                        format_number(approved),
-                                        format_percentage(approved_rate / 100),
+                                        f"{approved:,}件",
+                                        f"{approved_rate:.1f}%",
                                         help="商談ステータス: 承認"
                                     )
                                 
                                 with col2:
                                     rejected = deal_status.get('rejected', 0)
-                                    rejected_rate = safe_divide(rejected, total_deals) * 100
+                                    rejected_rate = (rejected / total_deals * 100) if total_deals > 0 else 0
                                     st.metric(
                                         "却下", 
-                                        format_number(rejected),
-                                        format_percentage(rejected_rate / 100),
+                                        f"{rejected:,}件",
+                                        f"{rejected_rate:.1f}%",
                                         help="商談ステータス: 却下"
                                     )
                                 
                                 with col3:
                                     pending = deal_status.get('pending', 0)
-                                    pending_rate = safe_divide(pending, total_deals) * 100
+                                    pending_rate = (pending / total_deals * 100) if total_deals > 0 else 0
                                     st.metric(
                                         "承認待ち・要対応", 
-                                        format_number(pending),
-                                        format_percentage(pending_rate / 100),
+                                        f"{pending:,}件",
+                                        f"{pending_rate:.1f}%",
                                         help="商談ステータス: 承認待ち・要対応"
                                     )
                                 
                                 with col4:
                                     st.metric(
                                         "総商談数", 
-                                        format_number(total_deals),
+                                        f"{total_deals:,}件",
                                         help="TAAANシステムに登録された総商談数"
                                     )
                                 
@@ -383,11 +403,11 @@ elif authentication_status:
                                 )
                                 st.plotly_chart(fig, use_container_width=True)
                             else:
-                                st.info(f"ℹ️ {WARNING_MESSAGES['no_data']}")
+                                st.info("ℹ️ 商談データがありません")
                         else:
-                            st.info(f"ℹ️ {WARNING_MESSAGES['no_data']}")
+                            st.info("ℹ️ 商談ステータスデータが見つかりません")
                     else:
-                        st.warning(f"⚠️ {WARNING_MESSAGES['no_data']}")
+                        st.warning("⚠️ コンバージョンデータが見つかりませんでした")
                     
                     # 2. 定着率推移グラフ
                     if not retention_trend_df.empty and 'retention_rate' in retention_trend_df.columns:
@@ -397,14 +417,14 @@ elif authentication_status:
                         fig2.update_layout(yaxis=dict(title='定着率(%)', range=[0,100]), height=300)
                         st.plotly_chart(fig2, use_container_width=True)
                     elif not retention_trend_df.empty:
-                        st.warning(f"⚠️ {WARNING_MESSAGES['insufficient_data']}")
+                        st.warning("⚠️ 定着率データの形式が正しくありません")
                     else:
-                        st.info(f"ℹ️ {WARNING_MESSAGES['no_data']}")
+                        st.info("ℹ️ 定着率データが見つかりませんでした")
                 else:
-                    st.error(f"❌ {ERROR_MESSAGES['data_loading_error']}")
+                    st.error("❌ 月次分析データの読み込みに失敗しました")
         
         elif selected_analysis == "retention_analysis":
-            st.header(ANALYSIS_TYPES["retention_analysis"])
+            st.header("📈 定着率分析")
             st.caption("全期間の定着率推移データを表示します")
             
             if selected_month:
@@ -597,7 +617,7 @@ elif authentication_status:
                     st.warning("⚠️ 定着率データが見つかりませんでした")
         
         elif selected_analysis == "monthly_detail":
-            st.header(ANALYSIS_TYPES["monthly_detail"])
+            st.header("📋 単月詳細データ")
             st.caption(f"選択月: {selected_month}")
             
             if selected_month:
