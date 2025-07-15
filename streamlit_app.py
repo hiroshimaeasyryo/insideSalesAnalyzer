@@ -10,6 +10,7 @@ import zipfile
 import tempfile
 import io
 from pathlib import Path
+import numpy as np
 
 # ページ設定
 st.set_page_config(
@@ -174,6 +175,42 @@ def extract_daily_activity_from_staff(staff_dict):
                     records.append(record)
     return pd.DataFrame(records)
 
+def get_prev_months(month_str, n=3):
+    """
+    指定月から過去n月分の月リストを生成
+    
+    Args:
+        month_str: 基準月 (YYYY-MM形式)
+        n: 取得する月数
+        
+    Returns:
+        list: 月のリスト (YYYY-MM形式)
+    """
+    try:
+        from datetime import datetime, timedelta
+        import calendar
+        
+        # 月文字列をパース
+        year, month = map(int, month_str.split('-'))
+        months = []
+        
+        for i in range(n):
+            if month - i <= 0:
+                # 前年に遡る
+                new_year = year - 1
+                new_month = 12 + (month - i)
+            else:
+                new_year = year
+                new_month = month - i
+            
+            months.append(f"{new_year:04d}-{new_month:02d}")
+        
+        return list(reversed(months))  # 古い順にソート
+        
+    except Exception as e:
+        st.error(f"月リスト生成エラー: {e}")
+        return []
+
 def display_ranking_with_ties(df, ranking_column, display_columns, max_rank=10, 
                              branch_colors=None, show_branch=True, format_func=None):
     """
@@ -250,6 +287,336 @@ def display_ranking_with_ties(df, ranking_column, display_columns, max_rank=10,
         else:
             display_text = f"{rank}. {staff_name}{branch_tag} : {display_values[0]} ({display_values[1]})"
         st.markdown(display_text, unsafe_allow_html=True)
+
+def load_multi_month_data(json_data, target_months):
+    """
+    複数月のデータを読み込んで統合
+    
+    Args:
+        json_data: JSONデータ
+        target_months: 対象月のリスト
+        
+    Returns:
+        dict: 月別データ辞書
+    """
+    monthly_data = {}
+    
+    for month in target_months:
+        try:
+            basic_data, detail_data, summary_data = load_analysis_data_from_json(json_data, month)
+            
+            if basic_data and summary_data:
+                # スタッフ別データの抽出
+                if 'monthly_analysis' in basic_data and month in basic_data['monthly_analysis']:
+                    staff_dict = basic_data['monthly_analysis'][month]['staff']
+                    df_basic = extract_daily_activity_from_staff(staff_dict)
+                    
+                    if not df_basic.empty:
+                        # 集計処理
+                        df_basic['branch'] = df_basic['branch'].fillna('未設定')
+                        
+                        # 日報データ集計
+                        agg_dict = {
+                            'call_count': 'sum',
+                            'charge_connected': 'sum', 
+                            'get_appointment': 'sum',
+                            'call_hours': 'sum'
+                        }
+                        
+                        staff_summary = df_basic.groupby('staff_name').agg(agg_dict).reset_index()
+                        
+                        # 支部情報の追加
+                        branch_mapping = df_basic.groupby('staff_name')['branch'].first().to_dict()
+                        staff_summary['branch'] = staff_summary['staff_name'].map(branch_mapping)
+                        
+                        # TAAANデータの追加
+                        taaan_staff_data = {}
+                        
+                        # 基本分析データから直接取得
+                        if 'monthly_analysis' in basic_data and month in basic_data['monthly_analysis']:
+                            for staff_name, staff_data in basic_data['monthly_analysis'][month]['staff'].items():
+                                taaan_staff_data[staff_name] = {
+                                    'taaan_deals': staff_data.get('total_deals', 0),
+                                    'approved_deals': staff_data.get('total_approved', 0),
+                                    'total_revenue': staff_data.get('total_revenue', 0)
+                                }
+                        
+                        # フォールバック: staff_performanceから取得
+                        if 'staff_performance' in summary_data:
+                            for staff_name, data in summary_data['staff_performance'].items():
+                                if staff_name not in taaan_staff_data:
+                                    taaan_staff_data[staff_name] = {
+                                        'taaan_deals': data.get('total_deals', 0),
+                                        'approved_deals': data.get('total_approved', 0),
+                                        'total_revenue': data.get('total_revenue', 0)
+                                    }
+                        
+                        # TAAANデータを結合
+                        for col_name, taaan_key in [('taaan_deals', 'taaan_deals'), 
+                                                  ('approved_deals', 'approved_deals'), 
+                                                  ('total_revenue', 'total_revenue')]:
+                            staff_summary[col_name] = staff_summary['staff_name'].map(
+                                lambda x: taaan_staff_data.get(x, {}).get(taaan_key, 0)
+                            )
+                        
+                        # カラム名の統一
+                        staff_summary = staff_summary.rename(columns={
+                            'call_count': 'total_calls',
+                            'get_appointment': 'appointments',
+                            'call_hours': 'total_hours'
+                        })
+                        
+                        # 稼働日数計算
+                        working_days_df = df_basic.groupby('staff_name')['date'].nunique().reset_index()
+                        working_days_df.columns = ['staff_name', 'working_days']
+                        staff_summary = staff_summary.merge(working_days_df, on='staff_name', how='left')
+                        staff_summary['working_days'] = staff_summary['working_days'].fillna(0)
+                        
+                        # 効率性指標の計算
+                        staff_summary['calls_per_hour'] = staff_summary.apply(
+                            lambda row: row['total_calls'] / row['total_hours'] if row['total_hours'] > 0 else 0, axis=1
+                        )
+                        staff_summary['appointments_per_hour'] = staff_summary.apply(
+                            lambda row: row['appointments'] / row['total_hours'] if row['total_hours'] > 0 else 0, axis=1
+                        )
+                        staff_summary['deals_per_hour'] = staff_summary.apply(
+                            lambda row: row['taaan_deals'] / row['total_hours'] if row['total_hours'] > 0 else 0, axis=1
+                        )
+                        staff_summary['revenue_per_hour'] = staff_summary.apply(
+                            lambda row: row['total_revenue'] / row['total_hours'] if row['total_hours'] > 0 else 0, axis=1
+                        )
+                        staff_summary['calls_per_working_day'] = staff_summary.apply(
+                            lambda row: row['total_calls'] / row['working_days'] if row['working_days'] > 0 else 0, axis=1
+                        )
+                        staff_summary['appointments_per_working_day'] = staff_summary.apply(
+                            lambda row: row['appointments'] / row['working_days'] if row['working_days'] > 0 else 0, axis=1
+                        )
+                        staff_summary['deals_per_working_day'] = staff_summary.apply(
+                            lambda row: row['taaan_deals'] / row['working_days'] if row['working_days'] > 0 else 0, axis=1
+                        )
+                        staff_summary['approved_per_working_day'] = staff_summary.apply(
+                            lambda row: row['approved_deals'] / row['working_days'] if row['working_days'] > 0 else 0, axis=1
+                        )
+                        staff_summary['revenue_per_working_day'] = staff_summary.apply(
+                            lambda row: row['total_revenue'] / row['working_days'] if row['working_days'] > 0 else 0, axis=1
+                        )
+                        
+                        monthly_data[month] = staff_summary
+                        
+        except Exception as e:
+            st.warning(f"⚠️ {month}のデータ読み込みに失敗: {str(e)}")
+            continue
+    
+    return monthly_data
+
+def create_trend_chart(monthly_data, metric_column, metric_name, staff_filter=None, branch_colors=None):
+    """
+    月別推移チャートを作成（人ごとの色分け、月次表示対応）
+    
+    Args:
+        monthly_data: 月別データ辞書
+        metric_column: 指標列名
+        metric_name: 指標表示名
+        staff_filter: スタッフフィルター（Noneの場合は全スタッフ）
+        branch_colors: 支部色設定（人ごと色分けのため現在未使用）
+        
+    Returns:
+        plotly figure
+    """
+    fig = go.Figure()
+    
+    # 全スタッフのデータを統合
+    all_staff_data = {}
+    months = sorted(monthly_data.keys())
+    
+    for month, df in monthly_data.items():
+        if staff_filter:
+            df = df[df['staff_name'].isin(staff_filter)]
+        
+        for _, row in df.iterrows():
+            staff_name = row['staff_name']
+            branch = row['branch']
+            value = row[metric_column]
+            
+            if staff_name not in all_staff_data:
+                all_staff_data[staff_name] = {
+                    'months': [],
+                    'values': [],
+                    'branch': branch
+                }
+            
+            all_staff_data[staff_name]['months'].append(month)
+            all_staff_data[staff_name]['values'].append(value)
+    
+    # 人数に応じた色パレットを生成
+    staff_names = list(all_staff_data.keys())
+    num_staff = len(staff_names)
+    
+    if num_staff <= 10:
+        # 10人以下の場合はplotlyの標準カラーを使用
+        colors = px.colors.qualitative.Plotly
+    else:
+        # 10人以上の場合はより多くの色を生成
+        colors = px.colors.qualitative.Set3 + px.colors.qualitative.Pastel + px.colors.qualitative.Set1
+    
+    # 各スタッフの推移線を追加（人ごとに異なる色）
+    for i, (staff_name, data) in enumerate(all_staff_data.items()):
+        branch = data['branch']
+        color = colors[i % len(colors)]  # 色をローテーション
+        
+        # データが3ヶ月分揃っていない場合の補完
+        complete_months = []
+        complete_values = []
+        for month in months:
+            if month in data['months']:
+                idx = data['months'].index(month)
+                complete_months.append(month)
+                complete_values.append(data['values'][idx])
+            else:
+                complete_months.append(month)
+                complete_values.append(None)  # 欠損値
+        
+        fig.add_trace(go.Scatter(
+            x=complete_months,
+            y=complete_values,
+            mode='lines+markers',
+            name=f"{staff_name} ({branch})",
+            line=dict(color=color, width=2),
+            marker=dict(size=8, color=color),
+            connectgaps=False,  # 欠損値は接続しない
+            hovertemplate='<b>%{fullData.name}</b><br>' +
+                         '月: %{x}<br>' +
+                         f'{metric_name}: %{{y}}<br>' +
+                         '<extra></extra>'
+        ))
+    
+    # 月次表示のためのx軸フォーマット設定
+    fig.update_layout(
+        title=f"📈 {metric_name} - 3ヶ月推移",
+        xaxis=dict(
+            title="月",
+            type='category',  # カテゴリ軸として扱う
+            categoryorder='array',
+            categoryarray=months,
+            tickangle=45
+        ),
+        yaxis_title=metric_name,
+        hovermode='x unified',
+        showlegend=True,
+        height=600,
+        legend=dict(
+            orientation="v",
+            yanchor="top",
+            y=1,
+            xanchor="left",
+            x=1.02
+        ),
+        margin=dict(r=150)  # 凡例のためのマージン
+    )
+    
+    return fig
+
+def create_monthly_histogram(monthly_data, metric_column, metric_name, staff_filter=None):
+    """
+    月別ヒストグラムを作成（月ごとに色分けし、最適なbinサイズで統一）
+    
+    Args:
+        monthly_data: 月別データ辞書
+        metric_column: 指標列名
+        metric_name: 指標表示名
+        staff_filter: スタッフフィルター
+        
+    Returns:
+        plotly figure
+    """
+    import numpy as np
+    
+    fig = go.Figure()
+    
+    months = sorted(monthly_data.keys())
+    # 月ごとに区別しやすい色（Plotlyのカテゴリカルカラーパレット）
+    colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b']
+    
+    # 全データを収集してbinサイズを計算
+    all_values = []
+    monthly_values = {}
+    
+    for month in months:
+        if month in monthly_data:
+            df = monthly_data[month]
+            if staff_filter:
+                df = df[df['staff_name'].isin(staff_filter)]
+            
+            values = df[metric_column].dropna().tolist()
+            if values:
+                monthly_values[month] = values
+                all_values.extend(values)
+    
+    if not all_values:
+        return go.Figure()
+    
+    # 最適なbinサイズを計算（Sturgesの法則とFreedman-Diaconisの法則の中間値）
+    n_data = len(all_values)
+    sturges_bins = int(np.log2(n_data) + 1)
+    
+    # データの範囲とIQRを計算
+    q75, q25 = np.percentile(all_values, [75, 25])
+    iqr = q75 - q25
+    
+    if iqr > 0:
+        # Freedman-Diaconisの法則
+        h = 2 * iqr / (n_data ** (1/3))
+        fd_bins = int((max(all_values) - min(all_values)) / h) if h > 0 else sturges_bins
+        # 適切な範囲内に制限
+        optimal_bins = max(5, min(30, int((sturges_bins + fd_bins) / 2)))
+    else:
+        optimal_bins = sturges_bins
+    
+    # 共通のbinエッジを計算
+    data_min, data_max = min(all_values), max(all_values)
+    bin_edges = np.linspace(data_min, data_max, optimal_bins + 1)
+    
+    # 各月のヒストグラムを作成
+    for i, month in enumerate(months):
+        if month in monthly_values:
+            values = monthly_values[month]
+            
+            fig.add_trace(go.Histogram(
+                x=values,
+                name=f"{month} (n={len(values)})",
+                opacity=0.7,
+                marker_color=colors[i % len(colors)],
+                xbins=dict(
+                    start=data_min,
+                    end=data_max,
+                    size=(data_max - data_min) / optimal_bins
+                ),
+                histnorm='probability density',  # 確率密度で正規化
+                legendgroup=month
+            ))
+    
+    fig.update_layout(
+        title=dict(
+            text=f"📊 {metric_name} - 月別分布比較",
+            x=0.5,
+            font=dict(size=16)
+        ),
+        xaxis_title=metric_name,
+        yaxis_title="確率密度",
+        barmode='overlay',
+        height=500,
+        showlegend=True,
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="center",
+            x=0.5
+        ),
+        hovermode='x unified'
+    )
+    
+    return fig
 
 if authentication_status == False:
     st.error('❌ ユーザー名/パスワードが間違っています')
@@ -2173,7 +2540,289 @@ elif authentication_status:
                                 
                                 with staff_subtab4:
                                     st.subheader("📈 月別推移(3ヶ月)")
-                                    st.info("🔧 **開発中**: 過去3ヶ月のデータ比較機能を実装予定です。")
+                                    
+                                    # 過去3ヶ月のデータを取得
+                                    target_months = get_prev_months(selected_month, 3)
+                                    
+                                    # 月別データを読み込み
+                                    with st.spinner("📊 過去3ヶ月のデータを読み込み中..."):
+                                        monthly_data = load_multi_month_data(json_data, target_months)
+                                    
+                                    if not monthly_data:
+                                        st.warning("⚠️ 3ヶ月推移に必要なデータが不足しています。")
+                                        st.info("💡 過去3ヶ月分のJSONファイルがアップロードされているか確認してください。")
+                                    else:
+                                        st.success(f"✅ 対象月: {', '.join(sorted(monthly_data.keys()))}")
+                                        
+                                        # 分析タイプ選択（ラジオボタンで改善）
+                                        st.markdown("### 📊 比較タイプ")
+                                        comparison_type = st.radio(
+                                            "比較タイプ",
+                                            ["🌐 全スタッフ比較", "🏢 支部内比較"],
+                                            horizontal=True,
+                                            key="trend_comparison_type",
+                                            label_visibility="collapsed"
+                                        )
+                                        
+                                        st.markdown("---")
+                                        
+                                        # 分析指標選択（カテゴリ別タブで改善）
+                                        st.markdown("### 📈 分析指標選択")
+                                        
+                                        metric_tab1, metric_tab2, metric_tab3 = st.tabs(["�� 実数指標", "⚡ 時間効率", "📅 日別効率"])
+                                        
+                                        # 実数指標
+                                        with metric_tab1:
+                                            metric_cols1 = st.columns(3)
+                                            with metric_cols1[0]:
+                                                if st.button("📞 架電数", use_container_width=True, key="btn_calls"):
+                                                    st.session_state.selected_metric_key = "total_calls"
+                                                    st.session_state.selected_metric_name = "📞 架電数 (日報)"
+                                                if st.button("💼 TAAAN商談数", use_container_width=True, key="btn_deals"):
+                                                    st.session_state.selected_metric_key = "taaan_deals"
+                                                    st.session_state.selected_metric_name = "💼 TAAAN商談数 (TAAAN)"
+                                            with metric_cols1[1]:
+                                                if st.button("🔗 担当コネクト数", use_container_width=True, key="btn_connects"):
+                                                    st.session_state.selected_metric_key = "charge_connected"
+                                                    st.session_state.selected_metric_name = "🔗 担当コネクト数 (日報)"
+                                                if st.button("✅ TAAAN承認数", use_container_width=True, key="btn_approved_1"):
+                                                    st.session_state.selected_metric_key = "approved_deals"
+                                                    st.session_state.selected_metric_name = "✅ TAAAN承認数 (TAAAN)"
+                                            with metric_cols1[2]:
+                                                if st.button("🎯 アポ獲得数", use_container_width=True, key="btn_appointments"):
+                                                    st.session_state.selected_metric_key = "appointments"
+                                                    st.session_state.selected_metric_name = "🎯 アポ獲得数 (日報)"
+                                                if st.button("💰 TAAAN報酬額", use_container_width=True, key="btn_revenue_1"):
+                                                    st.session_state.selected_metric_key = "total_revenue"
+                                                    st.session_state.selected_metric_name = "💰 TAAAN報酬額 (TAAAN)"
+                                        
+                                        # 時間効率指標
+                                        with metric_tab2:
+                                            metric_cols2 = st.columns(2)
+                                            with metric_cols2[0]:
+                                                if st.button("📞 1時間あたり架電数", use_container_width=True, key="btn_calls_hour"):
+                                                    st.session_state.selected_metric_key = "calls_per_hour"
+                                                    st.session_state.selected_metric_name = "📞 1時間あたり架電数"
+                                                if st.button("💼 1時間あたりTAAAN商談数", use_container_width=True, key="btn_deals_hour"):
+                                                    st.session_state.selected_metric_key = "deals_per_hour"
+                                                    st.session_state.selected_metric_name = "💼 1時間あたりTAAAN商談数"
+                                            with metric_cols2[1]:
+                                                if st.button("🎯 1時間あたりアポ獲得数", use_container_width=True, key="btn_appt_hour"):
+                                                    st.session_state.selected_metric_key = "appointments_per_hour"
+                                                    st.session_state.selected_metric_name = "🎯 1時間あたりアポ獲得数"
+                                                if st.button("💰 1時間あたり報酬額", use_container_width=True, key="btn_rev_hour"):
+                                                    st.session_state.selected_metric_key = "revenue_per_hour"
+                                                    st.session_state.selected_metric_name = "💰 1時間あたり報酬額"
+                                        
+                                        # 日別効率指標
+                                        with metric_tab3:
+                                            metric_cols3 = st.columns(3)
+                                            with metric_cols3[0]:
+                                                if st.button("📞 1稼働日あたり架電数", use_container_width=True, key="btn_calls_day"):
+                                                    st.session_state.selected_metric_key = "calls_per_working_day"
+                                                    st.session_state.selected_metric_name = "📞 1稼働日あたり架電数"
+                                                if st.button("✅ 1稼働日あたり承認数", use_container_width=True, key="btn_appr_day"):
+                                                    st.session_state.selected_metric_key = "approved_per_working_day"
+                                                    st.session_state.selected_metric_name = "✅ 1稼働日あたり承認数"
+                                            with metric_cols3[1]:
+                                                if st.button("🎯 1稼働日あたりアポ獲得数", use_container_width=True, key="btn_appt_day"):
+                                                    st.session_state.selected_metric_key = "appointments_per_working_day"
+                                                    st.session_state.selected_metric_name = "🎯 1稼働日あたりアポ獲得数"
+                                                if st.button("💰 1稼働日あたり報酬額", use_container_width=True, key="btn_rev_day"):
+                                                    st.session_state.selected_metric_key = "revenue_per_working_day"
+                                                    st.session_state.selected_metric_name = "💰 1稼働日あたり報酬額"
+                                            with metric_cols3[2]:
+                                                if st.button("💼 1稼働日あたりTAAAN商談数", use_container_width=True, key="btn_deals_day"):
+                                                    st.session_state.selected_metric_key = "deals_per_working_day"
+                                                    st.session_state.selected_metric_name = "💼 1稼働日あたりTAAAN商談数"
+                                        
+                                        # デフォルト選択
+                                        if 'selected_metric_key' not in st.session_state:
+                                            st.session_state.selected_metric_key = "appointments"
+                                            st.session_state.selected_metric_name = "🎯 アポ獲得数 (日報)"
+                                        
+                                        selected_metric = st.session_state.selected_metric_key
+                                        selected_metric_name = st.session_state.selected_metric_name
+                                        
+                                        # 現在選択中の指標を表示
+                                        st.info(f"📊 **現在選択中**: {selected_metric_name}")
+                                        
+                                        st.markdown("---")
+                                        
+                                        # 支部内比較の場合は支部選択
+                                        staff_filter = None
+                                        if comparison_type == "🏢 支部内比較":
+                                            # 利用可能な支部を取得
+                                            all_branches = set()
+                                            for month_df in monthly_data.values():
+                                                all_branches.update(month_df['branch'].unique())
+                                            available_branches = sorted([b for b in all_branches if pd.notna(b) and b != ''])
+                                            
+                                            if available_branches:
+                                                selected_branch_trend = st.selectbox(
+                                                    "🏢 分析対象支部",
+                                                    available_branches,
+                                                    key="trend_branch"
+                                                )
+                                                
+                                                # 選択支部のスタッフを取得
+                                                branch_staff = set()
+                                                for month_df in monthly_data.values():
+                                                    branch_df = month_df[month_df['branch'] == selected_branch_trend]
+                                                    branch_staff.update(branch_df['staff_name'].tolist())
+                                                staff_filter = list(branch_staff)
+                                                
+                                                st.info(f"📍 **{selected_branch_trend}支部** の {len(staff_filter)}名のスタッフを分析対象とします")
+                                            else:
+                                                st.warning("⚠️ 支部情報が見つかりません。")
+                                        else:
+                                            # 全スタッフ表示用の情報
+                                            total_staff = set()
+                                            for month_df in monthly_data.values():
+                                                total_staff.update(month_df['staff_name'].tolist())
+                                            st.info(f"🌐 **全スタッフ** {len(total_staff)}名を分析対象とします")
+                                        
+                                        # チャート表示
+                                        st.subheader("📊 推移チャート")
+                                        
+                                        try:
+                                            chart = create_trend_chart(
+                                                monthly_data, 
+                                                selected_metric, 
+                                                selected_metric_name,
+                                                staff_filter, 
+                                                branch_colors
+                                            )
+                                            st.plotly_chart(chart, use_container_width=True)
+                                            
+                                            # ヒストグラム表示
+                                            st.subheader("📊 月別分布")
+                                            hist_chart = create_monthly_histogram(
+                                                monthly_data,
+                                                selected_metric,
+                                                selected_metric_name,
+                                                staff_filter
+                                            )
+                                            st.plotly_chart(hist_chart, use_container_width=True)
+                                            
+                                        except Exception as e:
+                                            st.error(f"❌ チャート生成エラー: {str(e)}")
+                                        
+                                        # データテーブル表示
+                                        st.subheader("📋 詳細データ")
+                                        
+                                        # 月別比較テーブル作成
+                                        comparison_data = []
+                                        months = sorted(monthly_data.keys())
+                                        
+                                        # 全スタッフのデータを取得
+                                        all_staff = set()
+                                        for month_df in monthly_data.values():
+                                            if staff_filter:
+                                                month_df = month_df[month_df['staff_name'].isin(staff_filter)]
+                                            all_staff.update(month_df['staff_name'].tolist())
+                                        
+                                        for staff_name in sorted(all_staff):
+                                            row_data = {'スタッフ名': staff_name}
+                                            
+                                            # 支部情報を取得
+                                            staff_branch = '未設定'
+                                            for month_df in monthly_data.values():
+                                                staff_row = month_df[month_df['staff_name'] == staff_name]
+                                                if not staff_row.empty:
+                                                    staff_branch = staff_row.iloc[0]['branch']
+                                                    break
+                                            row_data['支部'] = staff_branch
+                                            
+                                            # 各月のデータを追加
+                                            for month in months:
+                                                if month in monthly_data:
+                                                    month_df = monthly_data[month]
+                                                    staff_row = month_df[month_df['staff_name'] == staff_name]
+                                                    if not staff_row.empty:
+                                                        value = staff_row.iloc[0][selected_metric]
+                                                        # フォーマット
+                                                        if selected_metric == 'total_revenue':
+                                                            formatted_value = f"¥{value:,.0f}"
+                                                        elif 'per_hour' in selected_metric:
+                                                            formatted_value = f"{value:.1f}"
+                                                        elif 'per_working_day' in selected_metric:
+                                                            formatted_value = f"{value:.1f}"
+                                                        else:
+                                                            formatted_value = f"{value:.0f}"
+                                                        row_data[month] = formatted_value
+                                                    else:
+                                                        row_data[month] = "-"
+                                                else:
+                                                    row_data[month] = "-"
+                                            
+                                            comparison_data.append(row_data)
+                                        
+                                        if comparison_data:
+                                            comparison_df = pd.DataFrame(comparison_data)
+                                            
+                                            # 支部別色分け表示（改善版）
+                                            def highlight_branch(row):
+                                                branch = row['支部']
+                                                if branch in branch_colors:
+                                                    color = branch_colors[branch]
+                                                    # より薄い透明度で背景色を設定
+                                                    return [f'background-color: {color}20; border-left: 3px solid {color}'] * len(row)
+                                                else:
+                                                    return [f'background-color: #f8f9fa; border-left: 3px solid #dee2e6'] * len(row)
+                                            
+                                            try:
+                                                styled_df = comparison_df.style.apply(highlight_branch, axis=1)
+                                                st.dataframe(styled_df, use_container_width=True, height=400)
+                                                
+                                                # 支部色の凡例を表示
+                                                st.markdown("**支部色の凡例:**")
+                                                legend_cols = st.columns(len(branch_colors))
+                                                for i, (branch, color) in enumerate(branch_colors.items()):
+                                                    with legend_cols[i % len(legend_cols)]:
+                                                        st.markdown(f'<span style="display: inline-block; width: 15px; height: 15px; background-color: {color}; border-radius: 3px; margin-right: 5px;"></span>{branch}', unsafe_allow_html=True)
+                                                        
+                                            except Exception as e:
+                                                # スタイル適用が失敗した場合は通常のデータフレーム表示
+                                                st.dataframe(comparison_df, use_container_width=True)
+                                                st.warning(f"⚠️ 色分け表示に失敗しました: {str(e)}")
+                                            
+                                            # 統計情報
+                                            st.subheader("📊 統計サマリー")
+                                            
+                                            stats_cols = st.columns(len(months))
+                                            for i, month in enumerate(months):
+                                                with stats_cols[i]:
+                                                    month_values = []
+                                                    for _, row in comparison_df.iterrows():
+                                                        val_str = row[month]
+                                                        if val_str != "-":
+                                                            # 数値を抽出
+                                                            try:
+                                                                if selected_metric == 'total_revenue':
+                                                                    val = float(val_str.replace('¥', '').replace(',', ''))
+                                                                else:
+                                                                    val = float(val_str)
+                                                                month_values.append(val)
+                                                            except:
+                                                                continue
+                                                    
+                                                    if month_values:
+                                                        avg_val = sum(month_values) / len(month_values)
+                                                        max_val = max(month_values)
+                                                        min_val = min(month_values)
+                                                        
+                                                        st.markdown(f"**{month}**")
+                                                        if selected_metric == 'total_revenue':
+                                                            st.metric("平均", f"¥{avg_val:,.0f}")
+                                                            st.metric("最大", f"¥{max_val:,.0f}")
+                                                            st.metric("最小", f"¥{min_val:,.0f}")
+                                                        else:
+                                                            st.metric("平均", f"{avg_val:.1f}")
+                                                            st.metric("最大", f"{max_val:.1f}")
+                                                            st.metric("最小", f"{min_val:.1f}")
+                                        else:
+                                            st.warning("⚠️ 表示するデータがありません。")
                             
                             with tab4:
                                 st.subheader("商材別分析")
@@ -2284,10 +2933,10 @@ elif authentication_status:
                                         if st.button("💼 TAAAN商談数", use_container_width=True, key="btn_taaan"):
                                             st.session_state.analysis_metric = "TAAAN商談数"
                                     with col2:
-                                        if st.button("✅ 承認数", use_container_width=True, key="btn_approved"):
+                                        if st.button("✅ 承認数", use_container_width=True, key="btn_approved_2"):
                                             st.session_state.analysis_metric = "承認数"
                                     with col3:
-                                        if st.button("💰 確定売上", use_container_width=True, key="btn_revenue"):
+                                        if st.button("💰 確定売上", use_container_width=True, key="btn_revenue_2"):
                                             st.session_state.analysis_metric = "確定売上"
                                     
                                     # デフォルトの分析指標を設定
