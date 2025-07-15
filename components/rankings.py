@@ -58,7 +58,7 @@ def display_ranking_with_ties(df, ranking_column, display_columns, max_rank=10,
                 elif col == 'revenue_per_working_day':
                     formatted_value = f"¥{value:,.0f}/日"
                 elif col == 'total_hours':
-                    formatted_value = f"総{value:.1f}h"
+                    formatted_value = f"総{value:.1f}時間"
                 elif col == 'working_days':
                     formatted_value = f"{value:.0f}日"
                 elif col == 'appointments':

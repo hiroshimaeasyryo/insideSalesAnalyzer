@@ -97,7 +97,7 @@ def create_trend_chart(monthly_data, metric_column, metric_name, staff_filter=No
             tickangle=45
         ),
         yaxis_title=metric_name,
-        hovermode='x unified',
+        hovermode='closest',
         showlegend=True,
         height=600,
         legend=dict(
@@ -187,7 +187,7 @@ def create_monthly_histogram(monthly_data, metric_column, metric_name, staff_fil
                     end=data_max,
                     size=(data_max - data_min) / optimal_bins
                 ),
-                histnorm='probability density',  # 確率密度で正規化
+                histnorm='',  # 頻度（count）で表示
                 legendgroup=month
             ))
     
@@ -198,7 +198,7 @@ def create_monthly_histogram(monthly_data, metric_column, metric_name, staff_fil
             font=dict(size=16)
         ),
         xaxis_title=metric_name,
-        yaxis_title="確率密度",
+        yaxis_title="頻度",
         barmode='overlay',
         height=500,
         showlegend=True,
@@ -209,7 +209,7 @@ def create_monthly_histogram(monthly_data, metric_column, metric_name, staff_fil
             xanchor="center",
             x=0.5
         ),
-        hovermode='x unified'
+        hovermode='closest'
     )
     
     return fig
