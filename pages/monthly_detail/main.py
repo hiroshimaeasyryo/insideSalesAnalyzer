@@ -8,9 +8,12 @@ from utils.data_processor import (
     load_analysis_data_from_json, 
     extract_daily_activity_from_staff,
     get_prev_months,
-    load_multi_month_data
+    load_multi_month_data,
+    extract_taaan_product_data,
+    generate_branch_product_cross_data,
+    format_number_value
 )
-from components.charts import create_funnel_chart, create_pie_chart, create_trend_chart, create_monthly_histogram
+from components.charts import create_funnel_chart, create_pie_chart, create_trend_chart, create_monthly_histogram, create_bar_chart, create_line_chart
 from components.rankings import display_ranking_with_ties
 from utils.config import BRANCH_COLORS, CARD_STYLE
 
@@ -163,6 +166,7 @@ def render_main_tabs(df_basic, basic_data, detail_data, summary_data, selected_m
             render_staff_analysis_tab(df_basic, basic_data, summary_data, selected_month, json_data)
         
         with tab4:
+            from .product_analysis import render_product_analysis_tab
             render_product_analysis_tab(df_basic, summary_data, json_data, selected_month)
         
         with tab5:
@@ -2023,106 +2027,7 @@ def render_staff_analysis_tab(df_basic, basic_data, summary_data, selected_month
                             st.markdown(f"**{month}月**")
                             st.info("データなし")
 
-def render_product_analysis_tab(df_basic, summary_data, json_data, selected_month):
-    """商材別分析タブをレンダリング"""
-    st.subheader("商材別分析")
-    
-    # 商材別データの集計
-    if 'product_performance' in summary_data:
-        product_data = summary_data['product_performance']
-        
-        # データフレーム作成
-        product_df = []
-        for product, data in product_data.items():
-            product_df.append({
-                'product': product,
-                'total_deals': data.get('total_deals', 0),
-                'approved_deals': data.get('total_approved', 0),
-                'total_revenue': data.get('total_revenue', 0),
-                'total_potential_revenue': data.get('total_potential_revenue', 0)
-            })
-        
-        if product_df:
-            product_df = pd.DataFrame(product_df)
-            
-            # 承認率を計算
-            product_df['approval_rate'] = (
-                (product_df['approved_deals'] / product_df['total_deals'] * 100)
-                .fillna(0)
-                .round(1)
-            )
-            
-            # 商材別グラフ表示
-            col1, col2 = st.columns(2)
-            
-            with col1:
-                # 商談数グラフ
-                fig_deals = create_pie_chart(
-                    product_df['product'].tolist(),
-                    product_df['total_deals'].tolist(),
-                    "商材別商談数分布"
-                )
-                st.plotly_chart(fig_deals, use_container_width=True)
-                
-                # 承認数グラフ
-                fig_approved = create_pie_chart(
-                    product_df['product'].tolist(),
-                    product_df['approved_deals'].tolist(),
-                    "商材別承認数分布"
-                )
-                st.plotly_chart(fig_approved, use_container_width=True)
-            
-            with col2:
-                # 売上グラフ
-                fig_revenue = create_pie_chart(
-                    product_df['product'].tolist(),
-                    product_df['total_revenue'].tolist(),
-                    "商材別売上分布"
-                )
-                st.plotly_chart(fig_revenue, use_container_width=True)
-                
-                # 承認率グラフ
-                fig_approval_rate = go.Figure()
-                fig_approval_rate.add_trace(go.Bar(
-                    x=product_df['product'],
-                    y=product_df['approval_rate'],
-                    marker_color='lightblue',
-                    hovertemplate='<b>%{x}</b><br>承認率: %{y:.1f}%<extra></extra>'
-                ))
-                fig_approval_rate.update_layout(
-                    title="商材別承認率",
-                    xaxis_title="商材",
-                    yaxis_title="承認率(%)",
-                    yaxis=dict(range=[0, 100])
-                )
-                st.plotly_chart(fig_approval_rate, use_container_width=True)
-            
-            # 商材別サマリーテーブル
-            st.markdown("#### 商材別サマリーテーブル")
-            display_table = product_df.copy()
-            
-            # 数値フォーマット
-            display_table['total_deals'] = display_table['total_deals'].apply(lambda x: f"{x:,}")
-            display_table['approved_deals'] = display_table['approved_deals'].apply(lambda x: f"{x:,}")
-            display_table['total_revenue'] = display_table['total_revenue'].apply(lambda x: f"¥{x:,}")
-            display_table['total_potential_revenue'] = display_table['total_potential_revenue'].apply(lambda x: f"¥{x:,}")
-            display_table['approval_rate'] = display_table['approval_rate'].apply(lambda x: f"{x:.1f}%")
-            
-            # 列名を日本語に変更
-            display_table = display_table.rename(columns={
-                'product': '商材',
-                'total_deals': '総商談数',
-                'approved_deals': '承認数',
-                'total_revenue': '売上',
-                'total_potential_revenue': '潜在売上',
-                'approval_rate': '承認率'
-            })
-            
-            st.dataframe(display_table, use_container_width=True)
-        else:
-            st.info("商材別データがありません")
-    else:
-        st.info("商材別データがありません")
+# 商材別分析機能は pages/monthly_detail/product_analysis.py に移動されました
 
 def render_detail_data_tab(df_basic, selected_month):
     """詳細データタブをレンダリング"""

@@ -288,3 +288,184 @@ def load_multi_month_data(json_data, target_months):
             continue
     
     return monthly_data 
+
+def format_number_value(value, metric_type="normal"):
+    """
+    数値を適切にフォーマット
+    
+    Args:
+        value: フォーマットする値
+        metric_type: メトリクスタイプ ("normal", "revenue", "percentage")
+        
+    Returns:
+        str: フォーマットされた文字列
+    """
+    if pd.isna(value):
+        return ""
+    
+    if not isinstance(value, (int, float)):
+        return str(value)
+    
+    if metric_type == "revenue":
+        return f"¥{value:,.0f}"
+    elif metric_type == "percentage":
+        return f"{value:.1f}%"
+    else:
+        return f"{value:,.0f}"
+
+def aggregate_product_data_from_basic(df_basic):
+    """
+    日報データから商材別集計を実行
+    
+    Args:
+        df_basic: 日報データのDataFrame
+        
+    Returns:
+        pd.DataFrame: 商材別集計データ
+    """
+    if df_basic.empty:
+        return pd.DataFrame()
+    
+    # カラム名の統一
+    call_col = 'call_count' if 'call_count' in df_basic.columns else 'total_calls'
+    appointment_col = 'get_appointment' if 'get_appointment' in df_basic.columns else 'appointments'
+    success_col = 'charge_connected' if 'charge_connected' in df_basic.columns else 'successful_calls'
+    
+    # 商材別集計
+    product_summary = df_basic.groupby('product').agg({
+        call_col: 'sum',
+        success_col: 'sum',
+        appointment_col: 'sum'
+    }).reset_index()
+    
+    # カラム名を統一
+    product_summary.columns = ['product', 'total_calls', 'charge_connected', 'appointments']
+    
+    # 効率指標の計算
+    product_summary['connection_rate'] = (
+        (product_summary['charge_connected'] / product_summary['total_calls'] * 100)
+        .fillna(0)
+        .round(1)
+    )
+    product_summary['appointment_rate'] = (
+        (product_summary['appointments'] / product_summary['total_calls'] * 100)
+        .fillna(0)
+        .round(1)
+    )
+    
+    return product_summary
+
+def extract_taaan_product_data(summary_data):
+    """
+    サマリーデータからTAAAN商材別データを抽出
+    
+    Args:
+        summary_data: 月次サマリーデータ
+        
+    Returns:
+        pd.DataFrame: TAAAN商材別データ
+    """
+    taaan_product_data = []
+    
+    if 'product_performance' in summary_data:
+        for product, data in summary_data['product_performance'].items():
+            taaan_product_data.append({
+                'product': product,
+                'taaan_deals': data.get('total_deals', 0),
+                'approved_deals': data.get('total_approved', 0),
+                'total_revenue': data.get('total_revenue', 0),
+                'total_potential_revenue': data.get('total_potential_revenue', 0)
+            })
+    
+    if taaan_product_data:
+        df = pd.DataFrame(taaan_product_data)
+        # 承認率を計算
+        df['approval_rate'] = (
+            (df['approved_deals'] / df['taaan_deals'] * 100)
+            .fillna(0)
+            .round(1)
+        )
+        return df
+    
+    return pd.DataFrame()
+
+def generate_branch_product_cross_data(summary_data, metric_type="taaan_deals"):
+    """
+    支部×商材クロス分析データを生成
+    
+    Args:
+        summary_data: 月次サマリーデータ
+        metric_type: 分析指標 ("taaan_deals", "approved_deals", "total_revenue")
+        
+    Returns:
+        pd.DataFrame: クロス分析用のピボットテーブル
+    """
+    records = []
+    
+    # 支部×商材クロス分析データを取得
+    if 'branch_product_cross_analysis' in summary_data:
+        cross_data = summary_data['branch_product_cross_analysis']
+        metric_data = cross_data.get(metric_type, {})
+        
+        for branch, products in metric_data.items():
+            for product, value in products.items():
+                records.append({
+                    'branch': branch,
+                    'product': product,
+                    'value': value
+                })
+    
+    if records:
+        df_cross = pd.DataFrame(records)
+        
+        # ピボットテーブルを作成
+        cross_analysis = df_cross.pivot_table(
+            values='value',
+            index='branch',
+            columns='product',
+            aggfunc='sum',
+            fill_value=0
+        )
+        
+        # 合計行と列を追加
+        cross_analysis['合計'] = cross_analysis.sum(axis=1)
+        cross_analysis.loc['合計'] = cross_analysis.sum()
+        
+        return cross_analysis
+    
+    return pd.DataFrame()
+
+def load_product_3month_comparison_data(json_data, selected_month):
+    """
+    商材別3ヶ月比較データを読み込み
+    
+    Args:
+        json_data: JSONデータ
+        selected_month: 基準月
+        
+    Returns:
+        pd.DataFrame: 3ヶ月分の商材別TAAANデータ
+    """
+    target_months = get_prev_months(selected_month, 3)
+    monthly_taaan_data = {}
+    
+    for month in target_months:
+        try:
+            basic_data, detail_data, summary_data = load_analysis_data_from_json(json_data, month)
+            
+            if summary_data:
+                taaan_product_df = extract_taaan_product_data(summary_data)
+                if not taaan_product_df.empty:
+                    taaan_product_df['month'] = month
+                    monthly_taaan_data[month] = taaan_product_df
+                    
+        except Exception as e:
+            st.warning(f"⚠️ {month}のデータ読み込みに失敗: {str(e)}")
+            continue
+    
+    if monthly_taaan_data:
+        # 全ての月のデータを結合
+        all_data = pd.concat(monthly_taaan_data.values(), ignore_index=True)
+        return all_data
+    
+    return pd.DataFrame() 
