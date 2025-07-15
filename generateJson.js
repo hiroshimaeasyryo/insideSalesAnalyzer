@@ -528,7 +528,7 @@ function generateAnalysisJson() {
     var rec = {};
     dHdr.forEach(function(h,i){ rec[h] = row[i]; });
     return {
-      date: safeDateConversion(rec['商談開始日時']),
+      date: safeDateConversion(rec['作成日時']),
       staff: rec['パートナー担当者'],
       company: rec['メーカー名'],
       product: rec['プロダクト名'],

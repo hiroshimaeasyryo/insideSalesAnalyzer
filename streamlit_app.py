@@ -174,6 +174,83 @@ def extract_daily_activity_from_staff(staff_dict):
                     records.append(record)
     return pd.DataFrame(records)
 
+def display_ranking_with_ties(df, ranking_column, display_columns, max_rank=10, 
+                             branch_colors=None, show_branch=True, format_func=None):
+    """
+    同順位を反映したランキング表示関数
+    
+    Args:
+        df: DataFrame
+        ranking_column: ランキング基準の列名
+        display_columns: 表示する列のリスト
+        max_rank: 表示する最大順位
+        branch_colors: 支部の色設定辞書
+        show_branch: 支部タグを表示するか
+        format_func: 値のフォーマット関数
+    """
+    # 同順位を反映した順位を計算
+    df_sorted = df.copy()
+    df_sorted['rank'] = df_sorted[ranking_column].rank(method='min', ascending=False).astype(int)
+    df_sorted = df_sorted.sort_values([ranking_column, 'staff_name'], ascending=[False, True])
+    
+    # 指定順位以内のデータのみ取得
+    df_display = df_sorted[df_sorted['rank'] <= max_rank]
+    
+    # ランキング表示
+    for _, row in df_display.iterrows():
+        rank = row['rank']
+        staff_name = row['staff_name']
+        
+        # 支部タグの作成
+        if show_branch and branch_colors and 'branch' in row:
+            branch_color = branch_colors.get(row['branch'], '#95a5a6')
+            branch_tag = f'<span style="background-color: {branch_color}; color: white; padding: 2px 6px; border-radius: 10px; font-size: 0.8em; margin-left: 8px;">{row["branch"]}</span>'
+        else:
+            branch_tag = ''
+        
+        # 表示値の作成
+        display_values = []
+        for col in display_columns:
+            value = row[col]
+            if format_func:
+                formatted_value = format_func(col, value)
+            else:
+                # デフォルトフォーマット
+                if col == 'total_revenue':
+                    formatted_value = f"¥{value:,}"
+                elif col == 'revenue_per_hour':
+                    formatted_value = f"¥{value:,.0f}/時間"
+                elif col == 'revenue_per_working_day':
+                    formatted_value = f"¥{value:,.0f}/日"
+                elif col == 'total_hours':
+                    formatted_value = f"総{value:.1f}h"
+                elif col == 'working_days':
+                    formatted_value = f"{value:.0f}日"
+                elif col == 'appointments':
+                    formatted_value = f"総{value:,.0f}件"
+                elif col == 'taaan_deals':
+                    formatted_value = f"総{value:,.0f}件"
+                elif col == 'approved_deals':
+                    formatted_value = f"総{value:,.0f}件"
+                elif 'rate' in col.lower():
+                    formatted_value = f"{value:.1f}%"
+                elif 'per_hour' in col.lower():
+                    formatted_value = f"{value:.1f}件/時間"
+                elif 'per_day' in col.lower():
+                    formatted_value = f"{value:.1f}件/日"
+                elif isinstance(value, (int, float)):
+                    formatted_value = f"{value:,}件" if value >= 1000 or value == int(value) else f"{value:.1f}"
+                else:
+                    formatted_value = str(value)
+            display_values.append(formatted_value)
+        
+        # 表示文字列の作成
+        if len(display_values) == 1:
+            display_text = f"{rank}. {staff_name}{branch_tag} : {display_values[0]}"
+        else:
+            display_text = f"{rank}. {staff_name}{branch_tag} : {display_values[0]} ({display_values[1]})"
+        st.markdown(display_text, unsafe_allow_html=True)
+
 if authentication_status == False:
     st.error('❌ ユーザー名/パスワードが間違っています')
 elif authentication_status == None:
@@ -1574,11 +1651,6 @@ elif authentication_status:
                             with tab3:
                                 st.subheader("スタッフ別分析")
                                 
-                                # スタッフ別分析のサブタブ
-                                staff_subtab1, staff_subtab2, staff_subtab3, staff_subtab4 = st.tabs([
-                                    "📊 全体実数ランキング", "🏢 支部内実数ランキング", "⚡ 効率性ランキング", "📈 月別推移(3ヶ月)"
-                                ])
-                                
                                 # 共通のスタッフ別集計処理
                                 # 日報データから基本集計
                                 call_col = 'call_count' if 'call_count' in df_basic.columns else 'total_calls'
@@ -1595,16 +1667,28 @@ elif authentication_status:
                                 # カラム名を統一
                                 staff_summary.columns = ['staff_name', 'total_calls', 'charge_connected', 'appointments', 'branch']
                                 
-                                # TAAANデータをスタッフ別に集計
+                                # TAAANデータをスタッフ別に集計（基本分析データから直接取得）
                                 taaan_staff_data = {}
+                                if basic_data and 'monthly_analysis' in basic_data and selected_month in basic_data['monthly_analysis']:
+                                    staff_dict = basic_data['monthly_analysis'][selected_month]['staff']
+                                    for staff_name, staff_data in staff_dict.items():
+                                        taaan_staff_data[staff_name] = {
+                                            'taaan_deals': staff_data.get('total_deals', 0),
+                                            'approved_deals': staff_data.get('total_approved', 0),
+                                            'total_revenue': staff_data.get('total_revenue', 0),
+                                            'total_potential_revenue': staff_data.get('total_potential_revenue', 0)
+                                        }
+                                
+                                # staff_performanceもフォールバックとして使用（上位N名のデータのため）
                                 if 'staff_performance' in summary_data:
                                     for staff_name, data in summary_data['staff_performance'].items():
-                                        taaan_staff_data[staff_name] = {
-                                            'taaan_deals': data.get('total_deals', 0),
-                                            'approved_deals': data.get('total_approved', 0),
-                                            'total_revenue': data.get('total_revenue', 0),
-                                            'total_potential_revenue': data.get('total_potential_revenue', 0)
-                                        }
+                                        if staff_name not in taaan_staff_data:  # まだ存在しない場合のみ追加
+                                            taaan_staff_data[staff_name] = {
+                                                'taaan_deals': data.get('total_deals', 0),
+                                                'approved_deals': data.get('total_approved', 0),
+                                                'total_revenue': data.get('total_revenue', 0),
+                                                'total_potential_revenue': data.get('total_potential_revenue', 0)
+                                            }
                                 
                                 # TAAANデータを結合
                                 staff_summary['taaan_deals'] = staff_summary['staff_name'].map(
@@ -1652,6 +1736,23 @@ elif authentication_status:
                                     '社員': '#6c5ce7'       # 紫（未設定と区別）
                                 }
                                 
+                                # 全体TAAANデータの状況を確認
+                                total_staff_count = len(staff_summary)
+                                total_taaan_deals_all = staff_summary['taaan_deals'].sum()
+                                total_approved_deals_all = staff_summary['approved_deals'].sum()
+                                total_revenue_all = staff_summary['total_revenue'].sum()
+                                staff_with_taaan = len(staff_summary[staff_summary['taaan_deals'] > 0])
+                                
+                                # データソース情報を追加
+                                basic_data_available = basic_data and 'monthly_analysis' in basic_data and selected_month in basic_data['monthly_analysis']
+                                basic_staff_count = len(basic_data['monthly_analysis'][selected_month]['staff']) if basic_data_available else 0
+                                summary_staff_count = len(summary_data.get('staff_performance', {})) if 'staff_performance' in summary_data else 0
+                                
+                                # スタッフ別分析のサブタブ
+                                staff_subtab1, staff_subtab2, staff_subtab3, staff_subtab4 = st.tabs([
+                                    "📊 全体実数ランキング", "🏢 支部内実数ランキング", "⚡ 効率性ランキング", "📈 月別推移(3ヶ月)"
+                                ])
+                                
                                 with staff_subtab1:
                                     st.subheader("📊 全体実数ランキング")
                                     st.write("全スタッフの実数（絶対値）でのランキングです。")
@@ -1662,61 +1763,72 @@ elif authentication_status:
                                     with col1:
                                         # 1. 架電数ランキング
                                         st.markdown("##### 🏆 架電数ランキング (日報)")
-                                        top_calls = staff_summary.nlargest(10, 'total_calls')[['staff_name', 'total_calls', 'connect_rate', 'branch']]
-                                        for i, (_, row) in enumerate(top_calls.iterrows(), 1):
-                                            branch_color = branch_colors.get(row['branch'], '#95a5a6')
-                                            branch_tag = f'<span style="background-color: {branch_color}; color: white; padding: 2px 6px; border-radius: 10px; font-size: 0.8em; margin-left: 8px;">{row["branch"]}</span>'
-                                            st.markdown(f"{i}. {row['staff_name']}{branch_tag} - {row['total_calls']:,}件 ({row['connect_rate']}%)", unsafe_allow_html=True)
+                                        display_ranking_with_ties(
+                                            staff_summary, 
+                                            'total_calls', 
+                                            ['total_calls'], 
+                                            max_rank=10, 
+                                            branch_colors=branch_colors
+                                        )
                                         
                                         st.markdown("---")
                                         
                                         # 2. 担当コネクト数ランキング
                                         st.markdown("##### 📞 担当コネクト数ランキング (日報)")
-                                        top_connects = staff_summary.nlargest(10, 'charge_connected')[['staff_name', 'charge_connected', 'appointment_rate', 'branch']]
-                                        for i, (_, row) in enumerate(top_connects.iterrows(), 1):
-                                            branch_color = branch_colors.get(row['branch'], '#95a5a6')
-                                            branch_tag = f'<span style="background-color: {branch_color}; color: white; padding: 2px 6px; border-radius: 10px; font-size: 0.8em; margin-left: 8px;">{row["branch"]}</span>'
-                                            st.markdown(f"{i}. {row['staff_name']}{branch_tag} - {row['charge_connected']:,}件 ({row['appointment_rate']}%)", unsafe_allow_html=True)
+                                        display_ranking_with_ties(
+                                            staff_summary, 
+                                            'charge_connected', 
+                                            ['charge_connected'], 
+                                            max_rank=10, 
+                                            branch_colors=branch_colors
+                                        )
                                         
                                         st.markdown("---")
                                         
                                         # 3. アポ獲得数ランキング
                                         st.markdown("##### 🎯 アポ獲得数ランキング (日報)")
-                                        top_appointments = staff_summary.nlargest(10, 'appointments')[['staff_name', 'appointments', 'branch']]
-                                        for i, (_, row) in enumerate(top_appointments.iterrows(), 1):
-                                            branch_color = branch_colors.get(row['branch'], '#95a5a6')
-                                            branch_tag = f'<span style="background-color: {branch_color}; color: white; padding: 2px 6px; border-radius: 10px; font-size: 0.8em; margin-left: 8px;">{row["branch"]}</span>'
-                                            st.markdown(f"{i}. {row['staff_name']}{branch_tag} - {row['appointments']:,}件", unsafe_allow_html=True)
+                                        display_ranking_with_ties(
+                                            staff_summary, 
+                                            'appointments', 
+                                            ['appointments'], 
+                                            max_rank=10, 
+                                            branch_colors=branch_colors
+                                        )
                                     
                                     with col2:
                                         # 4. TAAAN商談数ランキング
                                         st.markdown("##### 💼 TAAAN商談数ランキング (TAAAN)")
-                                        top_taaan_deals = staff_summary.nlargest(10, 'taaan_deals')[['staff_name', 'taaan_deals', 'approval_rate', 'branch']]
-                                        for i, (_, row) in enumerate(top_taaan_deals.iterrows(), 1):
-                                            branch_color = branch_colors.get(row['branch'], '#95a5a6')
-                                            branch_tag = f'<span style="background-color: {branch_color}; color: white; padding: 2px 6px; border-radius: 10px; font-size: 0.8em; margin-left: 8px;">{row["branch"]}</span>'
-                                            approval_display = f" ({row['approval_rate']}%)" if row['taaan_deals'] > 0 else ""
-                                            st.markdown(f"{i}. {row['staff_name']}{branch_tag} - {row['taaan_deals']:,}件{approval_display}", unsafe_allow_html=True)
+                                        display_ranking_with_ties(
+                                            staff_summary, 
+                                            'taaan_deals', 
+                                            ['taaan_deals'], 
+                                            max_rank=10, 
+                                            branch_colors=branch_colors
+                                        )
                                         
                                         st.markdown("---")
                                         
                                         # 5. TAAAN承認数ランキング
                                         st.markdown("##### ✅ TAAAN承認数ランキング (TAAAN)")
-                                        top_approved = staff_summary.nlargest(10, 'approved_deals')[['staff_name', 'approved_deals', 'branch']]
-                                        for i, (_, row) in enumerate(top_approved.iterrows(), 1):
-                                            branch_color = branch_colors.get(row['branch'], '#95a5a6')
-                                            branch_tag = f'<span style="background-color: {branch_color}; color: white; padding: 2px 6px; border-radius: 10px; font-size: 0.8em; margin-left: 8px;">{row["branch"]}</span>'
-                                            st.markdown(f"{i}. {row['staff_name']}{branch_tag} - {row['approved_deals']:,}件", unsafe_allow_html=True)
+                                        display_ranking_with_ties(
+                                            staff_summary, 
+                                            'approved_deals', 
+                                            ['approved_deals'], 
+                                            max_rank=10, 
+                                            branch_colors=branch_colors
+                                        )
                                         
                                         st.markdown("---")
                                         
                                         # 6. TAAAN報酬額ランキング
                                         st.markdown("##### 💰 TAAAN報酬額ランキング (TAAAN)")
-                                        top_revenue = staff_summary.nlargest(10, 'total_revenue')[['staff_name', 'total_revenue', 'branch']]
-                                        for i, (_, row) in enumerate(top_revenue.iterrows(), 1):
-                                            branch_color = branch_colors.get(row['branch'], '#95a5a6')
-                                            branch_tag = f'<span style="background-color: {branch_color}; color: white; padding: 2px 6px; border-radius: 10px; font-size: 0.8em; margin-left: 8px;">{row["branch"]}</span>'
-                                            st.markdown(f"{i}. {row['staff_name']}{branch_tag} - ¥{row['total_revenue']:,}", unsafe_allow_html=True)
+                                        display_ranking_with_ties(
+                                            staff_summary, 
+                                            'total_revenue', 
+                                            ['total_revenue'], 
+                                            max_rank=10, 
+                                            branch_colors=branch_colors
+                                        )
                                 
                                 with staff_subtab2:
                                     st.subheader("🏢 支部内実数ランキング")
@@ -1764,7 +1876,11 @@ elif authentication_status:
                                     branch_staff = staff_summary[staff_summary['branch'] == selected_branch]
                                     
                                     if not branch_staff.empty:
-                                        st.info(f"📍 **{selected_branch}支部** のスタッフランキング ({len(branch_staff)}名)")
+                                        
+                                        # デバッグ情報を表示
+                                        total_taaan_deals = branch_staff['taaan_deals'].sum()
+                                        if total_taaan_deals == 0:
+                                            st.warning("⚠️ この支部のTAAAN商談数が0件です。基本分析データにTAAAN商談情報が含まれているか確認してください。")
                                         
                                         # 6つのランキングを2列×3行で表示
                                         col1, col2 = st.columns(2)
@@ -1772,49 +1888,72 @@ elif authentication_status:
                                         with col1:
                                             # 1. 架電数ランキング（支部内）
                                             st.markdown("##### 🏆 架電数ランキング (日報)")
-                                            top_calls_branch = branch_staff.nlargest(5, 'total_calls')[['staff_name', 'total_calls', 'connect_rate']]
-                                            for i, (_, row) in enumerate(top_calls_branch.iterrows(), 1):
-                                                st.markdown(f"{i}. {row['staff_name']} - {row['total_calls']:,}件 ({row['connect_rate']}%)")
+                                            display_ranking_with_ties(
+                                                branch_staff, 
+                                                'total_calls', 
+                                                ['total_calls'], 
+                                                max_rank=5, 
+                                                show_branch=False
+                                            )
                                             
                                             st.markdown("---")
                                             
                                             # 2. 担当コネクト数ランキング（支部内）
                                             st.markdown("##### 📞 担当コネクト数ランキング (日報)")
-                                            top_connects_branch = branch_staff.nlargest(5, 'charge_connected')[['staff_name', 'charge_connected', 'appointment_rate']]
-                                            for i, (_, row) in enumerate(top_connects_branch.iterrows(), 1):
-                                                st.markdown(f"{i}. {row['staff_name']} - {row['charge_connected']:,}件 ({row['appointment_rate']}%)")
+                                            display_ranking_with_ties(
+                                                branch_staff, 
+                                                'charge_connected', 
+                                                ['charge_connected'], 
+                                                max_rank=5, 
+                                                show_branch=False
+                                            )
                                             
                                             st.markdown("---")
                                             
                                             # 3. アポ獲得数ランキング（支部内）
                                             st.markdown("##### 🎯 アポ獲得数ランキング (日報)")
-                                            top_appointments_branch = branch_staff.nlargest(5, 'appointments')[['staff_name', 'appointments']]
-                                            for i, (_, row) in enumerate(top_appointments_branch.iterrows(), 1):
-                                                st.markdown(f"{i}. {row['staff_name']} - {row['appointments']:,}件")
+                                            display_ranking_with_ties(
+                                                branch_staff, 
+                                                'appointments', 
+                                                ['appointments'], 
+                                                max_rank=5, 
+                                                show_branch=False
+                                            )
                                         
                                         with col2:
                                             # 4. TAAAN商談数ランキング（支部内）
                                             st.markdown("##### 💼 TAAAN商談数ランキング (TAAAN)")
-                                            top_taaan_branch = branch_staff.nlargest(5, 'taaan_deals')[['staff_name', 'taaan_deals', 'approval_rate']]
-                                            for i, (_, row) in enumerate(top_taaan_branch.iterrows(), 1):
-                                                approval_display = f" ({row['approval_rate']}%)" if row['taaan_deals'] > 0 else ""
-                                                st.markdown(f"{i}. {row['staff_name']} - {row['taaan_deals']:,}件{approval_display}")
+                                            display_ranking_with_ties(
+                                                branch_staff, 
+                                                'taaan_deals', 
+                                                ['taaan_deals'], 
+                                                max_rank=5, 
+                                                show_branch=False
+                                            )
                                             
                                             st.markdown("---")
                                             
                                             # 5. TAAAN承認数ランキング（支部内）
                                             st.markdown("##### ✅ TAAAN承認数ランキング (TAAAN)")
-                                            top_approved_branch = branch_staff.nlargest(5, 'approved_deals')[['staff_name', 'approved_deals']]
-                                            for i, (_, row) in enumerate(top_approved_branch.iterrows(), 1):
-                                                st.markdown(f"{i}. {row['staff_name']} - {row['approved_deals']:,}件")
+                                            display_ranking_with_ties(
+                                                branch_staff, 
+                                                'approved_deals', 
+                                                ['approved_deals'], 
+                                                max_rank=5, 
+                                                show_branch=False
+                                            )
                                             
                                             st.markdown("---")
                                             
                                             # 6. TAAAN報酬額ランキング（支部内）
                                             st.markdown("##### 💰 TAAAN報酬額ランキング (TAAAN)")
-                                            top_revenue_branch = branch_staff.nlargest(5, 'total_revenue')[['staff_name', 'total_revenue']]
-                                            for i, (_, row) in enumerate(top_revenue_branch.iterrows(), 1):
-                                                st.markdown(f"{i}. {row['staff_name']} - ¥{row['total_revenue']:,}")
+                                            display_ranking_with_ties(
+                                                branch_staff, 
+                                                'total_revenue', 
+                                                ['total_revenue'], 
+                                                max_rank=5, 
+                                                show_branch=False
+                                            )
                                     else:
                                         st.warning(f"選択された支部 '{selected_branch}' にはスタッフが存在しません。")
                                 
@@ -1844,9 +1983,7 @@ elif authentication_status:
                                     # 架電時間データが利用可能かチェック
                                     hours_available = 'call_hours' in df_basic.columns and df_basic['call_hours'].sum() > 0
                                     
-                                    if working_days_available:
-                                        st.success("✅ 稼働日数の算出に成功しました！")
-                                    else:
+                                    if not working_days_available:
                                         st.warning("⚠️ 稼働日数の算出ができませんでした。")
                                         st.info("💡 日報データから稼働日数を計算するには、daily_activityデータまたは日別の架電データが必要です。")
                                     
@@ -1874,7 +2011,7 @@ elif authentication_status:
                                                 staff_hours_summary['appointments'] / staff_hours_summary['total_hours']
                                             ).fillna(0).round(1)
                                             
-                                            # TAAANデータを結合
+                                            # TAAANデータを結合（既に作成済みのtaaan_staff_dataを使用）
                                             staff_hours_summary['taaan_deals'] = staff_hours_summary['staff_name'].map(
                                                 lambda x: taaan_staff_data.get(x, {}).get('taaan_deals', 0)
                                             )
@@ -1899,47 +2036,54 @@ elif authentication_status:
                                             with col1:
                                                 # 1時間あたり架電数ランキング
                                                 st.markdown("##### 📞 1時間あたり架電数ランキング")
-                                                top_calls_per_hour = staff_hours_summary.nlargest(10, 'calls_per_hour')[['staff_name', 'calls_per_hour', 'total_hours', 'branch']]
-                                                for i, (_, row) in enumerate(top_calls_per_hour.iterrows(), 1):
-                                                    branch_color = branch_colors.get(row['branch'], '#95a5a6')
-                                                    branch_tag = f'<span style="background-color: {branch_color}; color: white; padding: 2px 6px; border-radius: 10px; font-size: 0.8em; margin-left: 8px;">{row["branch"]}</span>'
-                                                    st.markdown(f"{i}. {row['staff_name']}{branch_tag} - {row['calls_per_hour']:.1f}件/時間 (総{row['total_hours']:.1f}h)", unsafe_allow_html=True)
+                                                display_ranking_with_ties(
+                                                    staff_hours_summary, 
+                                                    'calls_per_hour', 
+                                                    ['calls_per_hour', 'total_hours'], 
+                                                    max_rank=10, 
+                                                    branch_colors=branch_colors
+                                                )
                                                 
                                                 st.markdown("---")
                                                 
                                                 # 1時間あたりアポ獲得数ランキング
                                                 st.markdown("##### 🎯 1時間あたりアポ獲得数ランキング")
-                                                top_appointments_per_hour = staff_hours_summary.nlargest(10, 'appointments_per_hour')[['staff_name', 'appointments_per_hour', 'appointments', 'branch']]
-                                                for i, (_, row) in enumerate(top_appointments_per_hour.iterrows(), 1):
-                                                    branch_color = branch_colors.get(row['branch'], '#95a5a6')
-                                                    branch_tag = f'<span style="background-color: {branch_color}; color: white; padding: 2px 6px; border-radius: 10px; font-size: 0.8em; margin-left: 8px;">{row["branch"]}</span>'
-                                                    st.markdown(f"{i}. {row['staff_name']}{branch_tag} - {row['appointments_per_hour']:.1f}件/時間 (総{row['appointments']}件)", unsafe_allow_html=True)
+                                                display_ranking_with_ties(
+                                                    staff_hours_summary, 
+                                                    'appointments_per_hour', 
+                                                    ['appointments_per_hour', 'appointments'], 
+                                                    max_rank=10, 
+                                                    branch_colors=branch_colors
+                                                )
                                             
                                             with col2:
                                                 # 1時間あたりTAAAN商談数ランキング
                                                 st.markdown("##### 💼 1時間あたりTAAAN商談数ランキング")
-                                                top_deals_per_hour = staff_hours_summary.nlargest(10, 'deals_per_hour')[['staff_name', 'deals_per_hour', 'taaan_deals', 'branch']]
-                                                for i, (_, row) in enumerate(top_deals_per_hour.iterrows(), 1):
-                                                    branch_color = branch_colors.get(row['branch'], '#95a5a6')
-                                                    branch_tag = f'<span style="background-color: {branch_color}; color: white; padding: 2px 6px; border-radius: 10px; font-size: 0.8em; margin-left: 8px;">{row["branch"]}</span>'
-                                                    st.markdown(f"{i}. {row['staff_name']}{branch_tag} - {row['deals_per_hour']:.1f}件/時間 (総{row['taaan_deals']}件)", unsafe_allow_html=True)
+                                                display_ranking_with_ties(
+                                                    staff_hours_summary, 
+                                                    'deals_per_hour', 
+                                                    ['deals_per_hour', 'taaan_deals'], 
+                                                    max_rank=10, 
+                                                    branch_colors=branch_colors
+                                                )
                                                 
                                                 st.markdown("---")
                                                 
                                                 # 1時間あたり報酬額ランキング
                                                 st.markdown("##### 💰 1時間あたり報酬額ランキング")
-                                                top_revenue_per_hour = staff_hours_summary.nlargest(10, 'revenue_per_hour')[['staff_name', 'revenue_per_hour', 'total_revenue', 'branch']]
-                                                for i, (_, row) in enumerate(top_revenue_per_hour.iterrows(), 1):
-                                                    branch_color = branch_colors.get(row['branch'], '#95a5a6')
-                                                    branch_tag = f'<span style="background-color: {branch_color}; color: white; padding: 2px 6px; border-radius: 10px; font-size: 0.8em; margin-left: 8px;">{row["branch"]}</span>'
-                                                    st.markdown(f"{i}. {row['staff_name']}{branch_tag} - ¥{row['revenue_per_hour']:,.0f}/時間 (総¥{row['total_revenue']:,})", unsafe_allow_html=True)
+                                                display_ranking_with_ties(
+                                                    staff_hours_summary, 
+                                                    'revenue_per_hour', 
+                                                    ['revenue_per_hour', 'total_revenue'], 
+                                                    max_rank=10, 
+                                                    branch_colors=branch_colors
+                                                )
                                         else:
                                             st.warning("⚠️ 架電時間データが利用できないため、時間当たり効率性ランキングを表示できません。")
                                             st.info("💡 GASのJSON生成時に架電時間データが含まれているか確認してください。")
                                     
                                     with eff_tab2:
                                         if working_days_available:
-                                            st.success("✅ 稼働日当たり効率性ランキング")
                                             
                                             # 稼働日当たり効率の計算
                                             staff_summary['calls_per_working_day'] = (
@@ -1968,50 +2112,60 @@ elif authentication_status:
                                             with col1:
                                                 # 1稼働日あたり架電数ランキング
                                                 st.markdown("##### 📞 1稼働日あたり架電数ランキング")
-                                                top_calls_per_day = staff_summary.nlargest(10, 'calls_per_working_day')[['staff_name', 'calls_per_working_day', 'working_days', 'branch']]
-                                                for i, (_, row) in enumerate(top_calls_per_day.iterrows(), 1):
-                                                    branch_color = branch_colors.get(row['branch'], '#95a5a6')
-                                                    branch_tag = f'<span style="background-color: {branch_color}; color: white; padding: 2px 6px; border-radius: 10px; font-size: 0.8em; margin-left: 8px;">{row["branch"]}</span>'
-                                                    st.markdown(f"{i}. {row['staff_name']}{branch_tag} - {row['calls_per_working_day']:.1f}件/日 ({row['working_days']}日)", unsafe_allow_html=True)
+                                                display_ranking_with_ties(
+                                                    staff_summary, 
+                                                    'calls_per_working_day', 
+                                                    ['calls_per_working_day', 'working_days'], 
+                                                    max_rank=10, 
+                                                    branch_colors=branch_colors
+                                                )
                                                 
                                                 st.markdown("---")
                                                 
                                                 # 1稼働日あたりアポ獲得数ランキング
                                                 st.markdown("##### 🎯 1稼働日あたりアポ獲得数ランキング")
-                                                top_appointments_per_day = staff_summary.nlargest(10, 'appointments_per_working_day')[['staff_name', 'appointments_per_working_day', 'appointments', 'branch']]
-                                                for i, (_, row) in enumerate(top_appointments_per_day.iterrows(), 1):
-                                                    branch_color = branch_colors.get(row['branch'], '#95a5a6')
-                                                    branch_tag = f'<span style="background-color: {branch_color}; color: white; padding: 2px 6px; border-radius: 10px; font-size: 0.8em; margin-left: 8px;">{row["branch"]}</span>'
-                                                    st.markdown(f"{i}. {row['staff_name']}{branch_tag} - {row['appointments_per_working_day']:.1f}件/日 (総{row['appointments']}件)", unsafe_allow_html=True)
+                                                display_ranking_with_ties(
+                                                    staff_summary, 
+                                                    'appointments_per_working_day', 
+                                                    ['appointments_per_working_day', 'appointments'], 
+                                                    max_rank=10, 
+                                                    branch_colors=branch_colors
+                                                )
                                                 
                                                 st.markdown("---")
                                                 
                                                 # 1稼働日あたりTAAAN商談数ランキング
                                                 st.markdown("##### 💼 1稼働日あたりTAAAN商談数ランキング")
-                                                top_deals_per_day = staff_summary.nlargest(10, 'deals_per_working_day')[['staff_name', 'deals_per_working_day', 'taaan_deals', 'branch']]
-                                                for i, (_, row) in enumerate(top_deals_per_day.iterrows(), 1):
-                                                    branch_color = branch_colors.get(row['branch'], '#95a5a6')
-                                                    branch_tag = f'<span style="background-color: {branch_color}; color: white; padding: 2px 6px; border-radius: 10px; font-size: 0.8em; margin-left: 8px;">{row["branch"]}</span>'
-                                                    st.markdown(f"{i}. {row['staff_name']}{branch_tag} - {row['deals_per_working_day']:.1f}件/日 (総{row['taaan_deals']}件)", unsafe_allow_html=True)
+                                                display_ranking_with_ties(
+                                                    staff_summary, 
+                                                    'deals_per_working_day', 
+                                                    ['deals_per_working_day', 'taaan_deals'], 
+                                                    max_rank=10, 
+                                                    branch_colors=branch_colors
+                                                )
                                             
                                             with col2:
                                                 # 1稼働日あたり承認数ランキング
                                                 st.markdown("##### ✅ 1稼働日あたり承認数ランキング")
-                                                top_approved_per_day = staff_summary.nlargest(10, 'approved_per_working_day')[['staff_name', 'approved_per_working_day', 'approved_deals', 'branch']]
-                                                for i, (_, row) in enumerate(top_approved_per_day.iterrows(), 1):
-                                                    branch_color = branch_colors.get(row['branch'], '#95a5a6')
-                                                    branch_tag = f'<span style="background-color: {branch_color}; color: white; padding: 2px 6px; border-radius: 10px; font-size: 0.8em; margin-left: 8px;">{row["branch"]}</span>'
-                                                    st.markdown(f"{i}. {row['staff_name']}{branch_tag} - {row['approved_per_working_day']:.1f}件/日 (総{row['approved_deals']}件)", unsafe_allow_html=True)
+                                                display_ranking_with_ties(
+                                                    staff_summary, 
+                                                    'approved_per_working_day', 
+                                                    ['approved_per_working_day', 'approved_deals'], 
+                                                    max_rank=10, 
+                                                    branch_colors=branch_colors
+                                                )
                                                 
                                                 st.markdown("---")
                                                 
                                                 # 1稼働日あたり報酬額ランキング
                                                 st.markdown("##### 💰 1稼働日あたり報酬額ランキング")
-                                                top_revenue_per_day = staff_summary.nlargest(10, 'revenue_per_working_day')[['staff_name', 'revenue_per_working_day', 'total_revenue', 'branch']]
-                                                for i, (_, row) in enumerate(top_revenue_per_day.iterrows(), 1):
-                                                    branch_color = branch_colors.get(row['branch'], '#95a5a6')
-                                                    branch_tag = f'<span style="background-color: {branch_color}; color: white; padding: 2px 6px; border-radius: 10px; font-size: 0.8em; margin-left: 8px;">{row["branch"]}</span>'
-                                                    st.markdown(f"{i}. {row['staff_name']}{branch_tag} - ¥{row['revenue_per_working_day']:,.0f}/日 (総¥{row['total_revenue']:,})", unsafe_allow_html=True)
+                                                display_ranking_with_ties(
+                                                    staff_summary, 
+                                                    'revenue_per_working_day', 
+                                                    ['revenue_per_working_day', 'total_revenue'], 
+                                                    max_rank=10, 
+                                                    branch_colors=branch_colors
+                                                )
                                         else:
                                             st.warning("⚠️ 稼働日数データが利用できないため、稼働日当たり効率性ランキングを表示できません。")
                                             st.info("💡 **理由**: 日別の架電データまたは`daily_activity`データが不足している可能性があります。")
